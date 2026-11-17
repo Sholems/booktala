@@ -105,6 +105,14 @@
                             <i class="fas fa-tools w-5 text-sm"></i>
                             <span class="text-sm">Maintenance</span>
                         </a>
+                        <a href="{{ route('staff.security.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group {{ request()->routeIs('staff.security.*') ? 'bg-accent/10 text-accent font-semibold' : 'hover:bg-slate-800/50 hover:text-white' }}">
+                            <i class="fas fa-shield-alt w-5 text-sm"></i>
+                            <span class="text-sm">Security</span>
+                        </a>
+                        <a href="{{ route('staff.inventory.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group {{ request()->routeIs('staff.inventory.*') ? 'bg-accent/10 text-accent font-semibold' : 'hover:bg-slate-800/50 hover:text-white' }}">
+                            <i class="fas fa-boxes w-5 text-sm"></i>
+                            <span class="text-sm">Inventory</span>
+                        </a>
                     </div>
                 </div>
 

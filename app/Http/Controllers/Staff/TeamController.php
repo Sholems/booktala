@@ -83,6 +83,16 @@ class TeamController extends Controller
             'departures' => $departures,
             'teamBySite' => $this->teamBySite($siteIds),
             'missedGrace' => EscalationService::MISSED_SHIFT_GRACE_MINUTES,
+            'security' => [
+                'open_incidents' => \App\Models\Incident::whereIn('site_id', $siteIds)->where('status', 'open')->count(),
+                'visitors_on_site' => \App\Models\VisitorLog::whereIn('site_id', $siteIds)->onSite()->count(),
+                'low_stock' => \App\Models\InventoryItem::whereIn('site_id', $siteIds)->where('is_active', true)->low()->count(),
+                'overdue_checkpoints' => \App\Models\PatrolCheckpoint::whereIn('site_id', $siteIds)->where('is_active', true)
+                    ->with(['site', 'lastScan'])->get()
+                    ->filter(fn ($c) => $c->site->patrolsAt(now())
+                        && (!$c->lastScan || $c->lastScan->scanned_at->lt(now()->subMinutes($c->site->patrol_interval_minutes * 2))))
+                    ->count(),
+            ],
         ]);
     }
 

@@ -33,12 +33,12 @@ class EscalationService
 
     public const MISSED_SHIFT_GRACE_MINUTES = 30;
 
-    public function __construct(private AttendanceService $attendance)
+    public function __construct(private AttendanceService $attendance, private SecurityService $security)
     {
     }
 
     /**
-     * @return array{tasks: int, maintenance: int, missed_shifts: int, closed_attendance: int}
+     * @return array{tasks: int, maintenance: int, missed_shifts: int, closed_attendance: int, missed_patrols: int}
      */
     public function run(): array
     {
@@ -47,6 +47,7 @@ class EscalationService
             'maintenance' => $this->escalateMaintenance(),
             'missed_shifts' => $this->reportMissedShifts(),
             'closed_attendance' => $this->attendance->closeForgotten(),
+            'missed_patrols' => $this->security->reportMissedPatrols(),
         ];
     }
 

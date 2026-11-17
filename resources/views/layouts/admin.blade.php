@@ -217,6 +217,16 @@ $logo = \App\Models\Setting::get('logo');
                             <i class="fas fa-user-clock w-5 text-sm"></i>
                             <span class="text-sm">Attendance</span>
                         </a>
+                        @can('site.manage')
+                        <a href="{{ route('admin.security.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group {{ request()->routeIs('admin.security.*') ? 'bg-accent/10 text-accent font-semibold' : 'hover:bg-slate-800/50 hover:text-white' }}">
+                            <i class="fas fa-shield-alt w-5 text-sm"></i>
+                            <span class="text-sm">Security</span>
+                        </a>
+                        <a href="{{ route('admin.inventory.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group {{ request()->routeIs('admin.inventory.*') ? 'bg-accent/10 text-accent font-semibold' : 'hover:bg-slate-800/50 hover:text-white' }}">
+                            <i class="fas fa-boxes w-5 text-sm"></i>
+                            <span class="text-sm">Inventory</span>
+                        </a>
+                        @endcan
                     </div>
                 </div>
 
@@ -227,6 +237,10 @@ $logo = \App\Models\Setting::get('logo');
                         <a href="{{ route('admin.reports.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group {{ request()->routeIs('admin.reports.*') ? 'bg-accent/10 text-accent font-semibold' : 'hover:bg-slate-800/50 hover:text-white' }}">
                             <i class="fas fa-chart-pie w-5 text-sm"></i>
                             <span class="text-sm">Reports</span>
+                        </a>
+                        <a href="{{ route('admin.reports.sites') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group {{ request()->routeIs('admin.reports.sites*') ? 'bg-accent/10 text-accent font-semibold' : 'hover:bg-slate-800/50 hover:text-white' }}">
+                            <i class="fas fa-city w-5 text-sm"></i>
+                            <span class="text-sm">Site Report</span>
                         </a>
                         <a href="{{ route('admin.ical.url') }}" target="_blank" class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group hover:bg-slate-800/50 hover:text-white">
                             <i class="fas fa-calendar-week w-5 text-sm"></i>

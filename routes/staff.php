@@ -56,6 +56,12 @@ Route::prefix('staff')->middleware(['auth', 'role:staff'])->group(function () {
     Route::get('/payslips/{payslip}', [PayslipController::class, 'show'])->name('staff.payslips.show');
     Route::get('/payslips/{payslip}/pdf', [PayslipController::class, 'pdf'])->name('staff.payslips.pdf');
 
+    // Security, inventory and QR patrol scans at the staff member's sites.
+    $portal = 'staff';
+    require __DIR__ . '/site-operations.php';
+    Route::get('/patrol/{token}', [\App\Http\Controllers\Staff\PatrolController::class, 'show'])->name('staff.patrol.scan');
+    Route::post('/patrol/{token}', [\App\Http\Controllers\Staff\PatrolController::class, 'record'])->name('staff.patrol.record')->middleware('throttle:30,1');
+
     // Supervisors and managers: their sites' team, work, roster and attendance.
     Route::prefix('team')->middleware('supervisor')->group(function () {
         Route::get('/', [TeamController::class, 'index'])->name('staff.team.index');

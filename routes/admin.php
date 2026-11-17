@@ -92,6 +92,14 @@ Route::prefix('admin')->middleware(['auth', 'role:super_admin|admin'])->group(fu
     Route::post('/owners/{owner}/portal', [OwnerController::class, 'portalAccess'])->name('admin.owners.portal')->middleware('can:owner.manage');
     Route::patch('/owners/{owner}/portal/revoke', [OwnerController::class, 'revokePortal'])->name('admin.owners.portal.revoke')->middleware('can:owner.manage');
 
+    // Security and inventory across all sites.
+    Route::middleware('can:site.manage')->group(function () {
+        $portal = 'admin';
+        require __DIR__ . '/site-operations.php';
+    });
+    Route::get('/reports/sites', [\App\Http\Controllers\Admin\SiteReportController::class, 'index'])->name('admin.reports.sites')->middleware('can:report.view');
+    Route::get('/reports/sites/export', [\App\Http\Controllers\Admin\SiteReportController::class, 'export'])->name('admin.reports.sites.export')->middleware('can:report.export');
+
     // Finance: property expenses and owner statements.
     Route::middleware('can:finance.manage')->group(function () {
         Route::get('/expenses', [ExpenseController::class, 'index'])->name('admin.expenses.index');

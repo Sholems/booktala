@@ -15,11 +15,38 @@ class Site extends Model
 {
     use HasSlug;
 
-    protected $fillable = ['name', 'slug', 'address', 'city', 'state', 'country', 'latitude', 'longitude', 'geofence_radius_m', 'phone', 'notes', 'is_active'];
+    protected $fillable = [
+        'name', 'slug', 'address', 'city', 'state', 'country', 'latitude', 'longitude', 'geofence_radius_m',
+        'patrol_interval_minutes', 'patrol_from', 'patrol_until', 'phone', 'notes', 'is_active',
+    ];
 
     protected function casts(): array
     {
-        return ['is_active' => 'boolean', 'latitude' => 'float', 'longitude' => 'float', 'geofence_radius_m' => 'integer'];
+        return ['is_active' => 'boolean', 'latitude' => 'float', 'longitude' => 'float', 'geofence_radius_m' => 'integer', 'patrol_interval_minutes' => 'integer'];
+    }
+
+    public function checkpoints(): HasMany
+    {
+        return $this->hasMany(PatrolCheckpoint::class);
+    }
+
+    /**
+     * Whether guards should be patrolling at the given moment (window may run past midnight).
+     */
+    public function patrolsAt(\DateTimeInterface $at): bool
+    {
+        if (!$this->patrol_interval_minutes) {
+            return false;
+        }
+        if (!$this->patrol_from || !$this->patrol_until) {
+            return true; // round the clock
+        }
+
+        $time = $at->format('H:i:s');
+        $from = substr($this->patrol_from, 0, 8);
+        $until = substr($this->patrol_until, 0, 8);
+
+        return $from <= $until ? ($time >= $from && $time < $until) : ($time >= $from || $time < $until);
     }
 
     public function hasLocation(): bool

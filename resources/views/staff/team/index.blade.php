@@ -48,6 +48,24 @@
     @endforeach
 </div>
 
+@php $siteQuery = array_filter(['site' => $selectedSite]); @endphp
+<div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+    @foreach([
+        ['Open incidents', $security['open_incidents'], 'fa-exclamation-circle', 'text-red-600', route('staff.security.index', $siteQuery)],
+        ['Visitors on site', $security['visitors_on_site'], 'fa-id-card', 'text-blue-600', route('staff.security.index', $siteQuery)],
+        ['Overdue patrol points', $security['overdue_checkpoints'], 'fa-route', 'text-orange-600', route('staff.security.index', $siteQuery)],
+        ['Low stock items', $security['low_stock'], 'fa-boxes', 'text-orange-600', route('staff.inventory.index', $siteQuery)],
+    ] as [$label, $count, $icon, $color, $url])
+    <a href="{{ $url }}" class="rounded-lg bg-white p-4 shadow-sm ring-1 ring-gray-100 hover:ring-primary/30 {{ $count === 0 ? 'opacity-60' : '' }}">
+        <div class="flex items-center justify-between">
+            <span class="text-2xl font-bold {{ $count ? $color : 'text-gray-400' }}">{{ $count }}</span>
+            <i class="fas {{ $icon }} {{ $count ? $color : 'text-gray-300' }}"></i>
+        </div>
+        <div class="mt-1 text-xs text-gray-600">{{ $label }}</div>
+    </a>
+    @endforeach
+</div>
+
 @if($errors->has('assigned_to'))
 <div class="mb-4 bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-700">{{ $errors->first('assigned_to') }}</div>
 @endif
