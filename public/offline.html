@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#0B2D5B">
+    <title>You're offline · BookTala</title>
+    <link rel="icon" href="icons/favicon-32.png">
+    <style>
+        :root { --primary: #0B2D5B; --accent: #E11D2E; --bg: #F6F7F9; --text: #1f2937; --muted: #6b7280; }
+        * { box-sizing: border-box; }
+        body {
+            margin: 0; min-height: 100vh; display: flex; align-items: center; justify-content: center;
+            background: var(--bg); color: var(--text); padding: 24px 16px;
+            font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; line-height: 1.5;
+        }
+        main { width: 100%; max-width: 440px; text-align: center; }
+        .card { background: #fff; border-radius: 16px; padding: 32px 24px; box-shadow: 0 10px 30px rgba(11, 45, 91, .08); }
+        img.logo { display: block; height: 56px; width: auto; margin: 0 auto; }
+        .badge {
+            display: inline-flex; align-items: center; gap: 8px; margin: 24px 0 8px;
+            padding: 6px 14px; border-radius: 999px; background: #fef3c7; color: #92400e; font-size: 14px; font-weight: 600;
+        }
+        .dot { width: 8px; height: 8px; border-radius: 50%; background: #d97706; }
+        h1 { margin: 8px 0; font-size: 24px; color: var(--primary); }
+        p { margin: 0 0 16px; color: var(--muted); }
+        .actions { display: flex; flex-direction: column; gap: 10px; margin-top: 24px; }
+        .btn {
+            display: inline-flex; justify-content: center; align-items: center; gap: 8px; padding: 12px 20px;
+            border-radius: 999px; font-weight: 600; font-size: 15px; text-decoration: none; cursor: pointer; border: 0;
+        }
+        .btn-primary { background: var(--primary); color: #fff; }
+        .btn-outline { background: #fff; color: var(--primary); border: 1px solid var(--primary); }
+        .help { margin-top: 24px; font-size: 14px; color: var(--muted); }
+        .help a { color: var(--primary); font-weight: 600; }
+        @media (prefers-color-scheme: dark) {
+            :root { --bg: #0f172a; --text: #e5e7eb; --muted: #9ca3af; }
+            .card { background: #111c33; box-shadow: none; }
+            h1 { color: #fff; }
+            .btn-outline { background: transparent; color: #fff; border-color: #fff; }
+            .help a { color: var(--accent); }
+            img.logo { background: #fff; border-radius: 10px; padding: 6px 10px; }
+        }
+    </style>
+</head>
+<body>
+<main>
+    <div class="card">
+        <img class="logo" src="images/booktala-logo.png" alt="BookTala">
+        <div class="badge"><span class="dot"></span> No internet connection</div>
+        <h1>You're offline</h1>
+        <p>This page isn't saved on your device yet. Pages you've opened before are still available.</p>
+        <div class="actions">
+            <button class="btn btn-primary" type="button" onclick="location.reload()">Try again</button>
+            <a class="btn btn-outline" href="./">Go to home page</a>
+        </div>
+        <p class="help">Need help with a booking? Reconnect and visit our contact page.</p>
+    </div>
+</main>
+<script>
+    // Reload as soon as the connection returns.
+    window.addEventListener('online', function () { location.reload(); });
+</script>
+</body>
+</html>

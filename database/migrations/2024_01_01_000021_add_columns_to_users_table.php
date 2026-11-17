@@ -1,0 +1,27 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::table('users', function (Blueprint $table) {
+            $table->string('phone')->nullable()->after('email');
+            $table->string('avatar')->nullable()->after('phone');
+            $table->enum('status', ['active', 'suspended', 'banned'])->default('active')->after('avatar');
+            $table->string('id_document')->nullable()->after('status');
+            $table->boolean('id_verified')->default(false)->after('id_document');
+            $table->string('google_id')->nullable()->after('id_verified');
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::table('users', function (Blueprint $table) {
+            $table->dropColumn(['phone', 'avatar', 'status', 'id_document', 'id_verified', 'google_id']);
+        });
+    }
+};

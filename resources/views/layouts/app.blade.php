@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+@php
+$siteName = \App\Models\Setting::get('site_name', config('brand.name'));
+$logo = \App\Models\Setting::get('logo');
+$logoUrl = $logo ? url('media/' . ltrim($logo, '/')) : asset('images/booktala-logo.png');
+$favicon = \App\Models\Setting::get('favicon');
+$sitePhone = \App\Models\Setting::get('phone', config('brand.phone'));
+$siteEmail = \App\Models\Setting::get('email', config('brand.email'));
+$siteAddress = \App\Models\Setting::get('address', config('brand.address'));
+$googleProfile = \App\Models\Setting::get('google_profile', config('brand.google_profile'));
+$socialLinks = array_filter([
+    'facebook' => ['fa-facebook-f', 'Facebook', \App\Models\Setting::get('social_facebook', config('brand.social.facebook'))],
+    'twitter' => ['fa-x-twitter', 'X (Twitter)', \App\Models\Setting::get('social_twitter', config('brand.social.twitter'))],
+    'instagram' => ['fa-instagram', 'Instagram', \App\Models\Setting::get('social_instagram', config('brand.social.instagram'))],
+    'linkedin' => ['fa-linkedin-in', 'LinkedIn', \App\Models\Setting::get('social_linkedin')],
+    'youtube' => ['fa-youtube', 'YouTube', \App\Models\Setting::get('social_youtube')],
+], fn ($link) => !empty($link[2]));
+@endphp
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="@yield('meta_description', $siteName . ' - ' . config('brand.tagline') . '. Book fully furnished short-let apartments online.')">
+    <meta name="keywords" content="@yield('meta_keywords', 'BookTala, shortlet, short let, apartment booking, serviced apartment, Lagos')">
+    <title>@yield('title', $siteName . ' - Stays, Travels & Better Living')</title>
+    
+    <meta property="og:title" content="@yield('og_title', $siteName)">
+    <meta property="og:description" content="@yield('og_description', 'Stays, Travels & Better Living')">
+    <meta property="og:image" content="@yield('og_image', asset('images/og-default.jpg'))">
+    <meta property="og:url" content="{{ url()->current() }}">
+    <meta property="og:type" content="website">
+    
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="@yield('twitter_title', $siteName)">
+    <meta name="twitter:description" content="@yield('twitter_description', 'Stays, Travels & Better Living')">
+    <meta name="twitter:image" content="@yield('twitter_image', asset('images/og-default.jpg'))">
+    
+    <link rel="canonical" href="{{ url()->current() }}">
+    @if($favicon)
+    <link rel="icon" type="image/x-icon" href="{{ url('media/' . ltrim($favicon, '/')) }}">
+    @else
+    <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
+    @endif
+    
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <style>
+        .mobile-menu { display: none; }
+        .mobile-menu.open { display: block; }
+        @media (max-width: 768px) {
+            .desktop-nav { display: none !important; }
+            .mobile-menu { position: fixed; inset: 0; z-index: 50; background: white; padding: 1rem; overflow-y: auto; }
+            .mobile-menu .nav-link { display: block; padding: 0.75rem 0; border-b border-gray-100; }
+        }
+    </style>
+    @include('partials.pwa-head')
+    @stack('styles')
+</head>
+<body class="bg-background text-gray-800 font-sans">
+    <header class="bg-white shadow-md sticky top-0 z-50">
+        <nav class="container mx-auto px-4 py-3 md:py-4">
+            <div class="flex items-center justify-between">
+                <a href="{{ route('home') }}" class="flex items-center gap-2 shrink-0" aria-label="{{ $siteName }} home">
+                    <img src="{{ $logoUrl }}" alt="{{ $siteName }}" class="h-10 md:h-14 w-auto object-contain">
+                </a>
+                
+                <div class="desktop-nav hidden md:flex items-center space-x-6 lg:space-x-8">
+                    <a href="{{ route('home') }}" class="text-gray-700 hover:text-primary transition text-sm lg:text-base">Home</a>
+                    <a href="{{ route('properties.index') }}" class="text-gray-700 hover:text-primary transition text-sm lg:text-base">Apartments</a>
+                    <a href="{{ route('pages.about') }}" class="text-gray-700 hover:text-primary transition text-sm lg:text-base">About</a>
+                    <a href="{{ route('blog.index') }}" class="text-gray-700 hover:text-primary transition text-sm lg:text-base">Blog</a>
+                    <a href="{{ route('pages.contact') }}" class="text-gray-700 hover:text-primary transition text-sm lg:text-base">Contact</a>
+                    <a href="{{ route('pages.faq') }}" class="text-gray-700 hover:text-primary transition text-sm lg:text-base">FAQ</a>
+                </div>
+                
+                <div class="flex items-center gap-2 md:space-x-4">
+                    @auth
+                        @php
+                            $dashboardRoute = auth()->user()->hasAnyRole(['super_admin', 'admin']) ? 'admin.dashboard'
+                                : (auth()->user()->hasRole('staff') ? 'staff.dashboard'
+                                : (auth()->user()->hasRole('owner') ? 'owner.dashboard' : 'customer.dashboard'));
+                        @endphp
+                        <a href="{{ route($dashboardRoute) }}" class="px-3 md:px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition text-sm">Dashboard</a>
+                        <form method="POST" action="{{ route('logout') }}" class="inline">
+                            @csrf
+                            <button type="submit" class="p-2 text-red-600 hover:text-red-800">
+                                <i class="fas fa-sign-out-alt"></i>
+                            </button>
+                        </form>
+                    @else
+                        <a href="{{ route('login') }}" class="px-3 py-2 text-primary hover:text-accent transition text-sm">Login</a>
+                        <a href="{{ route('register') }}" class="px-3 md:px-4 py-2 bg-accent text-white rounded-lg hover:bg-accent/90 transition text-sm">Register</a>
+                    @endauth
+                    <button class="md:hidden text-gray-700" onclick="toggleMobileMenu()">
+                        <i class="fas fa-bars text-xl"></i>
+                    </button>
+                </div>
+            </div>
+        </nav>
+        
+        <div id="mobile-menu" class="mobile-menu">
+            <div class="flex justify-between items-center mb-4 pb-4 border-b">
+                <img src="{{ $logoUrl }}" alt="{{ $siteName }}" class="h-10 w-auto object-contain">
+                <button onclick="toggleMobileMenu()" class="p-2">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            <a href="{{ route('home') }}" class="nav-link" onclick="toggleMobileMenu()">Home</a>
+            <a href="{{ route('properties.index') }}" class="nav-link" onclick="toggleMobileMenu()">Apartments</a>
+            <a href="{{ route('pages.about') }}" class="nav-link" onclick="toggleMobileMenu()">About</a>
+            <a href="{{ route('pages.contact') }}" class="nav-link" onclick="toggleMobileMenu()">Contact</a>
+            <a href="{{ route('pages.faq') }}" class="nav-link" onclick="toggleMobileMenu()">FAQ</a>
+            <a href="{{ route('blog.index') }}" class="nav-link" onclick="toggleMobileMenu()">Blog</a>
+        </div>
+    </header>
+
+    <main>
+        @yield('content')
+    </main>
+
+    <footer class="bg-primary text-white py-8 md:py-12">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-8 lg:gap-10">
+                <div class="lg:col-span-4">
+                    <a href="{{ route('home') }}" class="inline-block bg-white rounded-lg px-3 py-2 mb-4" aria-label="{{ $siteName }} home">
+                        <img src="{{ $logoUrl }}" alt="{{ $siteName }}" class="h-14 w-auto object-contain">
+                    </a>
+                    <p class="text-gray-300 text-sm leading-relaxed">{{ \App\Models\Setting::get('site_description', config('brand.description')) }}</p>
+                    <p class="text-accent text-sm font-semibold mt-3 tracking-wide">{{ config('brand.tagline') }}</p>
+                </div>
+                <div class="lg:col-span-2">
+                    <h4 class="font-bold mb-3 md:mb-4 text-sm md:text-base">Useful Links</h4>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="{{ route('pages.about') }}" class="text-gray-300 hover:text-accent">About Us</a></li>
+                        <li><a href="{{ route('pages.contact') }}" class="text-gray-300 hover:text-accent">Contact Us</a></li>
+                        <li><a href="{{ route('pages.terms') }}" class="text-gray-300 hover:text-accent">Term &amp; Condition</a></li>
+                        <li><a href="{{ route('properties.index') }}" class="text-gray-300 hover:text-accent">Apartments</a></li>
+                        <li><a href="{{ route('blog.index') }}" class="text-gray-300 hover:text-accent">Blog</a></li>
+                        <li><a href="{{ route('pages.faq') }}" class="text-gray-300 hover:text-accent">FAQ</a></li>
+                        <li><a href="{{ route('pages.privacy') }}" class="text-gray-300 hover:text-accent">Privacy Policy</a></li>
+                        <li><a href="{{ route('pages.cancellation') }}" class="text-gray-300 hover:text-accent">Cancellation Policy</a></li>
+                    </ul>
+                </div>
+                <div class="lg:col-span-3">
+                    <h4 class="font-bold mb-3 md:mb-4 text-sm md:text-base">Address</h4>
+                    <p class="flex text-sm text-gray-300"><i class="fas fa-map-marker-alt mr-2 mt-1 text-accent"></i> <span>{{ $siteAddress }}</span></p>
+                    @if($googleProfile)
+                    <a href="{{ $googleProfile }}" target="_blank" rel="noopener" class="inline-flex items-center gap-2 mt-3 text-sm text-gray-300 hover:text-accent">
+                        <i class="fab fa-google"></i> Google Profile
+                    </a>
+                    @endif
+                </div>
+                <div class="lg:col-span-3">
+                    <h4 class="font-bold mb-3 md:mb-4 text-sm md:text-base">Contact Us</h4>
+                    <ul class="space-y-2 text-sm text-gray-300">
+                        <li><i class="fas fa-phone mr-2 text-accent"></i> <a href="tel:{{ preg_replace('/[^0-9+]/', '', $sitePhone) }}" class="hover:text-accent">{{ $sitePhone }}</a></li>
+                        <li><i class="fas fa-envelope mr-2 text-accent"></i> <a href="mailto:{{ $siteEmail }}" class="hover:text-accent break-all">{{ $siteEmail }}</a></li>
+                    </ul>
+                    <div class="mt-4 flex gap-3">
+                        @foreach($socialLinks as [$icon, $label, $href])
+                        <a href="{{ $href }}" target="_blank" rel="noopener" aria-label="{{ $label }}" class="w-9 h-9 rounded-full bg-white/10 flex items-center justify-center text-gray-200 hover:bg-accent hover:text-white transition"><i class="fab {{ $icon }}"></i></a>
+                        @endforeach
+                    </div>
+                </div>
+            </div>
+            <div class="border-t border-gray-700 mt-8 pt-6 text-center text-gray-400 text-sm">
+                <p>&copy; {{ date('Y') }} {{ $siteName }}. All Rights Reserved. <span class="block sm:inline mt-1 sm:mt-0">A brand of {{ config('brand.owner') }}.</span></p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        function toggleMobileMenu() {
+            document.getElementById('mobile-menu').classList.toggle('open');
+            document.body.classList.toggle('overflow-hidden');
+        }
+    </script>
+    @stack('scripts')
+    @include('partials.pwa-scripts', ['pwaInstallPrompt' => true])
+</body>
+</html>
