@@ -192,6 +192,10 @@ class OperationsFlowTest extends TestCase
         $this->assertSame('pending', $order->status);
         $this->assertSame(0.0, (float) $order->total_amount, 'Guests must not set their own prices');
 
+        $this->actingAs($guest)->get(route('customer.room-service.index'))
+            ->assertOk()
+            ->assertSee('Amenity Request');
+
         $this->actingAs($staff)->get(route('staff.room-service.index'))->assertOk()->assertSee('Extra towels');
 
         $this->actingAs($staff)->patch(route('staff.room-service.advance', $order), ['charge' => 1500])->assertSessionHas('success');

@@ -46,7 +46,7 @@
                     <td class="px-6 py-4">
                         <div class="flex items-center gap-3">
                             <div class="w-10 h-10 rounded-lg bg-{{ $order->order_type === 'food' ? 'orange' : ($order->order_type === 'laundry' ? 'blue' : 'purple') }}-100 flex items-center justify-center">
-                                <i class="fas {{ $order->order_type === 'food' ? 'fa-utensils' : ($order->order_type === 'laundry' ? 'fa-tshirt' : ($order->order_type === 'amenity' ? 'fa-spa' : ($order->order_type === 'maintenance' ? 'fa-wrench' : 'fa-box')) }} text-{{ $order->order_type === 'food' ? 'orange' : ($order->order_type === 'laundry' ? 'blue' : 'purple') }}-600"></i>
+                                <i class="fas {{ $order->order_type === 'food' ? 'fa-utensils' : ($order->order_type === 'laundry' ? 'fa-tshirt' : ($order->order_type === 'amenity' ? 'fa-spa' : ($order->order_type === 'maintenance' ? 'fa-wrench' : 'fa-box'))) }} text-{{ $order->order_type === 'food' ? 'orange' : ($order->order_type === 'laundry' ? 'blue' : 'purple') }}-600"></i>
                             </div>
                             <div>
                                 <p class="font-medium text-gray-800">{{ RoomServiceOrder::orderTypes()[$order->order_type] }}</p>
