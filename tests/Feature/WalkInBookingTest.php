@@ -130,6 +130,30 @@ class WalkInBookingTest extends TestCase
         $this->assertSame(1, Invoice::count());
     }
 
+    public function test_transfer_reference_error_is_shown_at_the_reference_field(): void
+    {
+        $this->seed(RolePermissionSeeder::class);
+        $site = Site::create(['name' => 'Lekki', 'address' => '1 Road', 'city' => 'Lagos', 'state' => 'Lagos']);
+        $unit = $this->unitAt($site);
+        $receptionist = $this->receptionistAt($site);
+
+        $this->actingAs($receptionist)
+            ->from(route('frontdesk.reservations.create'))
+            ->followingRedirects()
+            ->post(route('frontdesk.reservations.store'), $this->payload($site, $unit, [
+                'payment_method' => 'transfer',
+                'reference' => '',
+            ]))
+            ->assertOk()
+            ->assertSee('There is a problem with your booking')
+            ->assertSee('The reference field is required.')
+            ->assertSee('id="reference"', false)
+            ->assertSee('aria-invalid="true"', false);
+
+        $this->assertSame(0, Reservation::count());
+        $this->assertSame(0, Payment::count());
+    }
+
     public function test_matching_phone_reuses_guest_instead_of_creating_duplicate(): void
     {
         $this->seed(RolePermissionSeeder::class);
