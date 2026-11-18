@@ -5,8 +5,8 @@ namespace App\Http\Controllers\Public;
 use App\Http\Controllers\Controller;
 use App\Models\Amenity;
 use App\Models\BlockedDate;
-use App\Models\Property;
 use App\Models\Reservation;
+use App\Models\Unit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Schema;
 
@@ -14,7 +14,7 @@ class PropertyController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Property::active()->with(['images', 'primaryImage', 'amenities', 'reviews']);
+        $query = Unit::active()->with(['images', 'primaryImage', 'amenities', 'reviews']);
 
         if ($request->has('city') && $request->city) {
             $location = '%'.$request->city.'%';
@@ -78,7 +78,7 @@ class PropertyController extends Controller
 
     public function show($slug)
     {
-        $property = Property::where('slug', $slug)
+        $property = Unit::where('slug', $slug)
             ->with(['images', 'amenities', 'reviews' => function ($q) {
                 $q->where('is_published', true)->with('user');
             }])
@@ -86,7 +86,7 @@ class PropertyController extends Controller
 
         $unavailableDates = $this->getUnavailableDates($property->id);
 
-        $similarProperties = Property::active()
+        $similarProperties = Unit::active()
             ->where('id', '!=', $property->id)
             ->where('city', $property->city)
             ->with('primaryImage')

@@ -4,8 +4,8 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\ApiBookPropertyRequest;
-use App\Models\Property;
 use App\Models\Reservation;
+use App\Models\Unit;
 use App\Services\BookingService;
 use App\Services\PricingService;
 use Illuminate\Http\Request;
@@ -14,7 +14,7 @@ class PropertyController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Property::with('images', 'amenities')->active();
+        $query = Unit::with('images', 'amenities')->active();
 
         if ($request->location) {
             $location = '%'.$request->location.'%';
@@ -48,7 +48,7 @@ class PropertyController extends Controller
 
     public function show($id)
     {
-        $property = Property::with('images', 'amenities', 'reviews')->active()->findOrFail($id);
+        $property = Unit::with('images', 'amenities', 'reviews')->active()->findOrFail($id);
 
         return response()->json([
             'property' => $property,
@@ -59,7 +59,7 @@ class PropertyController extends Controller
 
     public function availability(Request $request, $id, PricingService $pricingService)
     {
-        $property = Property::active()->findOrFail($id);
+        $property = Unit::active()->findOrFail($id);
 
         $request->validate([
             'check_in' => 'required|date',
@@ -84,7 +84,7 @@ class PropertyController extends Controller
 
     public function book(ApiBookPropertyRequest $request, $id, BookingService $bookingService)
     {
-        $property = Property::active()->findOrFail($id);
+        $property = Unit::active()->findOrFail($id);
 
         $data = $request->validated();
 

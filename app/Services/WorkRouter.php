@@ -3,8 +3,8 @@
 namespace App\Services;
 
 use App\Models\MaintenanceReport;
-use App\Models\Property;
 use App\Models\StaffSchedule;
+use App\Models\Unit;
 use App\Models\User;
 use App\Notifications\OperationsAlert;
 use App\Support\PropertyAccess;
@@ -20,9 +20,9 @@ class WorkRouter
     /**
      * @param  array<int, string>  $departments  preferred first; others at the site are a fallback only if $strict is false
      */
-    public function pick(Property|int $property, array $departments, bool $onShiftOnly = true, bool $strict = true): ?User
+    public function pick(Unit|int $property, array $departments, bool $onShiftOnly = true, bool $strict = true): ?User
     {
-        $property = $property instanceof Property ? $property : Property::find($property);
+        $property = $property instanceof Unit ? $property : Unit::find($property);
         if (! $property) {
             return null;
         }

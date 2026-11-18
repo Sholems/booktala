@@ -3,6 +3,7 @@
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Auth\PasswordController;
 use App\Http\Controllers\AvailabilityController;
+use App\Http\Controllers\FrontDeskReservationController;
 use App\Http\Controllers\Public\BlogController;
 use App\Http\Controllers\Public\BookingController;
 use App\Http\Controllers\Public\HomeController;
@@ -21,6 +22,14 @@ Route::get('/storage/{path}', [StorageController::class, 'show'])
 
 Route::get('/availability/check', [AvailabilityController::class, 'check'])->name('availability.check')->middleware('throttle:availability');
 Route::get('/availability/calendar/{propertyId}', [AvailabilityController::class, 'getCalendar'])->name('availability.calendar')->middleware('throttle:availability');
+
+Route::prefix('front-desk')->middleware(['auth', 'role:super_admin|admin|staff', 'can:reservation.create'])->group(function () {
+    Route::get('/reservations/create', [FrontDeskReservationController::class, 'create'])->name('frontdesk.reservations.create');
+    Route::get('/reservations/{reservation}/receipt', [FrontDeskReservationController::class, 'receipt'])->name('frontdesk.reservations.receipt');
+    Route::get('/guests', [FrontDeskReservationController::class, 'guests'])->name('frontdesk.guests.index');
+    Route::post('/reservations/quote', [FrontDeskReservationController::class, 'quote'])->name('frontdesk.reservations.quote');
+    Route::post('/reservations', [FrontDeskReservationController::class, 'store'])->name('frontdesk.reservations.store');
+});
 
 Route::middleware('guest')->group(function () {
     Route::get('login', [AuthController::class, 'showLogin'])->name('login');

@@ -5,29 +5,29 @@ namespace App\Services;
 use App\Models\BlockedDate;
 use App\Models\DiscountCode;
 use App\Models\PricingRule;
-use App\Models\Property;
 use App\Models\Reservation;
 use App\Models\Setting;
+use App\Models\Unit;
 use Carbon\Carbon;
 
 class PricingService
 {
-    public function calculatePrice(Property $property, $checkIn, $checkOut, $guests = 1, $discountCode = null)
+    public function calculatePrice(Unit $property, $checkIn, $checkOut, $guests = 1, $discountCode = null)
     {
         $checkIn = Carbon::parse($checkIn);
         $checkOut = Carbon::parse($checkOut);
         $nights = $checkIn->diffInDays($checkOut);
 
         if ($nights < $property->min_nights) {
-            throw new \Exception("Minimum stay is {$property->min_nights} nights");
+            throw new \DomainException("Minimum stay is {$property->min_nights} nights");
         }
 
         if ($nights > $property->max_nights) {
-            throw new \Exception("Maximum stay is {$property->max_nights} nights");
+            throw new \DomainException("Maximum stay is {$property->max_nights} nights");
         }
 
         if ($guests > $property->max_guests) {
-            throw new \Exception("Maximum {$property->max_guests} guests allowed");
+            throw new \DomainException("Maximum {$property->max_guests} guests allowed");
         }
 
         $this->checkAvailability($property, $checkIn, $checkOut);
@@ -71,7 +71,7 @@ class PricingService
         ];
     }
 
-    private function getNightlyPrice(Property $property, Carbon $date)
+    private function getNightlyPrice(Unit $property, Carbon $date)
     {
         $pricingRule = PricingRule::where('property_id', $property->id)
             ->where('is_active', true)
@@ -104,7 +104,7 @@ class PricingService
         return $date->isSaturday() || $date->isSunday();
     }
 
-    public function checkAvailability(Property $property, $checkIn, $checkOut)
+    public function checkAvailability(Unit $property, $checkIn, $checkOut)
     {
         $checkIn = Carbon::parse($checkIn)->toDateString();
         $checkOut = Carbon::parse($checkOut)->toDateString();
@@ -117,7 +117,7 @@ class PricingService
             ->exists();
 
         if ($blockedDates) {
-            throw new \Exception('Selected dates are not available');
+            throw new \DomainException('Selected dates are not available');
         }
 
         // Stays overlap when one starts before the other ends; a checkout day
@@ -129,13 +129,13 @@ class PricingService
             ->exists();
 
         if ($reservations) {
-            throw new \Exception('Selected dates are already booked');
+            throw new \DomainException('Selected dates are already booked');
         }
 
         return true;
     }
 
-    public function isAvailable(Property $property, $checkIn, $checkOut): bool
+    public function isAvailable(Unit $property, $checkIn, $checkOut): bool
     {
         try {
             return $this->checkAvailability($property, $checkIn, $checkOut);
@@ -144,7 +144,7 @@ class PricingService
         }
     }
 
-    public function getBlockedDates(Property $property, $year = null, $month = null)
+    public function getBlockedDates(Unit $property, $year = null, $month = null)
     {
         $query = BlockedDate::where('property_id', $property->id);
 

@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Staff;
 
 use App\Http\Controllers\Controller;
 use App\Models\Reservation;
-use App\Models\Room;
 use App\Services\ReservationLifecycle;
 use App\Support\PropertyAccess;
 use Illuminate\Http\Request;
@@ -20,9 +19,7 @@ class CheckInController extends Controller
             ->with('property', 'user', 'guestCheckin')
             ->get();
 
-        $availableRooms = Room::whereIn('status', ['available', 'reserved'])->orderBy('room_number')->get();
-
-        return view('staff.checkin.index', compact('todayCheckIns', 'availableRooms'));
+        return view('staff.checkin.index', compact('todayCheckIns'));
     }
 
     public function search(Request $request)
@@ -42,20 +39,14 @@ class CheckInController extends Controller
             ->take(10)
             ->get();
 
-        $availableRooms = Room::whereIn('status', ['available', 'reserved'])->orderBy('room_number')->get();
-
-        return view('staff.checkin.search', compact('reservations', 'search', 'availableRooms'));
+        return view('staff.checkin.search', compact('reservations', 'search'));
     }
 
     public function processCheckIn(Reservation $reservation, ReservationLifecycle $lifecycle)
     {
         PropertyAccess::authorize(Auth::user(), $reservation->property_id);
 
-        request()->validate([
-            'room_id' => ['nullable', 'integer', 'exists:rooms,id'],
-        ]);
-
-        $lifecycle->checkIn($reservation, Auth::user(), false, (int) request('room_id') ?: null);
+        $lifecycle->checkIn($reservation, Auth::user());
 
         return redirect()->back()->with('success', 'Guest checked in successfully');
     }
@@ -90,9 +81,7 @@ class CheckInController extends Controller
 
         $reservation->load('property', 'user', 'guestCheckin.verifiedBy');
 
-        $availableRooms = Room::whereIn('status', ['available', 'reserved'])->orderBy('room_number')->get();
-
-        return view('staff.checkin.details', compact('reservation', 'availableRooms'));
+        return view('staff.checkin.details', compact('reservation'));
     }
 
     public function verifyId(Reservation $reservation)

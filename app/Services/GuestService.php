@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Guest;
 use App\Models\User;
+use App\Support\PropertyAccess;
 
 class GuestService
 {
@@ -39,6 +40,31 @@ class GuestService
             ->get();
 
         return new GuestMatch($guests);
+    }
+
+    public function matchForStaff(User $actor, array $contact): GuestMatch
+    {
+        $match = $this->match($contact);
+        if (PropertyAccess::seesAll($actor)) {
+            return $match;
+        }
+
+        $visibleGuests = $match->guests->filter(fn (Guest $guest) => $guest->reservations()
+            ->visibleTo($actor)
+            ->exists())
+            ->values();
+
+        return new GuestMatch($visibleGuests);
+    }
+
+    public function findForStaff(User $actor, int $guestId): ?Guest
+    {
+        $guest = Guest::find($guestId);
+        if (! $guest || (! PropertyAccess::seesAll($actor) && ! $guest->reservations()->visibleTo($actor)->exists())) {
+            return null;
+        }
+
+        return $guest;
     }
 
     public function linkUser(Guest $guest, User $user): Guest

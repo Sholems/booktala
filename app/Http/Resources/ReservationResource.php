@@ -11,6 +11,8 @@ class ReservationResource extends JsonResource
     {
         return [
             'id' => $this->id,
+            'unit_id' => $this->property_id,
+            'unit_name' => $this->unit?->title,
             'property_id' => $this->property_id,
             'property_name' => $this->property?->title,
             'check_in' => $this->check_in->toDateString(),

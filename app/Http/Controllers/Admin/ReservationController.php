@@ -7,7 +7,6 @@ use App\Http\Requests\CancelReservationRequest;
 use App\Http\Requests\UpdateCautionRefundRequest;
 use App\Http\Requests\UpdateReservationRefundRequest;
 use App\Models\Reservation;
-use App\Models\Room;
 use App\Services\ReservationLifecycle;
 use Illuminate\Http\Request;
 
@@ -59,9 +58,8 @@ class ReservationController extends Controller
     public function show(Reservation $reservation)
     {
         $reservation->load(['user', 'property', 'room', 'confirmedBy', 'cancelledBy']);
-        $availableRooms = Room::whereIn('status', ['available', 'reserved'])->orderBy('room_number')->get();
 
-        return view('admin.reservations.show', compact('reservation', 'availableRooms'));
+        return view('admin.reservations.show', compact('reservation'));
     }
 
     public function confirm(Reservation $reservation, ReservationLifecycle $lifecycle)
@@ -74,7 +72,6 @@ class ReservationController extends Controller
     public function checkIn(Request $request, Reservation $reservation, ReservationLifecycle $lifecycle)
     {
         $validated = $request->validate([
-            'room_id' => ['nullable', 'integer', 'exists:rooms,id'],
             'allow_unpaid' => ['nullable', 'boolean'],
         ]);
 
@@ -82,7 +79,6 @@ class ReservationController extends Controller
             $reservation,
             auth()->user(),
             $request->boolean('allow_unpaid'),
-            isset($validated['room_id']) ? (int) $validated['room_id'] : null,
         );
 
         return back()->with('success', 'Guest checked in');

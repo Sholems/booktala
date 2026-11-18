@@ -81,6 +81,12 @@
                             <i class="fas fa-sign-in-alt w-5 text-sm"></i>
                             <span class="text-sm">Check-in</span>
                         </a>
+                        @can('reservation.create')
+                        <a href="{{ route('frontdesk.reservations.create') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group {{ request()->routeIs('frontdesk.reservations.*') ? 'bg-accent/10 text-accent font-semibold' : 'hover:bg-slate-800/50 hover:text-white' }}">
+                            <i class="fas fa-user-plus w-5 text-sm"></i>
+                            <span class="text-sm">New Booking</span>
+                        </a>
+                        @endcan
                         <a href="{{ route('staff.checkout.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group {{ request()->routeIs('staff.checkout.*') ? 'bg-accent/10 text-accent font-semibold' : 'hover:bg-slate-800/50 hover:text-white' }}">
                             <i class="fas fa-sign-out-alt w-5 text-sm"></i>
                             <span class="text-sm">Check-out</span>

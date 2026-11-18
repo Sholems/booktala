@@ -6,6 +6,7 @@ use App\Events\ReservationStatusChanged;
 use App\Exceptions\InvalidReservationTransition;
 use App\Models\Reservation;
 use App\Models\Room;
+use App\Models\Unit;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 
@@ -72,6 +73,10 @@ class ReservationLifecycle
     public function checkIn(Reservation $reservation, User $actor, bool $allowUnpaid = false, ?int $roomId = null): Reservation
     {
         return $this->transition($reservation, 'checked_in', $actor, function (Reservation $locked) use ($actor, $allowUnpaid, $roomId) {
+            $unit = Unit::whereKey($locked->property_id)->lockForUpdate()->firstOrFail();
+            if ($unit->status !== 'active') {
+                throw new InvalidReservationTransition('This unit is not available for check-in.');
+            }
             if ($locked->check_in->isAfter(today())) {
                 throw new InvalidReservationTransition('This guest cannot check in before '.$locked->check_in->format('j M Y').'.');
             }
@@ -88,8 +93,13 @@ class ReservationLifecycle
 
             $changes = ['checked_in_at' => now(), 'checked_in_by' => $actor->id];
 
-            if ($roomId !== null) {
-                $room = Room::whereKey($roomId)->lockForUpdate()->firstOrFail();
+            $legacyRoomId = $roomId ?? $locked->room_id;
+            if ($legacyRoomId !== null) {
+                $room = Room::whereKey($legacyRoomId)->lockForUpdate()->firstOrFail();
+
+                if ((int) $room->unit_id !== (int) $locked->property_id) {
+                    throw new InvalidReservationTransition('The legacy room mapping does not match the reserved unit.');
+                }
 
                 if (! in_array($room->status, ['available', 'reserved'], true)) {
                     throw new InvalidReservationTransition('This room is not available for check-in.');

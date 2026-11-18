@@ -301,9 +301,34 @@ class PaymentService
         return Payment::firstOrCreate(['paystack_reference' => $paystackReference], [
             'reservation_id' => $reservation->id,
             'user_id' => $reservation->user_id,
+            'guest_id' => $reservation->guest_id,
+            'provider' => 'paystack',
+            'reference' => $paystackReference,
             'amount' => $amount,
             'currency' => 'NGN',
             'type' => 'payment',
         ]);
+    }
+
+    public function applySuccessfulPayment(Payment $payment, Reservation $reservation): Reservation
+    {
+        $successfulPayments = (float) Payment::where('reservation_id', $reservation->id)
+            ->where('type', 'payment')
+            ->where('paystack_status', 'success')
+            ->sum('amount');
+        $status = $successfulPayments + 0.01 >= (float) $reservation->total_amount ? 'paid' : 'partial';
+
+        $reservation->update([
+            'payment_status' => $status,
+            'payment_method' => $payment->payment_method,
+            'hold_expires_at' => $status === 'paid' ? null : $reservation->hold_expires_at,
+            'caution_fee_status' => $status === 'paid' && (float) $reservation->caution_fee > 0 ? 'held' : $reservation->caution_fee_status,
+        ]);
+
+        if ($reservation->booking_status === 'pending' && $status !== 'pending') {
+            $this->reservationLifecycle->confirmAfterPayment($reservation);
+        }
+
+        return $reservation->fresh();
     }
 }

@@ -171,17 +171,6 @@
                     <form method="POST" action="{{ route('admin.reservations.checkin', $reservation) }}">
                         @csrf
                         @method('PATCH')
-                        @if($availableRooms->isNotEmpty())
-                        <label class="block text-sm text-gray-600 mb-1" for="room_id">Assign room</label>
-                        <select id="room_id" name="room_id" class="w-full border rounded-lg px-3 py-2 mb-3">
-                            <option value="">Select an available room</option>
-                            @foreach($availableRooms as $room)
-                            <option value="{{ $room->id }}">
-                                {{ $room->room_number }}{{ $room->building ? ' · '.$room->building : '' }} · {{ ucfirst($room->status) }}
-                            </option>
-                            @endforeach
-                        </select>
-                        @endif
                         @unless($isPaid)
                         <input type="hidden" name="allow_unpaid" value="1">
                         <p class="text-sm text-amber-700 mb-2"><i class="fas fa-exclamation-triangle mr-1"></i>No payment recorded for this booking.</p>

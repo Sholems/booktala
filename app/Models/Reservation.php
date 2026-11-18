@@ -18,6 +18,8 @@ class Reservation extends Model
         'booking_ref',
         'user_id',
         'guest_id',
+        'booking_source',
+        'created_by',
         'property_id',
         'room_id',
         'check_in',
@@ -156,6 +158,16 @@ class Reservation extends Model
     public function guest(): BelongsTo
     {
         return $this->belongsTo(Guest::class);
+    }
+
+    public function createdBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function unit(): BelongsTo
+    {
+        return $this->belongsTo(Unit::class, 'property_id');
     }
 
     protected static function booted(): void

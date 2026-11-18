@@ -11,6 +11,10 @@ class Payment extends Model
         'reservation_id',
         'user_id',
         'guest_id',
+        'provider',
+        'reference',
+        'collected_by',
+        'collected_at',
         'amount',
         'currency',
         'paystack_reference',
@@ -25,6 +29,7 @@ class Payment extends Model
         return [
             'amount' => 'decimal:2',
             'metadata' => 'array',
+            'collected_at' => 'datetime',
         ];
     }
 
@@ -41,6 +46,11 @@ class Payment extends Model
     public function guest(): BelongsTo
     {
         return $this->belongsTo(Guest::class);
+    }
+
+    public function collector(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'collected_by');
     }
 
     protected static function booted(): void

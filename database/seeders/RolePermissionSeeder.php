@@ -53,6 +53,7 @@ class RolePermissionSeeder extends Seeder
             'finance.manage',
         ],
         'staff' => [
+            'reservation.create',
             'task.manage', 'maintenance.manage',
         ],
         'customer' => [],

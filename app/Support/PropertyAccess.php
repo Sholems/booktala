@@ -2,7 +2,6 @@
 
 namespace App\Support;
 
-use App\Models\Property;
 use App\Models\StaffAssignment;
 use App\Models\Unit;
 use App\Models\User;
@@ -74,7 +73,7 @@ class PropertyAccess
      */
     public static function visiblePropertyIds(User $user): QueryBuilder
     {
-        return Property::query()->toBase()
+        return Unit::query()->toBase()
             ->select('properties.id')
             ->whereIn('properties.site_id', self::activeSiteIds($user));
     }
@@ -94,9 +93,9 @@ class PropertyAccess
     /**
      * Users who work at the property's site today (for assigning its tasks and reports).
      */
-    public static function staffAtProperty(Property|int $property): Builder
+    public static function staffAtProperty(Unit|int $property): Builder
     {
-        $siteId = $property instanceof Property ? $property->site_id : Property::whereKey($property)->value('site_id');
+        $siteId = $property instanceof Unit ? $property->site_id : Unit::whereKey($property)->value('site_id');
 
         return User::role('staff')
             ->where('status', 'active')

@@ -95,7 +95,7 @@ class ReservationLifecycleTest extends TestCase
         $this->assertNotNull($reservation->checked_in_at);
     }
 
-    public function test_room_is_assigned_on_check_in_and_cleaning_starts_on_check_out(): void
+    public function test_mapped_legacy_room_completes_without_a_second_room_choice(): void
     {
         $admin = $this->makeUser('admin');
         $reservation = $this->makeReservation($this->makeUser('customer'), ['payment_status' => 'paid']);
@@ -109,10 +109,12 @@ class ReservationLifecycleTest extends TestCase
             'room_type_id' => $roomType->id,
             'room_number' => '101',
             'status' => 'available',
+            'unit_id' => $reservation->property_id,
         ]);
+        $reservation->update(['room_id' => $room->id]);
 
         $this->actingAs($admin)
-            ->patch(route('admin.reservations.checkin', $reservation), ['room_id' => $room->id])
+            ->patch(route('admin.reservations.checkin', $reservation))
             ->assertSessionHas('success');
 
         $reservation->refresh();
@@ -173,6 +175,18 @@ class ReservationLifecycleTest extends TestCase
         ]);
 
         $this->actingAs($staff)->patch(route('staff.checkin.process', $reservation))
+            ->assertSessionHas('error');
+
+        $this->assertSame('confirmed', $reservation->fresh()->booking_status);
+    }
+
+    public function test_check_in_is_refused_when_reserved_unit_is_under_maintenance(): void
+    {
+        $admin = $this->makeUser('admin');
+        $reservation = $this->makeReservation($this->makeUser('customer'), ['payment_status' => 'paid']);
+        $reservation->property->update(['status' => 'maintenance']);
+
+        $this->actingAs($admin)->patch(route('admin.reservations.checkin', $reservation))
             ->assertSessionHas('error');
 
         $this->assertSame('confirmed', $reservation->fresh()->booking_status);

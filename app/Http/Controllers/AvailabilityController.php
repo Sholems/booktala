@@ -3,8 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\BlockedDate;
-use App\Models\Property;
 use App\Models\Reservation;
+use App\Models\Unit;
 use App\Services\PricingService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -26,12 +26,12 @@ class AvailabilityController extends Controller
         $nights = (int) $checkIn->diffInDays($checkOut);
 
         if ($request->property_id) {
-            $property = Property::with('images')->active()->findOrFail($request->property_id);
+            $property = Unit::with('images')->active()->findOrFail($request->property_id);
 
             return response()->json($this->checkPropertyAvailability($property, $checkIn, $checkOut, $nights));
         }
 
-        $properties = Property::with('images')
+        $properties = Unit::with('images')
             ->active()
             ->get()
             ->map(fn ($property) => $this->checkPropertyAvailability($property, $checkIn, $checkOut, $nights))
@@ -46,7 +46,7 @@ class AvailabilityController extends Controller
         ]);
     }
 
-    private function checkPropertyAvailability(Property $property, Carbon $checkIn, Carbon $checkOut, int $nights): array
+    private function checkPropertyAvailability(Unit $property, Carbon $checkIn, Carbon $checkOut, int $nights): array
     {
         $pricing = null;
 
@@ -77,7 +77,7 @@ class AvailabilityController extends Controller
 
     public function getCalendar($propertyId)
     {
-        $property = Property::active()->findOrFail($propertyId);
+        $property = Unit::active()->findOrFail($propertyId);
         $startDate = now()->startOfMonth()->startOfDay();
         $endDate = now()->addMonths(6)->endOfMonth()->startOfDay();
 

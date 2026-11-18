@@ -90,6 +90,12 @@ $logo = \App\Models\Setting::get('logo');
                             <i class="fas fa-calendar-check w-5 text-sm"></i>
                             <span class="text-sm">Reservations</span>
                         </a>
+                        @can('reservation.create')
+                        <a href="{{ route('frontdesk.reservations.create') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group {{ request()->routeIs('frontdesk.reservations.*') ? 'bg-accent/10 text-accent font-semibold' : 'hover:bg-slate-800/50 hover:text-white' }}">
+                            <i class="fas fa-user-plus w-5 text-sm"></i>
+                            <span class="text-sm">New Front-Desk Booking</span>
+                        </a>
+                        @endcan
                         <a href="{{ route('admin.payments.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group {{ request()->routeIs('admin.payments.*') ? 'bg-accent/10 text-accent font-semibold' : 'hover:bg-slate-800/50 hover:text-white' }}">
                             <i class="fas fa-wallet w-5 text-sm"></i>
                             <span class="text-sm">Payments</span>

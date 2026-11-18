@@ -2,8 +2,9 @@
 
 namespace App\Services;
 
-use App\Models\Property;
+use App\Models\Guest;
 use App\Models\Reservation;
+use App\Models\Unit;
 use App\Models\User;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -21,11 +22,16 @@ class BookingService
         $this->paymentService = $paymentService;
     }
 
-    public function createReservation(User $user, Property $property, array $data): Reservation
+    public function createReservation(User $user, Unit $property, array $data): Reservation
     {
-        return Cache::lock("booking:property:{$property->id}", 10)->block(5, function () use ($user, $property, $data) {
-            return DB::transaction(function () use ($user, $property, $data) {
-                Property::whereKey($property->getKey())->lockForUpdate()->firstOrFail();
+        return $this->createReservationForGuest(Guest::forUser($user), $property, $data, 'public', $user);
+    }
+
+    public function createReservationForGuest(Guest $guest, Unit $property, array $data, string $source, ?User $creator = null): Reservation
+    {
+        return Cache::lock("booking:property:{$property->id}", 10)->block(5, function () use ($guest, $property, $data, $source, $creator) {
+            return DB::transaction(function () use ($guest, $property, $data, $source, $creator) {
+                $property = Unit::whereKey($property->getKey())->lockForUpdate()->firstOrFail();
 
                 $pricing = $this->pricingService->calculatePrice(
                     $property,
@@ -37,7 +43,10 @@ class BookingService
 
                 return Reservation::create([
                     'booking_ref' => Reservation::generateBookingRef(),
-                    'user_id' => $user->id,
+                    'user_id' => $guest->user_id,
+                    'guest_id' => $guest->id,
+                    'booking_source' => $source,
+                    'created_by' => $creator?->id,
                     'property_id' => $property->id,
                     'check_in' => $data['check_in'],
                     'check_out' => $data['check_out'],
@@ -64,7 +73,7 @@ class BookingService
      * Create a pending reservation, open a Paystack transaction for it and
      * record the pending payment. Returns the reservation and checkout URL.
      */
-    public function startBooking(User $user, Property $property, array $data): array
+    public function startBooking(User $user, Unit $property, array $data): array
     {
         $reservation = $this->createReservation($user, $property, $data);
 
