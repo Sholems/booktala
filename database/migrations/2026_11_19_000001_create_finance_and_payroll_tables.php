@@ -149,7 +149,7 @@ return new class extends Migration
             $table->unique(['pay_run_id', 'staff_id']);
         });
 
-        (new RolePermissionSeeder())->run();
+        (new RolePermissionSeeder)->run();
     }
 
     public function down(): void

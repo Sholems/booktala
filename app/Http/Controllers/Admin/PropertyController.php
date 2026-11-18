@@ -3,11 +3,12 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Amenity;
+use App\Models\Owner;
 use App\Models\Property;
 use App\Models\PropertyImage;
-use App\Models\Amenity;
+use App\Models\Site;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 
 class PropertyController extends Controller
@@ -15,33 +16,34 @@ class PropertyController extends Controller
     public function index(Request $request)
     {
         $query = Property::with(['images', 'amenities']);
-        
+
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('title', 'like', "%{$search}%")
-                  ->orWhere('city', 'like', "%{$search}%")
-                  ->orWhere('state', 'like', "%{$search}%")
-                  ->orWhere('address', 'like', "%{$search}%");
+                    ->orWhere('city', 'like', "%{$search}%")
+                    ->orWhere('state', 'like', "%{$search}%")
+                    ->orWhere('address', 'like', "%{$search}%");
             });
         }
-        
+
         if ($request->filled('status')) {
             $query->where('status', $request->status);
         }
-        
+
         if ($request->filled('featured')) {
             $query->where('is_featured', $request->featured);
         }
-        
+
         $properties = $query->latest()->paginate(20)->appends($request->query());
-        
+
         return view('admin.properties.index', compact('properties'));
     }
 
     public function create()
     {
         $amenities = Amenity::all()->groupBy('category');
+
         return view('admin.properties.create', compact('amenities') + $this->ownershipOptions());
     }
 
@@ -76,13 +78,13 @@ class PropertyController extends Controller
         $validated['created_by'] = auth()->check() ? auth()->user()->id : 1;
         $validated['is_featured'] = $request->boolean('is_featured');
         $validated['status'] = $validated['status'] ?? 'active';
-        
+
         $property = Property::create($validated);
-        
+
         if ($request->amenities) {
             $property->amenities()->attach($request->amenities);
         }
-        
+
         if ($request->hasFile('images')) {
             foreach ($request->file('images') as $index => $image) {
                 $path = $image->store('property-images', 'public');
@@ -94,13 +96,14 @@ class PropertyController extends Controller
                 ]);
             }
         }
-        
+
         return redirect()->route('admin.properties.index')->with('success', 'Property created');
     }
 
     public function show(Property $property)
     {
         $property->load(['images', 'amenities']);
+
         return view('admin.properties.show', compact('property'));
     }
 
@@ -108,6 +111,7 @@ class PropertyController extends Controller
     {
         $amenities = Amenity::all()->groupBy('category');
         $property->load(['images', 'amenities']);
+
         return view('admin.properties.edit', compact('property', 'amenities') + $this->ownershipOptions());
     }
 
@@ -145,11 +149,11 @@ class PropertyController extends Controller
         $validated['is_featured'] = $request->boolean('is_featured');
 
         // Keep the current owner and site when the fields are left blank.
-        $validated = array_filter($validated, fn ($v, $k) => !in_array($k, ['owner_id', 'site_id'], true) || $v !== null, ARRAY_FILTER_USE_BOTH);
+        $validated = array_filter($validated, fn ($v, $k) => ! in_array($k, ['owner_id', 'site_id'], true) || $v !== null, ARRAY_FILTER_USE_BOTH);
         $property->update($validated);
-        
+
         $property->amenities()->sync($request->input('amenities', []));
-        
+
         if ($request->hasFile('images')) {
             foreach ($request->file('images') as $index => $image) {
                 $path = $image->store('property-images', 'public');
@@ -161,47 +165,50 @@ class PropertyController extends Controller
                 ]);
             }
         }
-        
+
         if ($request->has('delete_images')) {
             PropertyImage::whereIn('id', $request->delete_images)->delete();
         }
-        
+
         if ($request->has('primary_image')) {
             $property->images()->update(['is_primary' => false]);
             PropertyImage::where('id', $request->primary_image)->update(['is_primary' => true]);
         }
-        
+
         return back()->with('success', 'Property updated');
     }
 
     public function destroy(Property $property)
     {
         $property->delete();
+
         return redirect()->route('admin.properties.index')->with('success', 'Property deleted');
     }
 
     public function updateStatus(Request $request, Property $property)
     {
         $property->update(['status' => $request->status]);
+
         return back()->with('success', 'Status updated');
     }
 
     public function toggleFeatured(Property $property)
     {
-        $property->update(['is_featured' => !$property->is_featured]);
+        $property->update(['is_featured' => ! $property->is_featured]);
+
         return back()->with('success', 'Featured status updated');
     }
-    
+
     public function bulkAction(Request $request)
     {
         $request->validate([
             'property_ids' => 'required|array',
             'action' => 'required|string|in:active,inactive,featured,delete',
         ]);
-        
+
         $ids = $request->property_ids;
         $action = $request->action;
-        
+
         switch ($action) {
             case 'active':
                 Property::whereIn('id', $ids)->update(['status' => 'active']);
@@ -222,7 +229,7 @@ class PropertyController extends Controller
             default:
                 $message = 'Invalid action';
         }
-        
+
         return back()->with('success', $message);
     }
 
@@ -232,8 +239,8 @@ class PropertyController extends Controller
     private function ownershipOptions(): array
     {
         return [
-            'owners' => \App\Models\Owner::where('is_active', true)->orderByDesc('is_company_owned')->orderBy('name')->get(),
-            'sites' => \App\Models\Site::where('is_active', true)->orderBy('name')->get(),
+            'owners' => Owner::where('is_active', true)->orderByDesc('is_company_owned')->orderBy('name')->get(),
+            'sites' => Site::where('is_active', true)->orderBy('name')->get(),
         ];
     }
 }

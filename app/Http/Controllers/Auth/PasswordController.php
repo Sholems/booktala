@@ -7,10 +7,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
-use Illuminate\Support\Facades\Auth;
 
 class PasswordController extends Controller
 {
@@ -25,7 +22,7 @@ class PasswordController extends Controller
 
         $user = User::where('email', $request->email)->first();
 
-        if (!$user) {
+        if (! $user) {
             return back()->withErrors(['email' => 'No user found with this email']);
         }
 
@@ -36,13 +33,13 @@ class PasswordController extends Controller
             [
                 'email' => $user->email,
                 'token' => $token,
-                'created_at' => now()
+                'created_at' => now(),
             ]
         );
 
-        $resetUrl = url('/password/reset/' . $token . '?email=' . urlencode($user->email));
+        $resetUrl = url('/password/reset/'.$token.'?email='.urlencode($user->email));
 
-        return back()->with('success', 'Password reset link sent to your email. Use the token: ' . $token . ' (For demo purposes - in production, this would be sent via email)');
+        return back()->with('success', 'Password reset link sent to your email. Use the token: '.$token.' (For demo purposes - in production, this would be sent via email)');
     }
 
     public function showResetPassword($token)
@@ -55,7 +52,7 @@ class PasswordController extends Controller
         $request->validate([
             'email' => 'required|email',
             'password' => 'required|min:8|confirmed',
-            'token' => 'required'
+            'token' => 'required',
         ]);
 
         $record = DB::table('password_reset_tokens')
@@ -63,13 +60,13 @@ class PasswordController extends Controller
             ->where('token', $request->token)
             ->first();
 
-        if (!$record) {
+        if (! $record) {
             return back()->withErrors(['email' => 'Invalid or expired reset token']);
         }
 
         $user = User::where('email', $request->email)->first();
 
-        if (!$user) {
+        if (! $user) {
             return back()->withErrors(['email' => 'User not found']);
         }
 

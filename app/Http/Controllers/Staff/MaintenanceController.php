@@ -7,8 +7,8 @@ use App\Models\MaintenanceReport;
 use App\Models\Property;
 use App\Support\PropertyAccess;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule;
 
 class MaintenanceController extends Controller
 {

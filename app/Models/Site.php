@@ -35,10 +35,10 @@ class Site extends Model
      */
     public function patrolsAt(\DateTimeInterface $at): bool
     {
-        if (!$this->patrol_interval_minutes) {
+        if (! $this->patrol_interval_minutes) {
             return false;
         }
-        if (!$this->patrol_from || !$this->patrol_until) {
+        if (! $this->patrol_from || ! $this->patrol_until) {
             return true; // round the clock
         }
 
@@ -59,7 +59,7 @@ class Site extends Model
      */
     public function distanceTo(float $lat, float $lng): ?int
     {
-        if (!$this->hasLocation()) {
+        if (! $this->hasLocation()) {
             return null;
         }
 

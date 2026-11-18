@@ -5,7 +5,9 @@ namespace App\Http\Controllers\Customer;
 use App\Http\Controllers\Controller;
 use App\Models\GuestProfile;
 use App\Models\LoyaltyTransaction;
+use App\Models\Reservation;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class LoyaltyController extends Controller
 {
@@ -24,7 +26,7 @@ class LoyaltyController extends Controller
         $tiers = GuestProfile::tiers();
         $currentTier = $tiers[$profile->loyalty_tier];
         $nextTier = null;
-        
+
         $tierKeys = array_keys($tiers);
         $currentIndex = array_search($profile->loyalty_tier, $tierKeys);
         if ($currentIndex < count($tierKeys) - 1) {
@@ -50,17 +52,17 @@ class LoyaltyController extends Controller
         }
 
         $discount = $request->points / 100;
-        
+
         $profile->decrement('loyalty_points', $request->points);
 
         LoyaltyTransaction::create([
             'guest_profile_id' => $profile->id,
             'type' => 'redeem',
             'points' => -$request->points,
-            'description' => 'Redeemed for ₦' . number_format($discount, 2) . ' discount',
+            'description' => 'Redeemed for ₦'.number_format($discount, 2).' discount',
         ]);
 
-        return back()->with('success', 'Points redeemed! You got ₦' . number_format($discount, 2) . ' discount voucher');
+        return back()->with('success', 'Points redeemed! You got ₦'.number_format($discount, 2).' discount voucher');
     }
 
     public function applyDiscount(Request $request, $reservationId)
@@ -71,7 +73,7 @@ class LoyaltyController extends Controller
 
         $profile = GuestProfile::where('user_id', auth()->id())->firstOrFail();
 
-        $reservation = \App\Models\Reservation::where('id', $reservationId)
+        $reservation = Reservation::where('id', $reservationId)
             ->where('user_id', auth()->id())
             ->firstOrFail();
 
@@ -85,11 +87,18 @@ class LoyaltyController extends Controller
 
         $discount = $request->points / 100;
 
-        if ($discount > (float) $reservation->total_amount) {
-            return back()->with('error', 'Discount cannot exceed the reservation total.');
+        $discountableAmount = max(
+            0,
+            (float) $reservation->total_amount
+                - (float) $reservation->processing_fee
+                - (float) $reservation->caution_fee,
+        );
+
+        if ($discount > $discountableAmount) {
+            return back()->with('error', 'Discount cannot be applied to the processing or caution fees.');
         }
 
-        \Illuminate\Support\Facades\DB::transaction(function () use ($profile, $reservation, $request, $discount) {
+        DB::transaction(function () use ($profile, $reservation, $request, $discount) {
             $profile->decrement('loyalty_points', $request->points);
 
             LoyaltyTransaction::create([

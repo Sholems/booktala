@@ -6,8 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\MaintenanceReport;
 use App\Models\Property;
 use App\Models\User;
+use App\Rules\WorksAtProperty;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 
 /**
  * Maintenance flow: anyone reports -> admin assigns a staff member ->
@@ -41,7 +41,7 @@ class MaintenanceController extends Controller
             'property_id' => 'required|exists:properties,id',
             'description' => 'required|string|max:2000',
             'priority' => 'nullable|in:low,medium,high,urgent,emergency',
-            'assigned_to' => ['nullable', new \App\Rules\WorksAtProperty($request->integer('property_id') ?: null)],
+            'assigned_to' => ['nullable', new WorksAtProperty($request->integer('property_id') ?: null)],
         ]);
 
         MaintenanceReport::create($validated + [
@@ -57,7 +57,7 @@ class MaintenanceController extends Controller
     {
         $validated = $request->validate([
             'status' => 'required|in:pending,in_progress,resolved',
-            'assigned_to' => ['nullable', new \App\Rules\WorksAtProperty($maintenanceReport->property_id)],
+            'assigned_to' => ['nullable', new WorksAtProperty($maintenanceReport->property_id)],
             'resolution_notes' => 'nullable|string|max:2000|required_if:status,resolved',
         ], [
             'resolution_notes.required_if' => 'Add a note describing the fix before marking it resolved.',

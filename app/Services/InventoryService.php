@@ -18,14 +18,14 @@ class InventoryService
 {
     public function record(InventoryItem $item, string $type, float $quantity, User $by, ?int $propertyId = null, ?float $unitCost = null, ?string $note = null): StockMovement
     {
-        if (!array_key_exists($type, StockMovement::TYPES)) {
+        if (! array_key_exists($type, StockMovement::TYPES)) {
             throw ValidationException::withMessages(['type' => 'Unknown stock movement.']);
         }
         if ($quantity < 0 || ($quantity == 0 && $type !== 'count')) {
             throw ValidationException::withMessages(['quantity' => 'Enter a quantity above zero.']);
         }
-        if (in_array($type, ['to_laundry', 'from_laundry'], true) && !$item->tracks_laundry) {
-            throw ValidationException::withMessages(['type' => $item->name . ' is not tracked through the laundry.']);
+        if (in_array($type, ['to_laundry', 'from_laundry'], true) && ! $item->tracks_laundry) {
+            throw ValidationException::withMessages(['type' => $item->name.' is not tracked through the laundry.']);
         }
 
         return DB::transaction(function () use ($item, $type, $quantity, $by, $propertyId, $unitCost, $note) {
@@ -40,10 +40,10 @@ class InventoryService
             };
 
             if ($onHand < 0) {
-                throw ValidationException::withMessages(['quantity' => 'Only ' . $item->quantityLabel($item->on_hand) . ' in stock. Record a stock count if the figure is wrong.']);
+                throw ValidationException::withMessages(['quantity' => 'Only '.$item->quantityLabel($item->on_hand).' in stock. Record a stock count if the figure is wrong.']);
             }
             if ($atLaundry < 0) {
-                throw ValidationException::withMessages(['quantity' => 'Only ' . $item->quantityLabel($item->at_laundry) . ' are at the laundry.']);
+                throw ValidationException::withMessages(['quantity' => 'Only '.$item->quantityLabel($item->at_laundry).' are at the laundry.']);
             }
 
             $movement = $item->movements()->create([
@@ -69,7 +69,7 @@ class InventoryService
      */
     private function checkLowStock(InventoryItem $item): void
     {
-        if (!$item->isLow()) {
+        if (! $item->isLow()) {
             if ($item->low_stock_alerted_at) {
                 $item->update(['low_stock_alerted_at' => null]);
             }
@@ -83,9 +83,9 @@ class InventoryService
         foreach (Supervision::alertRecipients($item->site_id, 1) as $user) {
             $isHeadOffice = $user->hasAnyRole(['super_admin', 'admin']);
             $user->notify(new OperationsAlert(
-                'Low stock: ' . $item->name . ' at ' . $item->site->name,
-                $item->quantityLabel($item->on_hand) . ' left (reorder at ' . $item->quantityLabel($item->reorder_level) . ').',
-                route(($isHeadOffice ? 'admin' : 'staff') . '.inventory.index', ['site' => $item->site_id]),
+                'Low stock: '.$item->name.' at '.$item->site->name,
+                $item->quantityLabel($item->on_hand).' left (reorder at '.$item->quantityLabel($item->reorder_level).').',
+                route(($isHeadOffice ? 'admin' : 'staff').'.inventory.index', ['site' => $item->site_id]),
                 'escalated',
                 email: false,
             ));

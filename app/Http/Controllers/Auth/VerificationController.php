@@ -7,7 +7,6 @@ use App\Models\User;
 use Illuminate\Auth\Events\Verified;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
 
 class VerificationController extends Controller
 {
@@ -19,7 +18,7 @@ class VerificationController extends Controller
     public function sendVerification(Request $request)
     {
         $user = Auth::user();
-        
+
         if ($user->hasVerifiedEmail()) {
             return redirect()->route('home')->with('success', 'Your email is already verified.');
         }
@@ -33,7 +32,7 @@ class VerificationController extends Controller
     {
         $user = User::findOrFail($id);
 
-        if (!hash_equals($hash, sha1($user->getEmailForVerification()))) {
+        if (! hash_equals($hash, sha1($user->getEmailForVerification()))) {
             return redirect()->route('home')->with('error', 'Invalid verification link.');
         }
 

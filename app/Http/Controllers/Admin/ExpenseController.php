@@ -18,7 +18,7 @@ class ExpenseController extends Controller
 {
     public function index(Request $request)
     {
-        $month = CarbonImmutable::parse($request->query('month', now()->format('Y-m')) . '-01');
+        $month = CarbonImmutable::parse($request->query('month', now()->format('Y-m')).'-01');
 
         $expenses = Expense::with(['property.owner', 'statement', 'recordedBy'])
             ->whereDate('spent_on', '>=', $month->startOfMonth())

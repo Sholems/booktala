@@ -21,7 +21,7 @@ class PropertyResource extends JsonResource
             'max_guests' => $this->max_guests,
             'bedrooms' => $this->bedrooms,
             'bathrooms' => $this->bathrooms,
-            'images' => $this->images->map(fn($img) => $img->url),
+            'images' => $this->images->map(fn ($img) => $img->url),
             'amenities' => $this->amenities,
             'status' => $this->status,
             'featured' => (bool) $this->is_featured,

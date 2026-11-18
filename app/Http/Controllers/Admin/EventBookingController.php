@@ -12,8 +12,8 @@ class EventBookingController extends Controller
     public function index(Request $request)
     {
         $bookings = EventBooking::with(['user', 'eventSpace'])
-            ->when($request->status, fn($q, $status) => $q->where('status', $status))
-            ->when($request->search, fn($q, $search) => $q->where('event_name', 'like', "%{$search}%"))
+            ->when($request->status, fn ($q, $status) => $q->where('status', $status))
+            ->when($request->search, fn ($q, $search) => $q->where('event_name', 'like', "%{$search}%"))
             ->latest()
             ->paginate(20);
 
@@ -23,6 +23,7 @@ class EventBookingController extends Controller
     public function show(EventBooking $booking)
     {
         $booking->load(['user', 'eventSpace']);
+
         return view('admin.event-bookings.show', compact('booking'));
     }
 
@@ -40,6 +41,7 @@ class EventBookingController extends Controller
     public function spaces()
     {
         $spaces = EventSpace::all();
+
         return view('admin.event-spaces.index', compact('spaces'));
     }
 
@@ -88,6 +90,7 @@ class EventBookingController extends Controller
     public function destroySpace(EventSpace $space)
     {
         $space->delete();
+
         return back()->with('success', 'Event space deleted');
     }
 }

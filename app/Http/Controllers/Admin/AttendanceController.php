@@ -7,6 +7,7 @@ use App\Models\Attendance;
 use App\Models\Site;
 use App\Models\Staff;
 use Carbon\CarbonImmutable;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -49,7 +50,7 @@ class AttendanceController extends Controller
         [$query, $from, $to] = $this->filtered($request);
         $rows = $query->with(['staff.user', 'site', 'schedule'])->orderBy('clock_in_at')->get();
 
-        $filename = 'attendance-' . $from->format('Ymd') . '-' . $to->format('Ymd') . '.csv';
+        $filename = 'attendance-'.$from->format('Ymd').'-'.$to->format('Ymd').'.csv';
 
         return response()->streamDownload(function () use ($rows) {
             $out = fopen('php://output', 'w');
@@ -75,7 +76,7 @@ class AttendanceController extends Controller
     }
 
     /**
-     * @return array{0: \Illuminate\Database\Eloquent\Builder, 1: CarbonImmutable, 2: CarbonImmutable}
+     * @return array{0: Builder, 1: CarbonImmutable, 2: CarbonImmutable}
      */
     private function filtered(Request $request): array
     {

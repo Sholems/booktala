@@ -4,7 +4,10 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Owner;
+use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
+use Illuminate\Validation\Rules\Password;
 
 /**
  * Property owners: G-Briel's own portfolio and the landlords it manages for.
@@ -68,19 +71,19 @@ class OwnerController extends Controller
     public function portalAccess(Request $request, Owner $owner)
     {
         $data = $request->validate([
-            'email' => ['required', 'email', 'max:255', \Illuminate\Validation\Rule::unique('users', 'email')->ignore($owner->user_id)],
-            'password' => ['required', 'confirmed', \Illuminate\Validation\Rules\Password::min(8)],
+            'email' => ['required', 'email', 'max:255', Rule::unique('users', 'email')->ignore($owner->user_id)],
+            'password' => ['required', 'confirmed', Password::min(8)],
         ]);
 
         $user = $owner->user;
-        if ($user && !$user->hasRole('owner')) {
+        if ($user && ! $user->hasRole('owner')) {
             return back()->with('error', 'This owner is linked to a non-owner account; unlink it first.');
         }
 
         if ($user) {
             $user->update(['email' => $data['email'], 'password' => $data['password'], 'status' => 'active']);
         } else {
-            $user = \App\Models\User::create([
+            $user = User::create([
                 'name' => $owner->name,
                 'email' => $data['email'],
                 'password' => $data['password'],
@@ -92,7 +95,7 @@ class OwnerController extends Controller
             $owner->update(['user_id' => $user->id]);
         }
 
-        return back()->with('success', 'Owner portal login saved. Share the password with ' . $owner->name . ' securely.');
+        return back()->with('success', 'Owner portal login saved. Share the password with '.$owner->name.' securely.');
     }
 
     public function revokePortal(Owner $owner)

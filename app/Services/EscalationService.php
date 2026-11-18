@@ -33,9 +33,7 @@ class EscalationService
 
     public const MISSED_SHIFT_GRACE_MINUTES = 30;
 
-    public function __construct(private AttendanceService $attendance, private SecurityService $security)
-    {
-    }
+    public function __construct(private AttendanceService $attendance, private SecurityService $security) {}
 
     /**
      * @return array{tasks: int, maintenance: int, missed_shifts: int, closed_attendance: int, missed_patrols: int}
@@ -67,16 +65,16 @@ class EscalationService
 
         foreach ($tasks as $task) {
             $step = $this->dueStep($task->escalation_level, $task->assigned_at ?? $task->created_at, $task->escalated_at, $task->priority);
-            if (!$step || !$task->property?->site_id) {
+            if (! $step || ! $task->property?->site_id) {
                 continue;
             }
 
-            $who = $task->assignedTo ? 'assigned to ' . $task->assignedTo->name : 'nobody assigned';
+            $who = $task->assignedTo ? 'assigned to '.$task->assignedTo->name : 'nobody assigned';
             $this->alert(
                 $task->property->site_id,
                 $step,
-                ($step === 1 ? 'Not started: ' : 'Still not started: ') . $task->title,
-                $task->property->title . ' (' . $task->property->site->name . ') · ' . ucfirst($task->priority) . ' priority · ' . $who . '.',
+                ($step === 1 ? 'Not started: ' : 'Still not started: ').$task->title,
+                $task->property->title.' ('.$task->property->site->name.') · '.ucfirst($task->priority).' priority · '.$who.'.',
                 staffUrl: route('staff.team.index'),
                 adminUrl: route('admin.tasks.show', $task),
             );
@@ -97,16 +95,16 @@ class EscalationService
 
         foreach ($reports as $report) {
             $step = $this->dueStep($report->escalation_level, $report->assigned_at ?? $report->created_at, $report->escalated_at, $report->priority);
-            if (!$step || !$report->property?->site_id) {
+            if (! $step || ! $report->property?->site_id) {
                 continue;
             }
 
-            $who = $report->assignedTo ? 'assigned to ' . $report->assignedTo->name : 'nobody assigned';
+            $who = $report->assignedTo ? 'assigned to '.$report->assignedTo->name : 'nobody assigned';
             $this->alert(
                 $report->property->site_id,
                 $step,
-                ($step === 1 ? 'Repair not started: ' : 'Repair still not started: ') . $report->title,
-                $report->property->title . ' (' . $report->property->site->name . ') · ' . ucfirst($report->priority) . ' priority · ' . $who . '.',
+                ($step === 1 ? 'Repair not started: ' : 'Repair still not started: ').$report->title,
+                $report->property->title.' ('.$report->property->site->name.') · '.ucfirst($report->priority).' priority · '.$who.'.',
                 staffUrl: route('staff.team.index'),
                 adminUrl: route('admin.maintenance.index'),
             );
@@ -160,8 +158,8 @@ class EscalationService
             $this->alert(
                 $shift->site_id,
                 1,
-                'No clock-in: ' . $name . ' at ' . $shift->site->name,
-                $name . ' was due at ' . $shift->startsAt()->format('g:i A') . ' (' . (StaffSchedule::shiftTypes()[$shift->shift_type] ?? $shift->shift_type) . ' shift) and has not clocked in. Arrange cover if needed.',
+                'No clock-in: '.$name.' at '.$shift->site->name,
+                $name.' was due at '.$shift->startsAt()->format('g:i A').' ('.(StaffSchedule::shiftTypes()[$shift->shift_type] ?? $shift->shift_type).' shift) and has not clocked in. Arrange cover if needed.',
                 staffUrl: route('staff.team.index'),
                 adminUrl: route('admin.attendance.index', ['site_id' => $shift->site_id]),
             );

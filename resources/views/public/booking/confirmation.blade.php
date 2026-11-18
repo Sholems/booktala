@@ -90,10 +90,31 @@
                         <span class="text-gray-600">VAT</span>
                         <span>₦{{ number_format($reservation->tax_amount) }}</span>
                     </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Processing fee <span class="text-xs">(non-refundable)</span></span>
+                        <span>₦{{ number_format($reservation->processing_fee) }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Caution fee <span class="text-xs text-green-600">(refundable)</span></span>
+                        <span>₦{{ number_format($reservation->caution_fee) }}</span>
+                    </div>
                     <div class="flex justify-between text-lg font-bold pt-2 border-t">
-                        <span>Total Paid</span>
+                        <span>{{ $reservation->payment_status === 'partial' ? 'Booking Total' : 'Total Paid' }}</span>
                         <span class="text-primary">₦{{ number_format($reservation->total_amount) }}</span>
                     </div>
+                    @if($reservation->payment_status === 'partial')
+                    @php
+                        $paidAmount = $reservation->payments()->where('type', 'payment')->where('paystack_status', 'success')->sum('amount');
+                    @endphp
+                    <div class="flex justify-between text-amber-700">
+                        <span>Paid now</span>
+                        <span>₦{{ number_format($paidAmount, 2) }}</span>
+                    </div>
+                    <div class="flex justify-between font-bold text-amber-800">
+                        <span>Balance due</span>
+                        <span>₦{{ number_format(max(0, (float) $reservation->total_amount - (float) $paidAmount), 2) }}</span>
+                    </div>
+                    @endif
                 </div>
             </div>
 

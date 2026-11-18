@@ -4,13 +4,18 @@ namespace App\Http\Controllers\Staff;
 
 use App\Http\Controllers\Controller;
 use App\Models\Attendance;
+use App\Models\Incident;
+use App\Models\InventoryItem;
 use App\Models\MaintenanceReport;
+use App\Models\PatrolCheckpoint;
+use App\Models\Property;
 use App\Models\Reservation;
 use App\Models\Site;
 use App\Models\Staff;
 use App\Models\StaffSchedule;
 use App\Models\Task;
 use App\Models\User;
+use App\Models\VisitorLog;
 use App\Rules\WorksAtProperty;
 use App\Services\EscalationService;
 use App\Services\RosterService;
@@ -43,7 +48,7 @@ class TeamController extends Controller
             ->orderBy('clock_in_at')
             ->get();
 
-        $propertyIds = fn () => \App\Models\Property::whereIn('site_id', $siteIds)->select('id');
+        $propertyIds = fn () => Property::whereIn('site_id', $siteIds)->select('id');
 
         $tasks = Task::whereIn('property_id', $propertyIds())
             ->where('status', '!=', 'completed')
@@ -84,13 +89,13 @@ class TeamController extends Controller
             'teamBySite' => $this->teamBySite($siteIds),
             'missedGrace' => EscalationService::MISSED_SHIFT_GRACE_MINUTES,
             'security' => [
-                'open_incidents' => \App\Models\Incident::whereIn('site_id', $siteIds)->where('status', 'open')->count(),
-                'visitors_on_site' => \App\Models\VisitorLog::whereIn('site_id', $siteIds)->onSite()->count(),
-                'low_stock' => \App\Models\InventoryItem::whereIn('site_id', $siteIds)->where('is_active', true)->low()->count(),
-                'overdue_checkpoints' => \App\Models\PatrolCheckpoint::whereIn('site_id', $siteIds)->where('is_active', true)
+                'open_incidents' => Incident::whereIn('site_id', $siteIds)->where('status', 'open')->count(),
+                'visitors_on_site' => VisitorLog::whereIn('site_id', $siteIds)->onSite()->count(),
+                'low_stock' => InventoryItem::whereIn('site_id', $siteIds)->where('is_active', true)->low()->count(),
+                'overdue_checkpoints' => PatrolCheckpoint::whereIn('site_id', $siteIds)->where('is_active', true)
                     ->with(['site', 'lastScan'])->get()
                     ->filter(fn ($c) => $c->site->patrolsAt(now())
-                        && (!$c->lastScan || $c->lastScan->scanned_at->lt(now()->subMinutes($c->site->patrol_interval_minutes * 2))))
+                        && (! $c->lastScan || $c->lastScan->scanned_at->lt(now()->subMinutes($c->site->patrol_interval_minutes * 2))))
                     ->count(),
             ],
         ]);
@@ -102,9 +107,9 @@ class TeamController extends Controller
         $data = $request->validate(['assigned_to' => ['required', new WorksAtProperty($task->property_id)]]);
 
         $task->update(['assigned_to' => $data['assigned_to'], 'assigned_by' => $request->user()->id]);
-        app(WorkRouter::class)->notifyAssigned($task->assignedTo, $task->title, 'Assigned by ' . $request->user()->name . ' · ' . ($task->property->title ?? ''), route('staff.tasks.show', $task));
+        app(WorkRouter::class)->notifyAssigned($task->assignedTo, $task->title, 'Assigned by '.$request->user()->name.' · '.($task->property->title ?? ''), route('staff.tasks.show', $task));
 
-        return back()->with('success', 'Task assigned to ' . $task->assignedTo->name);
+        return back()->with('success', 'Task assigned to '.$task->assignedTo->name);
     }
 
     public function assignRepair(Request $request, MaintenanceReport $maintenanceReport)
@@ -113,9 +118,9 @@ class TeamController extends Controller
         $data = $request->validate(['assigned_to' => ['required', new WorksAtProperty($maintenanceReport->property_id)]]);
 
         $maintenanceReport->update(['assigned_to' => $data['assigned_to']]);
-        app(WorkRouter::class)->notifyAssigned($maintenanceReport->assignedTo, 'Maintenance job: ' . $maintenanceReport->title, 'Assigned by ' . $request->user()->name . ' · ' . ($maintenanceReport->property->title ?? ''), route('staff.maintenance.index'));
+        app(WorkRouter::class)->notifyAssigned($maintenanceReport->assignedTo, 'Maintenance job: '.$maintenanceReport->title, 'Assigned by '.$request->user()->name.' · '.($maintenanceReport->property->title ?? ''), route('staff.maintenance.index'));
 
-        return back()->with('success', 'Repair assigned to ' . $maintenanceReport->assignedTo->name);
+        return back()->with('success', 'Repair assigned to '.$maintenanceReport->assignedTo->name);
     }
 
     public function roster(Request $request)
@@ -132,7 +137,7 @@ class TeamController extends Controller
             ->whereDate('date', '<=', $weekStart->addDays(6))
             ->with(['attendance'])
             ->get()
-            ->groupBy(fn ($s) => $s->staff_id . '|' . $s->date->toDateString());
+            ->groupBy(fn ($s) => $s->staff_id.'|'.$s->date->toDateString());
 
         return view('staff.team.roster', compact('sites', 'site', 'weekStart', 'days', 'team', 'shifts'));
     }
@@ -143,14 +148,14 @@ class TeamController extends Controller
             'site_id' => 'required|exists:sites,id',
             'staff_id' => 'required|exists:staff,id',
             'date' => 'required|date|after_or_equal:today',
-            'shift_type' => 'required|in:' . implode(',', array_keys(StaffSchedule::SHIFT_TIMES)),
+            'shift_type' => 'required|in:'.implode(',', array_keys(StaffSchedule::SHIFT_TIMES)),
             'notes' => 'nullable|string|max:500',
         ]);
         $this->ensureSupervises($request->user(), (int) $data['site_id']);
 
         $shift = $roster->schedule(Staff::findOrFail($data['staff_id']), Site::findOrFail($data['site_id']), $data['date'], $data['shift_type'], $data['notes'] ?? null, $request->user());
 
-        return back()->with('success', ($shift->staff->user->name ?? 'Staff') . ' scheduled: ' . $shift->date->format('D j M') . ', ' . $shift->label());
+        return back()->with('success', ($shift->staff->user->name ?? 'Staff').' scheduled: '.$shift->date->format('D j M').', '.$shift->label());
     }
 
     public function cancelShift(Request $request, StaffSchedule $schedule)
@@ -199,10 +204,10 @@ class TeamController extends Controller
         $sites = Site::whereIn('id', $ids)->orderBy('name')->get();
 
         $selected = $request->integer('site');
-        if (!$all && $selected && $ids->contains($selected)) {
+        if (! $all && $selected && $ids->contains($selected)) {
             return [$sites, collect([$selected])];
         }
-        if ($selected && !$ids->contains($selected)) {
+        if ($selected && ! $ids->contains($selected)) {
             abort(404);
         }
 

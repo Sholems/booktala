@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Customer;
 use App\Http\Controllers\Controller;
 use App\Models\Property;
 use App\Models\Wishlist;
-use Illuminate\Http\Request;
 
 class WishlistController extends Controller
 {
@@ -15,7 +14,7 @@ class WishlistController extends Controller
             ->with('property.images')
             ->orderBy('created_at', 'desc')
             ->paginate(15);
-        
+
         return view('customer.wishlist.index', compact('wishlists'));
     }
 
@@ -23,9 +22,9 @@ class WishlistController extends Controller
     {
         Wishlist::firstOrCreate([
             'user_id' => auth()->id(),
-            'property_id' => $property->id
+            'property_id' => $property->id,
         ]);
-        
+
         return back()->with('success', 'Added to wishlist');
     }
 
@@ -34,7 +33,7 @@ class WishlistController extends Controller
         Wishlist::where('user_id', auth()->id())
             ->where('property_id', $property->id)
             ->delete();
-        
+
         return back()->with('success', 'Removed from wishlist');
     }
 }

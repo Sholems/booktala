@@ -12,9 +12,7 @@ use Illuminate\Contracts\Validation\ValidationRule;
  */
 class WorksAtProperty implements ValidationRule
 {
-    public function __construct(private readonly ?int $propertyId)
-    {
-    }
+    public function __construct(private readonly ?int $propertyId) {}
 
     public function validate(string $attribute, mixed $value, Closure $fail): void
     {
@@ -25,7 +23,7 @@ class WorksAtProperty implements ValidationRule
         $works = $this->propertyId !== null
             && PropertyAccess::staffAtProperty($this->propertyId)->whereKey($value)->exists();
 
-        if (!$works) {
+        if (! $works) {
             $fail('That staff member is not assigned to this property\'s site. Assign them to the site first, or pick someone who works there.');
         }
     }

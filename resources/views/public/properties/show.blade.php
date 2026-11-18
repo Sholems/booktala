@@ -234,6 +234,18 @@
                             <span>Number of nights</span>
                             <span id="nights-count">0</span>
                         </div>
+                        <div class="flex justify-between text-sm mb-1">
+                            <span>VAT ({{ rtrim(rtrim(number_format((float) \App\Models\Setting::get('vat_rate', 7.5), 2, '.', ''), '0'), '.') }}%)</span>
+                            <span id="tax-amount">₦0</span>
+                        </div>
+                        <div class="flex justify-between text-sm mb-1">
+                            <span>Processing fee <span class="text-xs text-gray-500">(non-refundable)</span></span>
+                            <span id="processing-fee">₦{{ number_format((float) config('booking.processing_fee')) }}</span>
+                        </div>
+                        <div class="flex justify-between text-sm mb-1">
+                            <span>Caution fee <span class="text-xs text-green-600">(refundable)</span></span>
+                            <span id="caution-fee">₦{{ number_format((float) config('booking.caution_fee')) }}</span>
+                        </div>
                         <div class="flex justify-between font-bold text-lg border-t pt-2 mt-2">
                             <span>Total</span>
                             <span id="total-price">₦0</span>
@@ -365,8 +377,11 @@ function selectDate(el) {
 
 function updatePriceSummary() {
     const pricePerNight = {{ $property->price_per_night }};
+    const processingFee = {{ (float) config('booking.processing_fee') }};
+    const cautionFee = {{ (float) config('booking.caution_fee') }};
     const summaryEl = document.getElementById('price-summary');
     const nightsEl = document.getElementById('nights-count');
+    const taxEl = document.getElementById('tax-amount');
     const totalEl = document.getElementById('total-price');
     
     if (checkInDate && checkOutDate) {
@@ -375,10 +390,30 @@ function updatePriceSummary() {
         const nights = Math.round((end - start) / (1000 * 60 * 60 * 24));
         
         if (nights > 0) {
-            const total = nights * pricePerNight;
+            const subtotal = nights * pricePerNight;
+            const vatRate = {{ (float) \App\Models\Setting::get('vat_rate', 7.5) }};
+            const fallbackTax = subtotal * (vatRate / 100);
+            const fallbackTotal = subtotal + fallbackTax + processingFee + cautionFee;
             nightsEl.textContent = nights;
-            totalEl.textContent = '₦' + total.toLocaleString();
+            taxEl.textContent = '₦' + fallbackTax.toLocaleString(undefined, { maximumFractionDigits: 2 });
+            totalEl.textContent = '₦' + fallbackTotal.toLocaleString(undefined, { maximumFractionDigits: 2 });
             summaryEl.classList.remove('hidden');
+
+            const params = new URLSearchParams({
+                check_in: checkInDate,
+                check_out: checkOutDate,
+                property_id: '{{ $property->id }}'
+            });
+            fetch('{{ route("availability.check") }}?' + params.toString())
+                .then(response => response.json())
+                .then(data => {
+                    if (data.available && data.total_price !== null) {
+                        taxEl.textContent = '₦' + Number(data.tax_amount || 0).toLocaleString(undefined, { maximumFractionDigits: 2 });
+                        totalEl.textContent = '₦' + Number(data.total_price).toLocaleString(undefined, { maximumFractionDigits: 2 });
+                        document.querySelector('[id="nights-count"]').textContent = data.nights;
+                    }
+                })
+                .catch(() => {});
         } else {
             summaryEl.classList.add('hidden');
         }

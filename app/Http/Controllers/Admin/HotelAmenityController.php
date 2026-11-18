@@ -12,6 +12,7 @@ class HotelAmenityController extends Controller
     public function index()
     {
         $amenities = HotelAmenity::orderBy('category')->orderBy('name')->get();
+
         return view('admin.hotel-amenities.index', compact('amenities'));
     }
 
@@ -51,12 +52,14 @@ class HotelAmenityController extends Controller
     public function update(Request $request, HotelAmenity $hotelAmenity)
     {
         $hotelAmenity->update($request->all());
+
         return redirect()->route('admin.hotel-amenities.index')->with('success', 'Hotel amenity updated');
     }
 
     public function destroy(HotelAmenity $hotelAmenity)
     {
         $hotelAmenity->delete();
+
         return redirect()->route('admin.hotel-amenities.index')->with('success', 'Hotel amenity deleted');
     }
 }

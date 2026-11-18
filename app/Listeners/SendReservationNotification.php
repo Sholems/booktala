@@ -3,14 +3,13 @@
 namespace App\Listeners;
 
 use App\Events\ReservationStatusChanged;
+use App\Models\User;
+use App\Notifications\BookingCancelled;
 use App\Notifications\BookingConfirmed;
 use App\Notifications\BookingPending;
-use App\Notifications\BookingCancelled;
-use App\Notifications\BookingCheckinReminder;
 use App\Notifications\GuestCancelledBooking;
-use App\Models\User;
-use Illuminate\Support\Facades\Notification;
 use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Support\Facades\Notification;
 
 class SendReservationNotification implements ShouldQueue
 {
@@ -18,20 +17,20 @@ class SendReservationNotification implements ShouldQueue
     {
         $reservation = $event->reservation;
         $user = $reservation->user;
-        
-        if (!$user) {
+
+        if (! $user) {
             return;
         }
-        
+
         switch ($event->newStatus) {
             case 'confirmed':
                 $user->notify(new BookingConfirmed($reservation));
                 break;
-                
+
             case 'pending':
                 $user->notify(new BookingPending($reservation));
                 break;
-                
+
             case 'cancelled':
                 $user->notify(new BookingCancelled($reservation));
 
@@ -41,7 +40,7 @@ class SendReservationNotification implements ShouldQueue
                     Notification::send($admins, new GuestCancelledBooking($reservation));
                 }
                 break;
-                
+
             case 'checked_in':
                 // Send check-in reminder (already checked in)
                 break;

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\PropertyAccess;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -15,7 +16,7 @@ class RoomServiceOrder extends Model
      */
     public function scopeVisibleTo($query, User $user)
     {
-        if (\App\Support\PropertyAccess::seesAll($user)) {
+        if (PropertyAccess::seesAll($user)) {
             return $query;
         }
 
@@ -85,7 +86,7 @@ class RoomServiceOrder extends Model
     public function advance(User $actor, ?float $charge = null): bool
     {
         $next = $this->nextStatus();
-        if (!$next) {
+        if (! $next) {
             return false;
         }
 

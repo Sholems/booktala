@@ -3,10 +3,13 @@
 namespace Tests\Feature;
 
 use App\Models\Payment;
+use App\Models\PaymentEvent;
 use App\Models\Property;
 use App\Models\Reservation;
 use App\Models\User;
+use App\Services\PaymentService;
 use App\Services\PricingService;
+use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Notification;
@@ -27,14 +30,14 @@ class BookingSecurityTest extends TestCase
         foreach (['super_admin', 'admin', 'staff', 'customer'] as $role) {
             Role::firstOrCreate(['name' => $role, 'guard_name' => 'web']);
         }
-        $this->seed(\Database\Seeders\RolePermissionSeeder::class);
+        $this->seed(RolePermissionSeeder::class);
     }
 
     private function makeUser(string $role, array $attrs = []): User
     {
         $user = User::create(array_merge([
-            'name' => ucfirst($role) . ' User',
-            'email' => $role . uniqid() . '@example.com',
+            'name' => ucfirst($role).' User',
+            'email' => $role.uniqid().'@example.com',
             'password' => 'password123',
             'status' => 'active',
         ], $attrs));
@@ -46,7 +49,7 @@ class BookingSecurityTest extends TestCase
     private function makeProperty(): Property
     {
         return Property::create([
-            'title' => 'Test Apartment ' . uniqid(),
+            'title' => 'Test Apartment '.uniqid(),
             'description' => 'Nice place',
             'address' => '1 Test Street',
             'city' => 'Lagos',
@@ -180,13 +183,105 @@ class BookingSecurityTest extends TestCase
             ]),
         ]);
 
-        $this->get('/booking/callback?reference=' . $reservation->booking_ref)
+        $this->get('/booking/callback?reference='.$reservation->booking_ref)
             ->assertRedirect(route('booking.confirmation', $reservation->booking_ref));
 
         $reservation->refresh();
         $this->assertSame('paid', $reservation->payment_status);
         $this->assertSame('confirmed', $reservation->booking_status);
         $this->assertSame('success', Payment::firstOrFail()->paystack_status);
+    }
+
+    public function test_partial_payment_can_pay_half_then_the_remaining_balance(): void
+    {
+        $property = $this->makeProperty();
+
+        Http::fake([
+            'api.paystack.co/transaction/initialize' => Http::response([
+                'status' => true,
+                'data' => [
+                    'authorization_url' => 'https://checkout.paystack.test/partial',
+                ],
+            ]),
+        ]);
+
+        $this->postJson('/booking/process', [
+            'property_id' => $property->id,
+            'check_in' => now()->addDays(5)->toDateString(),
+            'check_out' => now()->addDays(7)->toDateString(),
+            'guests' => 2,
+            'payment_mode' => 'partial',
+            'guest_name' => 'Partial Guest',
+            'guest_email' => 'partial@example.com',
+            'guest_phone' => '0800',
+            'guest_password' => 'secret123',
+        ])->assertOk()->assertJson(['success' => true]);
+
+        $reservation = Reservation::firstOrFail();
+        $partialAmount = (int) round($reservation->total_amount * 0.5 * 100);
+
+        Http::fake([
+            'api.paystack.co/transaction/verify/*' => Http::response([
+                'status' => true,
+                'data' => [
+                    'status' => 'success',
+                    'reference' => $reservation->booking_ref,
+                    'amount' => $partialAmount,
+                    'currency' => 'NGN',
+                    'channel' => 'card',
+                ],
+            ]),
+        ]);
+
+        $this->get('/booking/callback?reference='.$reservation->booking_ref)
+            ->assertRedirect(route('booking.confirmation', $reservation->booking_ref));
+
+        $this->assertSame('partial', $reservation->refresh()->payment_status);
+        $this->assertSame('confirmed', $reservation->booking_status);
+        $this->assertSame('pending', $reservation->caution_fee_status);
+
+        Http::fake([
+            'api.paystack.co/transaction/initialize' => Http::response([
+                'status' => true,
+                'data' => [
+                    'authorization_url' => 'https://checkout.paystack.test/balance',
+                ],
+            ]),
+        ]);
+
+        $this->actingAs($reservation->user)
+            ->post(route('customer.reservations.pay-balance', $reservation))
+            ->assertRedirect();
+
+        $balancePayment = Payment::where('reservation_id', $reservation->id)
+            ->where('paystack_reference', '!=', $reservation->booking_ref)
+            ->firstOrFail();
+
+        app(PaymentService::class)->markPaymentSuccessful([
+            'status' => 'success',
+            'reference' => $balancePayment->paystack_reference,
+            'amount' => (int) round((float) $balancePayment->amount * 100),
+            'currency' => 'NGN',
+            'channel' => 'card',
+        ]);
+
+        $reservation->refresh();
+        $this->assertSame('paid', $reservation->payment_status);
+        $this->assertSame('held', $reservation->caution_fee_status);
+    }
+
+    public function test_booking_page_loads_without_paystack_credentials(): void
+    {
+        config(['services.paystack.secret' => null]);
+        $property = $this->makeProperty();
+
+        $this->get('/booking/'.$property->slug.'?check_in='
+            .now()->addDays(5)->toDateString()
+            .'&check_out='.now()->addDays(7)->toDateString()
+            .'&guests=2')
+            ->assertOk()
+            ->assertSee('Refundable caution fee')
+            ->assertSee('Proceed to Payment');
     }
 
     public function test_underpaid_callback_does_not_confirm(): void
@@ -199,7 +294,7 @@ class BookingSecurityTest extends TestCase
             ]),
         ]);
 
-        $this->get('/booking/callback?reference=' . $reservation->booking_ref)->assertRedirect(route('home'));
+        $this->get('/booking/callback?reference='.$reservation->booking_ref)->assertRedirect(route('home'));
 
         $this->assertSame('pending', $reservation->refresh()->payment_status);
     }
@@ -237,6 +332,15 @@ class BookingSecurityTest extends TestCase
 
         $this->assertSame('pending', $reservation->refresh()->payment_status);
 
+        $eventKey = hash('sha256', 'paystack:'.hash('sha256', $body));
+        PaymentEvent::create([
+            'provider' => 'paystack',
+            'event_key' => $eventKey,
+            'event_type' => 'charge.success',
+            'payload' => json_decode($body, true),
+            'processed_at' => null,
+        ]);
+
         $this->call('POST', '/booking/webhook', [], [], [], [
             'CONTENT_TYPE' => 'application/json',
             'HTTP_X_PAYSTACK_SIGNATURE' => hash_hmac('sha512', $body, 'sk_test_secret'),
@@ -244,6 +348,43 @@ class BookingSecurityTest extends TestCase
 
         $this->assertSame('paid', $reservation->refresh()->payment_status);
         $this->assertDatabaseHas('payments', ['paystack_reference' => $reservation->booking_ref, 'paystack_status' => 'success']);
+        $this->assertNotNull(PaymentEvent::where('event_key', $eventKey)->value('processed_at'));
+
+        $this->call('POST', '/booking/webhook', [], [], [], [
+            'CONTENT_TYPE' => 'application/json',
+            'HTTP_X_PAYSTACK_SIGNATURE' => hash_hmac('sha512', $body, 'sk_test_secret'),
+        ], $body)->assertOk()->assertJson(['duplicate' => true]);
+
+        $this->assertSame(1, Payment::where('reservation_id', $reservation->id)->count());
+        $this->assertDatabaseCount('payment_events', 1);
+
+        $refundBody = json_encode([
+            'event' => 'refund.processed',
+            'data' => [
+                'id' => 98765,
+                'amount' => 1075000,
+                'currency' => 'NGN',
+                'transaction_reference' => $reservation->booking_ref,
+            ],
+        ]);
+
+        $this->call('POST', '/booking/webhook', [], [], [], [
+            'CONTENT_TYPE' => 'application/json',
+            'HTTP_X_PAYSTACK_SIGNATURE' => hash_hmac('sha512', $refundBody, 'sk_test_secret'),
+        ], $refundBody)->assertOk();
+
+        $this->assertDatabaseHas('payments', [
+            'paystack_reference' => $reservation->booking_ref,
+            'type' => 'payment',
+            'paystack_status' => 'success',
+        ]);
+        $this->assertDatabaseHas('payments', [
+            'reservation_id' => $reservation->id,
+            'type' => 'refund',
+            'amount' => 10750,
+            'paystack_status' => 'refunded',
+        ]);
+        $this->assertSame('refunded', $reservation->refresh()->payment_status);
     }
 
     public function test_availability_overlap_rules(): void

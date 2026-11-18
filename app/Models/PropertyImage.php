@@ -22,7 +22,7 @@ class PropertyImage extends Model
 
     public function getImagePathAttribute(?string $value): ?string
     {
-        if (!$value) {
+        if (! $value) {
             return $value;
         }
 
@@ -50,6 +50,6 @@ class PropertyImage extends Model
         }
 
         // Serve through application route to avoid cPanel symlink/static path issues.
-        return url('media/' . ltrim($value, '/'));
+        return url('media/'.ltrim($value, '/'));
     }
 }

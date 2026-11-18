@@ -56,7 +56,7 @@ class CheckinController extends Controller
             'special_requests' => 'nullable|string|max:1000',
             'id_type' => 'required|in:passport,national_id,drivers_license,voters_card,other',
             'id_number' => 'required|string|max:255',
-            'num_adults' => 'required|integer|min:1|max:' . max(1, (int) $reservation->guests),
+            'num_adults' => 'required|integer|min:1|max:'.max(1, (int) $reservation->guests),
             'num_children' => 'nullable|integer|min:0|max:20',
             'vehicle_plate' => 'nullable|string|max:20',
             'emergency_contact_name' => 'required|string|max:255',
@@ -91,7 +91,7 @@ class CheckinController extends Controller
     {
         abort_unless($reservation->user_id === auth()->id(), 403);
 
-        if ($reservation->booking_status !== 'confirmed' || !$reservation->check_out->isAfter(today())) {
+        if ($reservation->booking_status !== 'confirmed' || ! $reservation->check_out->isAfter(today())) {
             abort(redirect()->route('customer.checkin.index')
                 ->with('error', 'Online check-in is only available for confirmed upcoming stays.'));
         }

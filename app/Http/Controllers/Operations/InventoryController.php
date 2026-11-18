@@ -20,16 +20,14 @@ class InventoryController extends Controller
 {
     use SiteScopedPortal;
 
-    public function __construct(private InventoryService $inventory)
-    {
-    }
+    public function __construct(private InventoryService $inventory) {}
 
     public function index(Request $request)
     {
         $user = $request->user();
         $sites = $this->portalSites($user);
         $site = $this->selectedSite($request, $sites);
-        if (!$site) {
+        if (! $site) {
             return view('operations.no-site', $this->viewData($request, ['title' => 'Inventory']));
         }
 
@@ -68,11 +66,11 @@ class InventoryController extends Controller
             'reorder_level' => $data['reorder_level'] ?? 0,
             'tracks_laundry' => $request->boolean('tracks_laundry'),
         ]);
-        if (!empty($data['opening_stock'])) {
+        if (! empty($data['opening_stock'])) {
             $this->inventory->record($item, 'count', (float) $data['opening_stock'], $request->user(), note: 'Opening stock');
         }
 
-        return back()->with('success', $item->name . ' added');
+        return back()->with('success', $item->name.' added');
     }
 
     public function show(Request $request, InventoryItem $item)
@@ -111,7 +109,7 @@ class InventoryController extends Controller
         ]);
 
         // Deliveries and corrected counts are for supervisors and head office.
-        if (!StockMovement::TYPES[$data['type']][1]) {
+        if (! StockMovement::TYPES[$data['type']][1]) {
             $this->ensureManages($user, $item->site_id);
         }
 
@@ -122,6 +120,6 @@ class InventoryController extends Controller
             $data['note'] ?? null,
         );
 
-        return back()->with('success', $movement->label() . ': ' . $item->quantityLabel($movement->quantity) . ' of ' . $item->name . '. Now ' . $item->quantityLabel($movement->on_hand_after) . ' on hand.');
+        return back()->with('success', $movement->label().': '.$item->quantityLabel($movement->quantity).' of '.$item->name.'. Now '.$item->quantityLabel($movement->on_hand_after).' on hand.');
     }
 }

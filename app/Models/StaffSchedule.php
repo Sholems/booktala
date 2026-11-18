@@ -2,8 +2,11 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
+use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class StaffSchedule extends Model
 {
@@ -49,19 +52,19 @@ class StaffSchedule extends Model
         return $this->belongsTo(Site::class);
     }
 
-    public function attendance(): \Illuminate\Database\Eloquent\Relations\HasOne
+    public function attendance(): HasOne
     {
         return $this->hasOne(Attendance::class)->latestOfMany('clock_in_at');
     }
 
-    public function startsAt(): \Carbon\CarbonImmutable
+    public function startsAt(): CarbonImmutable
     {
-        return \Carbon\CarbonImmutable::parse($this->date->format('Y-m-d') . ' ' . \Carbon\Carbon::parse($this->start_time)->format('H:i'));
+        return CarbonImmutable::parse($this->date->format('Y-m-d').' '.Carbon::parse($this->start_time)->format('H:i'));
     }
 
-    public function endsAt(): \Carbon\CarbonImmutable
+    public function endsAt(): CarbonImmutable
     {
-        $end = \Carbon\CarbonImmutable::parse($this->date->format('Y-m-d') . ' ' . \Carbon\Carbon::parse($this->end_time)->format('H:i'));
+        $end = CarbonImmutable::parse($this->date->format('Y-m-d').' '.Carbon::parse($this->end_time)->format('H:i'));
 
         return $end->lte($this->startsAt()) ? $end->addDay() : $end;
     }
@@ -69,7 +72,7 @@ class StaffSchedule extends Model
     public function label(): string
     {
         return (self::shiftTypes()[$this->shift_type] ?? $this->shift_type)
-            . ' (' . $this->startsAt()->format('g:i A') . ' – ' . $this->endsAt()->format('g:i A') . ')';
+            .' ('.$this->startsAt()->format('g:i A').' – '.$this->endsAt()->format('g:i A').')';
     }
 
     public static function shiftTypes()

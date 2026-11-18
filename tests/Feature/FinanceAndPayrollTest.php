@@ -21,7 +21,9 @@ use App\Services\PayrollSettings;
 use Carbon\CarbonImmutable;
 use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 /**
@@ -33,9 +35,13 @@ class FinanceAndPayrollTest extends TestCase
     use RefreshDatabase;
 
     private User $superAdmin;
+
     private User $admin;
+
     private Owner $landlord;
+
     private Property $flat;
+
     private Site $site;
 
     protected function setUp(): void
@@ -54,9 +60,9 @@ class FinanceAndPayrollTest extends TestCase
 
     // --- Helpers -----------------------------------------------------------------------------
 
-    private function makeUser(string $role, string $name = null): User
+    private function makeUser(string $role, ?string $name = null): User
     {
-        $user = User::create(['name' => $name ?? ucfirst($role) . ' ' . uniqid(), 'email' => $role . uniqid() . '@example.com', 'password' => 'password123', 'status' => 'active']);
+        $user = User::create(['name' => $name ?? ucfirst($role).' '.uniqid(), 'email' => $role.uniqid().'@example.com', 'password' => 'password123', 'status' => 'active']);
         $user->assignRole($role);
 
         return $user;
@@ -85,13 +91,13 @@ class FinanceAndPayrollTest extends TestCase
 
     private function expense(Property $property, string $date, float $amount, string $chargeTo = 'owner'): Expense
     {
-        return Expense::create(['property_id' => $property->id, 'category' => 'repairs', 'description' => 'Fix ' . uniqid(), 'amount' => $amount, 'spent_on' => $date, 'charge_to' => $chargeTo]);
+        return Expense::create(['property_id' => $property->id, 'category' => 'repairs', 'description' => 'Fix '.uniqid(), 'amount' => $amount, 'spent_on' => $date, 'charge_to' => $chargeTo]);
     }
 
     private function makeStaff(array $salary = []): User
     {
-        $user = $this->makeUser('staff', 'Ngozi ' . uniqid());
-        $staff = Staff::create(['user_id' => $user->id, 'employee_id' => 'WP-' . $user->id, 'hire_date' => '2026-01-01', 'bank_name' => 'GTBank', 'bank_account_name' => 'Ngozi', 'bank_account_number' => '0123456789']);
+        $user = $this->makeUser('staff', 'Ngozi '.uniqid());
+        $staff = Staff::create(['user_id' => $user->id, 'employee_id' => 'WP-'.$user->id, 'hire_date' => '2026-01-01', 'bank_name' => 'GTBank', 'bank_account_name' => 'Ngozi', 'bank_account_number' => '0123456789']);
         $staff->assignTo($this->site, Position::where('name', 'Receptionist')->firstOrFail(), true, '2026-01-01');
         SalaryStructure::create(array_merge([
             'staff_id' => $staff->id, 'basic' => 150000, 'housing' => 50000, 'transport' => 30000, 'other_allowance' => 20000,
@@ -165,16 +171,16 @@ class FinanceAndPayrollTest extends TestCase
 
     public function test_admin_records_an_expense_with_a_private_receipt(): void
     {
-        \Illuminate\Support\Facades\Storage::fake('local');
+        Storage::fake('local');
 
         $this->actingAs($this->admin)->post(route('admin.expenses.store'), [
             'property_id' => $this->flat->id, 'category' => 'diesel', 'description' => 'Generator diesel', 'amount' => 45000,
             'spent_on' => '2026-11-10', 'charge_to' => 'owner',
-            'receipt' => \Illuminate\Http\UploadedFile::fake()->image('receipt.jpg'),
+            'receipt' => UploadedFile::fake()->image('receipt.jpg'),
         ])->assertSessionHasNoErrors();
 
         $expense = Expense::firstOrFail();
-        \Illuminate\Support\Facades\Storage::disk('local')->assertExists($expense->receipt_path);
+        Storage::disk('local')->assertExists($expense->receipt_path);
         $this->actingAs($this->admin)->get(route('admin.expenses.index', ['month' => '2026-11']))->assertOk()->assertSee('Generator diesel');
         $this->actingAs($this->admin)->get(route('admin.expenses.receipt', $expense))->assertOk();
         $this->actingAs($this->makeUser('customer'))->get(route('admin.expenses.receipt', $expense))->assertForbidden();

@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Log;
 class SmsService
 {
     private $apiKey;
+
     private $from;
 
     public function __construct()
@@ -20,6 +21,7 @@ class SmsService
     {
         if (empty($this->apiKey)) {
             Log::warning('Termii API key not configured. SMS not sent.');
+
             return false;
         }
 
@@ -35,7 +37,8 @@ class SmsService
 
             return $response->successful();
         } catch (\Exception $e) {
-            Log::error('SMS sending failed: ' . $e->getMessage());
+            Log::error('SMS sending failed: '.$e->getMessage());
+
             return false;
         }
     }
@@ -47,7 +50,7 @@ class SmsService
         $message .= "Property: {$property}\n";
         $message .= "Check-in: {$checkIn}\n";
         $message .= "Check-out: {$checkOut}\n";
-        $message .= "Thank you for choosing us!";
+        $message .= 'Thank you for choosing us!';
 
         return $this->sendSms($phone, $message);
     }
@@ -78,11 +81,11 @@ class SmsService
         $phone = preg_replace('/[^0-9]/', '', $phone);
 
         if (str_starts_with($phone, '0')) {
-            return '234' . substr($phone, 1);
+            return '234'.substr($phone, 1);
         }
 
-        if (!str_starts_with($phone, '234')) {
-            return '234' . $phone;
+        if (! str_starts_with($phone, '234')) {
+            return '234'.$phone;
         }
 
         return $phone;

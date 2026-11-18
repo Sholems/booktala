@@ -16,7 +16,7 @@ class PropertySeeder extends Seeder
 {
     private const HOUSE_RULES = "Valid government-issued ID is required at check-in.\nGuests must be at least 18 years old to book; minors must be accompanied by an adult.\nSmoking is not allowed inside the apartment.\nNo pets without prior written approval.\nParties and events require prior approval.\nPlease keep noise to a minimum out of respect for neighbours.";
 
-    private const CANCELLATION_POLICY = "Free cancellation up to 72 hours before check-in. Cancellations made between 72 and 24 hours before check-in receive a 50% refund. No refund for cancellations within 24 hours of check-in or for no-shows.";
+    private const CANCELLATION_POLICY = 'Free cancellation up to 72 hours before check-in. Cancellations made between 72 and 24 hours before check-in receive a 50% refund. No refund for cancellations within 24 hours of check-in or for no-shows.';
 
     private const COMMON_AMENITIES = [
         'Air Conditioning', 'Smart TV', 'WiFi', 'Kitchen', 'Parking Space',
@@ -89,7 +89,7 @@ class PropertySeeder extends Seeder
                     'check_out_time' => '12:00:00',
                     'house_rules' => self::HOUSE_RULES,
                     'cancellation_policy' => self::CANCELLATION_POLICY,
-                    'meta_title' => $data['title'] . ' | ' . config('brand.name'),
+                    'meta_title' => $data['title'].' | '.config('brand.name'),
                     'meta_description' => $data['short_description'],
                 ]
             );

@@ -1,14 +1,14 @@
 <?php
 
-use App\Http\Controllers\Customer\DashboardController;
-use App\Http\Controllers\Customer\ReservationController;
-use App\Http\Controllers\Customer\WishlistController;
-use App\Http\Controllers\Customer\ProfileController;
-use App\Http\Controllers\Customer\MessageController;
-use App\Http\Controllers\Customer\LoyaltyController;
 use App\Http\Controllers\Customer\CheckinController;
-use App\Http\Controllers\Customer\RoomServiceController;
+use App\Http\Controllers\Customer\DashboardController;
 use App\Http\Controllers\Customer\EventBookingController;
+use App\Http\Controllers\Customer\LoyaltyController;
+use App\Http\Controllers\Customer\MessageController;
+use App\Http\Controllers\Customer\ProfileController;
+use App\Http\Controllers\Customer\ReservationController;
+use App\Http\Controllers\Customer\RoomServiceController;
+use App\Http\Controllers\Customer\WishlistController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('customer')->middleware(['auth', 'role:customer'])->name('customer.')->group(function () {
@@ -17,6 +17,7 @@ Route::prefix('customer')->middleware(['auth', 'role:customer'])->name('customer
     Route::get('/reservations', [ReservationController::class, 'index'])->name('reservations.index');
     Route::get('/reservations/{reservation}', [ReservationController::class, 'show'])->name('reservations.show');
     Route::post('/reservations/{reservation}/cancel', [ReservationController::class, 'cancel'])->name('reservations.cancel');
+    Route::post('/reservations/{reservation}/pay-balance', [ReservationController::class, 'payBalance'])->name('reservations.pay-balance');
 
     Route::get('/wishlist', [WishlistController::class, 'index'])->name('wishlist.index');
     Route::post('/wishlist/{property}', [WishlistController::class, 'store'])->name('wishlist.store');

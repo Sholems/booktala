@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class DiscountCode extends Model
 {
@@ -33,6 +32,7 @@ class DiscountCode extends Model
     public function isValid(): bool
     {
         $now = now()->toDateString();
+
         return $this->is_active
             && $now >= $this->valid_from
             && $now <= $this->valid_until

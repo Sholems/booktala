@@ -13,7 +13,7 @@ class AppMode
 
     public static function isShortlet(): bool
     {
-        return !self::isHotel();
+        return ! self::isHotel();
     }
 
     public static function getMode(): string

@@ -76,7 +76,7 @@ class Staff extends Model
      */
     public function assignTo(Site $site, Position $position, bool $primary = false, $startsOn = null): StaffAssignment
     {
-        $primary = $primary || !$this->activeAssignments()->exists();
+        $primary = $primary || ! $this->activeAssignments()->exists();
 
         if ($primary) {
             $this->assignments()->update(['is_primary' => false]);

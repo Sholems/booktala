@@ -14,9 +14,7 @@ class GuestCancelledBooking extends Notification
 {
     use Queueable;
 
-    public function __construct(public Reservation $reservation)
-    {
-    }
+    public function __construct(public Reservation $reservation) {}
 
     public function via($notifiable): array
     {
@@ -28,18 +26,18 @@ class GuestCancelledBooking extends Notification
         $r = $this->reservation;
 
         $mail = (new MailMessage)
-            ->subject('Guest cancelled booking ' . $r->booking_ref)
-            ->greeting('Hello ' . $notifiable->name . ',')
-            ->line(($r->user->name ?? 'A guest') . ' cancelled booking ' . $r->booking_ref . '.')
-            ->line('Apartment: ' . ($r->property->title ?? '-'))
-            ->line('Dates: ' . $r->check_in->format('j M Y') . ' to ' . $r->check_out->format('j M Y'));
+            ->subject('Guest cancelled booking '.$r->booking_ref)
+            ->greeting('Hello '.$notifiable->name.',')
+            ->line(($r->user->name ?? 'A guest').' cancelled booking '.$r->booking_ref.'.')
+            ->line('Apartment: '.($r->property->title ?? '-'))
+            ->line('Dates: '.$r->check_in->format('j M Y').' to '.$r->check_out->format('j M Y'));
 
         if ($r->cancellation_reason) {
-            $mail->line('Reason given: ' . $r->cancellation_reason);
+            $mail->line('Reason given: '.$r->cancellation_reason);
         }
 
         if ($r->refund_status === 'pending') {
-            $mail->line('This booking was paid (₦' . number_format((float) $r->total_amount) . '). Review the refund under the cancellation policy.');
+            $mail->line('This booking was paid (₦'.number_format((float) $r->total_amount).'). Review up to ₦'.number_format($r->booking_refundable_amount).' under the cancellation policy. The processing and caution fees are excluded.');
         }
 
         return $mail->action('Open booking', route('admin.reservations.show', $r));
@@ -51,7 +49,7 @@ class GuestCancelledBooking extends Notification
             'reservation_id' => $this->reservation->id,
             'booking_ref' => $this->reservation->booking_ref,
             'refund_status' => $this->reservation->refund_status,
-            'message' => 'Guest cancelled booking ' . $this->reservation->booking_ref,
+            'message' => 'Guest cancelled booking '.$this->reservation->booking_ref,
         ];
     }
 }

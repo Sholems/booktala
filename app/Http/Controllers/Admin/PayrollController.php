@@ -24,9 +24,7 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
  */
 class PayrollController extends Controller
 {
-    public function __construct(private PayRunService $runs)
-    {
-    }
+    public function __construct(private PayRunService $runs) {}
 
     public function index()
     {
@@ -39,12 +37,12 @@ class PayrollController extends Controller
     public function generate(Request $request)
     {
         $data = $request->validate(['month' => 'required|date_format:Y-m']);
-        $month = CarbonImmutable::parse($data['month'] . '-01');
+        $month = CarbonImmutable::parse($data['month'].'-01');
         abort_if($month->isAfter(now()->startOfMonth()), 422, 'Pay runs cannot be prepared for future months.');
 
         $run = $this->runs->generate($month, $request->user());
 
-        return redirect()->route('admin.payroll.show', $run)->with('success', 'Pay run calculated for ' . $run->periodLabel() . '. Review it before approving.');
+        return redirect()->route('admin.payroll.show', $run)->with('success', 'Pay run calculated for '.$run->periodLabel().'. Review it before approving.');
     }
 
     public function show(PayRun $payRun)
@@ -56,7 +54,7 @@ class PayrollController extends Controller
         foreach ($payRun->payslips as $slip) {
             $cost = (float) $slip->gross + (float) $slip->pension_employer;
             $split = $slip->details['site_split'] ?? [];
-            if (!$split) {
+            if (! $split) {
                 $siteCosts['unallocated'] = ($siteCosts['unallocated'] ?? 0) + $cost;
             }
             foreach ($split as $siteId => $share) {
@@ -84,7 +82,7 @@ class PayrollController extends Controller
 
     public function destroy(PayRun $payRun)
     {
-        if (!$payRun->isDraft()) {
+        if (! $payRun->isDraft()) {
             return back()->with('error', 'Only a draft pay run can be deleted.');
         }
         $payRun->delete();
@@ -110,13 +108,13 @@ class PayrollController extends Controller
                     $slip->staff->bank_name ?? '',
                     $slip->staff->bank_account_name ?? '',
                     // Leading apostrophe keeps spreadsheet apps from dropping leading zeros.
-                    $slip->staff->bank_account_number ? "'" . $slip->staff->bank_account_number : '',
+                    $slip->staff->bank_account_number ? "'".$slip->staff->bank_account_number : '',
                     number_format((float) $slip->net, 2, '.', ''),
-                    'Salary ' . $payRun->periodLabel(),
+                    'Salary '.$payRun->periodLabel(),
                 ]);
             }
             fclose($out);
-        }, 'bank-schedule-' . $payRun->period_start->format('Y-m') . '.csv', ['Content-Type' => 'text/csv']);
+        }, 'bank-schedule-'.$payRun->period_start->format('Y-m').'.csv', ['Content-Type' => 'text/csv']);
     }
 
     public function payslipPdf(Payslip $payslip)
@@ -130,7 +128,7 @@ class PayrollController extends Controller
         $payslip->load(['staff.user', 'payRun']);
 
         return Pdf::loadView('payroll.payslip-pdf', compact('payslip'))
-            ->download('payslip-' . $payslip->staff->employee_id . '-' . $payslip->payRun->period_start->format('Y-m') . '.pdf');
+            ->download('payslip-'.$payslip->staff->employee_id.'-'.$payslip->payRun->period_start->format('Y-m').'.pdf');
     }
 
     // --- Rates -------------------------------------------------------------------------

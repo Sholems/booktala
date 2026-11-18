@@ -63,10 +63,10 @@ class Attendance extends Model
     {
         $flags = [];
         if ($this->isLate()) {
-            $flags[] = 'Late ' . $this->late_minutes . ' min';
+            $flags[] = 'Late '.$this->late_minutes.' min';
         }
         if ($this->clock_in_location === 'off_site') {
-            $flags[] = 'Clocked in ' . number_format((int) $this->clock_in_distance_m) . ' m away';
+            $flags[] = 'Clocked in '.number_format((int) $this->clock_in_distance_m).' m away';
         }
         if ($this->clock_in_location === 'unknown') {
             $flags[] = 'No location';
@@ -77,7 +77,7 @@ class Attendance extends Model
         if ($this->auto_closed) {
             $flags[] = 'Forgot to clock out';
         }
-        if (!$this->staff_schedule_id) {
+        if (! $this->staff_schedule_id) {
             $flags[] = 'No shift scheduled';
         }
 
@@ -88,6 +88,6 @@ class Attendance extends Model
     {
         $minutes = $this->worked_minutes ?? (int) $this->clock_in_at->diffInMinutes(now());
 
-        return intdiv($minutes, 60) . 'h ' . str_pad((string) ($minutes % 60), 2, '0', STR_PAD_LEFT) . 'm';
+        return intdiv($minutes, 60).'h '.str_pad((string) ($minutes % 60), 2, '0', STR_PAD_LEFT).'m';
     }
 }

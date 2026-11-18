@@ -34,15 +34,15 @@ class DashboardsAndAccessTest extends TestCase
     private function makeUser(string $role): User
     {
         $user = User::create([
-            'name' => ucfirst($role) . ' ' . uniqid(),
-            'email' => $role . uniqid() . '@example.com',
+            'name' => ucfirst($role).' '.uniqid(),
+            'email' => $role.uniqid().'@example.com',
             'password' => 'password123',
             'status' => 'active',
         ]);
         $user->assignRole($role);
 
         if ($role === 'staff') {
-            Staff::create(['user_id' => $user->id, 'department' => 'frontdesk', 'employee_id' => 'T-' . $user->id, 'hire_date' => today()]);
+            Staff::create(['user_id' => $user->id, 'department' => 'frontdesk', 'employee_id' => 'T-'.$user->id, 'hire_date' => today()]);
         }
 
         if ($role === 'staff') {
@@ -55,7 +55,7 @@ class DashboardsAndAccessTest extends TestCase
     private function makeReservation(User $guest, array $attrs = []): Reservation
     {
         $property = Property::create([
-            'title' => 'Apartment ' . uniqid(),
+            'title' => 'Apartment '.uniqid(),
             'description' => 'Nice place',
             'address' => '1 Test Street',
             'city' => 'Lagos',
@@ -105,7 +105,7 @@ class DashboardsAndAccessTest extends TestCase
             ->assertSee('Arriving today')
             ->assertSee(route('admin.reservations.index', ['queue' => 'arrivals']), false)
             ->assertSee('Recent activity')
-            ->assertSee('Booking ' . $arriving->booking_ref . ' confirmed by ' . $admin->name);
+            ->assertSee('Booking '.$arriving->booking_ref.' confirmed by '.$admin->name);
 
         $this->actingAs($admin)->get(route('admin.reservations.index', ['queue' => 'arrivals']))
             ->assertOk()->assertSee($arriving->booking_ref)->assertDontSee($toConfirm->booking_ref);

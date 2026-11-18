@@ -1,14 +1,14 @@
 <?php
 
-use App\Http\Controllers\Public\HomeController;
-use App\Http\Controllers\Public\PropertyController;
-use App\Http\Controllers\Public\BookingController;
-use App\Http\Controllers\Public\PageController;
-use App\Http\Controllers\Public\BlogController;
-use App\Http\Controllers\Public\StorageController;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Auth\PasswordController;
 use App\Http\Controllers\AvailabilityController;
+use App\Http\Controllers\Public\BlogController;
+use App\Http\Controllers\Public\BookingController;
+use App\Http\Controllers\Public\HomeController;
+use App\Http\Controllers\Public\PageController;
+use App\Http\Controllers\Public\PropertyController;
+use App\Http\Controllers\Public\StorageController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -19,8 +19,8 @@ Route::get('/storage/{path}', [StorageController::class, 'show'])
     ->where('path', '.*')
     ->name('public.storage');
 
-Route::get('/availability/check', [AvailabilityController::class, 'check'])->name('availability.check');
-Route::get('/availability/calendar/{propertyId}', [AvailabilityController::class, 'getCalendar'])->name('availability.calendar');
+Route::get('/availability/check', [AvailabilityController::class, 'check'])->name('availability.check')->middleware('throttle:availability');
+Route::get('/availability/calendar/{propertyId}', [AvailabilityController::class, 'getCalendar'])->name('availability.calendar')->middleware('throttle:availability');
 
 Route::middleware('guest')->group(function () {
     Route::get('login', [AuthController::class, 'showLogin'])->name('login');
@@ -39,15 +39,15 @@ Route::middleware('auth')->group(function () {
 
 Route::get('/apartments', [PropertyController::class, 'index'])->name('properties.index');
 Route::get('/apartments/{slug}', [PropertyController::class, 'show'])->name('properties.show');
-Route::post('/booking/process', [BookingController::class, 'process'])->name('booking.process');
-Route::get('/booking/callback', [BookingController::class, 'callback'])->name('booking.callback');
-Route::post('/booking/webhook', [BookingController::class, 'webhook'])->name('booking.webhook');
+Route::post('/booking/process', [BookingController::class, 'process'])->name('booking.process')->middleware('throttle:booking');
+Route::get('/booking/callback', [BookingController::class, 'callback'])->name('booking.callback')->middleware('throttle:payment');
+Route::post('/booking/webhook', [BookingController::class, 'webhook'])->name('booking.webhook')->middleware('throttle:payment');
 Route::get('/booking/confirmation/{booking_ref}', [BookingController::class, 'confirmation'])->name('booking.confirmation');
 Route::get('/booking/{slug}', [BookingController::class, 'show'])->name('booking.show');
 
 Route::get('/about', [PageController::class, 'about'])->name('pages.about');
 Route::get('/contact', [PageController::class, 'contact'])->name('pages.contact');
-Route::post('/contact', [PageController::class, 'submitContact'])->name('pages.contact.submit');
+Route::post('/contact', [PageController::class, 'submitContact'])->name('pages.contact.submit')->middleware('throttle:contact');
 Route::get('/faq', [PageController::class, 'faq'])->name('pages.faq');
 Route::get('/terms', [PageController::class, 'terms'])->name('pages.terms');
 Route::get('/privacy', [PageController::class, 'privacy'])->name('pages.privacy');

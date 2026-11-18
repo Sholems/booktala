@@ -39,7 +39,7 @@ class SiteReportController extends Controller
                 ));
             }
             fclose($out);
-        }, 'site-report-' . $from->format('Ymd') . '-' . $to->format('Ymd') . '.csv', ['Content-Type' => 'text/csv']);
+        }, 'site-report-'.$from->format('Ymd').'-'.$to->format('Ymd').'.csv', ['Content-Type' => 'text/csv']);
     }
 
     /** @return array{0: CarbonImmutable, 1: CarbonImmutable} */

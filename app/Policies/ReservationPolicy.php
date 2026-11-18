@@ -2,8 +2,8 @@
 
 namespace App\Policies;
 
-use App\Models\User;
 use App\Models\Reservation;
+use App\Models\User;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
 class ReservationPolicy
@@ -17,8 +17,8 @@ class ReservationPolicy
 
     public function view(User $user, Reservation $reservation): bool
     {
-        return $user->hasRole('admin') || 
-               $user->hasRole('staff') || 
+        return $user->hasRole('admin') ||
+               $user->hasRole('staff') ||
                $reservation->user_id === $user->id;
     }
 
@@ -29,8 +29,8 @@ class ReservationPolicy
 
     public function cancel(User $user, Reservation $reservation): bool
     {
-        return $user->hasRole('admin') || 
-               $user->hasRole('staff') || 
+        return $user->hasRole('admin') ||
+               $user->hasRole('staff') ||
                $reservation->user_id === $user->id;
     }
 }

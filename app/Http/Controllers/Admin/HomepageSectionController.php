@@ -11,6 +11,7 @@ class HomepageSectionController extends Controller
     public function index()
     {
         $sections = HomepageSection::orderBy('order')->get();
+
         return view('admin.homepage-sections.index', compact('sections'));
     }
 
@@ -44,6 +45,7 @@ class HomepageSectionController extends Controller
         foreach ($request->sections as $index => $id) {
             HomepageSection::where('id', $id)->update(['order' => $index]);
         }
+
         return response()->json(['success' => true]);
     }
 }

@@ -2,13 +2,13 @@
 
 namespace App\Services;
 
-use App\Models\Property;
-use App\Models\Reservation;
+use App\Models\BlockedDate;
 use App\Models\DiscountCode;
 use App\Models\PricingRule;
-use App\Models\BlockedDate;
-use Carbon\Carbon;
+use App\Models\Property;
+use App\Models\Reservation;
 use App\Models\Setting;
+use Carbon\Carbon;
 
 class PricingService
 {
@@ -42,24 +42,30 @@ class PricingService
         }
 
         $discountAmount = 0;
+        $appliedDiscountCode = null;
         if ($discountCode) {
-            $discountCode = DiscountCode::where('code', $discountCode)->first();
-            if ($discountCode && $discountCode->isValid()) {
-                $discountAmount = $discountCode->calculateDiscount($subtotal, $nights);
-                $discountCode->increment('used_count');
+            $discount = DiscountCode::where('code', $discountCode)->first();
+            if ($discount && $discount->isValid()) {
+                $discountAmount = $discount->calculateDiscount($subtotal, $nights);
+                $appliedDiscountCode = $discount->code;
             }
         }
 
         $taxRate = (float) Setting::get('vat_rate', 7.5);
         $taxAmount = ($subtotal - $discountAmount) * ($taxRate / 100);
-        $totalAmount = $subtotal - $discountAmount + $taxAmount;
+        $processingFee = (float) config('booking.processing_fee');
+        $cautionFee = (float) config('booking.caution_fee');
+        $totalAmount = $subtotal - $discountAmount + $taxAmount + $processingFee + $cautionFee;
 
         return [
             'nights' => $nights,
             'guests' => $guests,
             'subtotal' => round($subtotal, 2),
             'discount_amount' => round($discountAmount, 2),
+            'discount_code' => $appliedDiscountCode,
             'tax_amount' => round($taxAmount, 2),
+            'processing_fee' => round($processingFee, 2),
+            'caution_fee' => round($cautionFee, 2),
             'total_amount' => round($totalAmount, 2),
             'price_per_night' => $property->price_per_night,
         ];
@@ -81,6 +87,7 @@ class PricingService
                 $price = $this->isWeekend($date) && $property->weekend_price
                     ? $property->weekend_price
                     : $property->price_per_night;
+
                 return $price * (1 - $pricingRule->discount_percentage / 100);
             }
         }
@@ -116,7 +123,7 @@ class PricingService
         // Stays overlap when one starts before the other ends; a checkout day
         // can be the next guest's check-in day.
         $reservations = Reservation::where('property_id', $property->id)
-            ->whereIn('booking_status', ['pending', 'confirmed', 'checked_in'])
+            ->blockingAvailability()
             ->whereDate('check_in', '<', $checkOut)
             ->whereDate('check_out', '>', $checkIn)
             ->exists();

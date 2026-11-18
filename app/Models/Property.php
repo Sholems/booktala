@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Support\PropertyAccess;
+use App\Traits\LogsActivity;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -9,9 +11,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
-use Spatie\Sluggable\SlugOptions;
 use Spatie\Sluggable\HasSlug;
-use App\Traits\LogsActivity;
+use Spatie\Sluggable\SlugOptions;
 
 class Property extends Model implements HasMedia
 {
@@ -165,7 +166,7 @@ class Property extends Model implements HasMedia
      */
     public function scopeVisibleTo($query, User $user)
     {
-        return \App\Support\PropertyAccess::scope($query, $user, 'properties.id');
+        return PropertyAccess::scope($query, $user, 'properties.id');
     }
 
     // Many views and hotel-mode screens refer to a property's "name"; the column is "title".

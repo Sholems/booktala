@@ -24,7 +24,7 @@ trait SiteScopedPortal
     protected function portalSites(User $user): Collection
     {
         return Site::where('is_active', true)
-            ->when(!PropertyAccess::seesAll($user), fn ($q) => $q->whereIn('id', PropertyAccess::activeSiteIds($user)))
+            ->when(! PropertyAccess::seesAll($user), fn ($q) => $q->whereIn('id', PropertyAccess::activeSiteIds($user)))
             ->orderBy('name')
             ->get();
     }
@@ -55,6 +55,6 @@ trait SiteScopedPortal
     {
         $portal = $this->portal($request);
 
-        return $data + ['layout' => 'layouts.' . $portal, 'p' => $portal];
+        return $data + ['layout' => 'layouts.'.$portal, 'p' => $portal];
     }
 }

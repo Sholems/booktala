@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\RoomType;
 use App\Models\Room;
+use App\Models\RoomType;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
@@ -13,6 +13,7 @@ class RoomTypeController extends Controller
     public function index()
     {
         $roomTypes = RoomType::with('rooms')->orderBy('sort_order')->get();
+
         return view('admin.room-types.index', compact('roomTypes'));
     }
 
@@ -103,12 +104,14 @@ class RoomTypeController extends Controller
     public function destroy(RoomType $roomType)
     {
         $roomType->delete();
+
         return redirect()->route('admin.room-types.index')->with('success', 'Room type deleted successfully');
     }
 
     public function rooms(RoomType $roomType)
     {
         $rooms = $roomType->rooms()->orderBy('room_number')->get();
+
         return view('admin.room-types.rooms', compact('roomType', 'rooms'));
     }
 

@@ -31,8 +31,8 @@ class OwnerStatementService
         // Match on the date only: stored dates carry a time part on some databases.
         $statement = OwnerStatement::where('owner_id', $owner->id)->whereDate('period_start', $start)->first()
             ?? new OwnerStatement(['owner_id' => $owner->id, 'period_start' => $start->toDateString()]);
-        if ($statement->exists && !$statement->isDraft()) {
-            throw ValidationException::withMessages(['month' => $owner->name . "'s " . $statement->periodLabel() . ' statement is already ' . $statement->status . '.']);
+        if ($statement->exists && ! $statement->isDraft()) {
+            throw ValidationException::withMessages(['month' => $owner->name."'s ".$statement->periodLabel().' statement is already '.$statement->status.'.']);
         }
 
         return DB::transaction(function () use ($owner, $statement, $start, $end) {
@@ -68,7 +68,7 @@ class OwnerStatementService
                     'type' => 'booking',
                     'source_id' => $stay->id,
                     'date' => $stay->check_out,
-                    'description' => 'Stay ' . $stay->booking_ref . ' · ' . $stay->check_in->format('j M') . '–' . $stay->check_out->format('j M'),
+                    'description' => 'Stay '.$stay->booking_ref.' · '.$stay->check_in->format('j M').'–'.$stay->check_out->format('j M'),
                     'nights' => $stay->nights,
                     'amount' => $amount,
                 ]);
@@ -91,7 +91,7 @@ class OwnerStatementService
                         'type' => 'expense',
                         'source_id' => $expense->id,
                         'date' => $expense->spent_on,
-                        'description' => $expense->categoryLabel() . ': ' . $expense->description,
+                        'description' => $expense->categoryLabel().': '.$expense->description,
                         'amount' => -1 * (float) $expense->amount,
                     ]);
                 }
@@ -119,7 +119,7 @@ class OwnerStatementService
         $count = 0;
         foreach (Owner::where('is_active', true)->whereHas('properties')->get() as $owner) {
             $existing = OwnerStatement::where('owner_id', $owner->id)->whereDate('period_start', $month->startOfMonth())->first();
-            if ($existing && !$existing->isDraft()) {
+            if ($existing && ! $existing->isDraft()) {
                 continue;
             }
             $this->generate($owner, $month);
@@ -131,7 +131,7 @@ class OwnerStatementService
 
     public function approve(OwnerStatement $statement, User $by): void
     {
-        if (!$statement->isDraft()) {
+        if (! $statement->isDraft()) {
             throw ValidationException::withMessages(['status' => 'Only a draft statement can be approved.']);
         }
 

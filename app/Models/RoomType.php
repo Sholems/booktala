@@ -4,7 +4,6 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
@@ -65,8 +64,11 @@ class RoomType extends Model implements HasMedia
 
     public function getOccupancyRateAttribute()
     {
-        if ($this->total_rooms == 0) return 0;
+        if ($this->total_rooms == 0) {
+            return 0;
+        }
         $occupied = $this->rooms()->where('status', 'occupied')->count();
+
         return round(($occupied / $this->total_rooms) * 100);
     }
 }

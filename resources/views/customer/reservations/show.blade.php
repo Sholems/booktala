@@ -46,6 +46,19 @@
                         <span class="text-gray-500">Total Price:</span>
                         <span class="font-medium">₦{{ number_format((float) $reservation->total_amount) }}</span>
                     </div>
+                    @if($reservation->payment_status === 'partial')
+                    @php $paidAmount = $reservation->payments()->where('type','payment')->where('paystack_status','success')->sum('amount'); @endphp
+                    <div class="flex justify-between"><span class="text-gray-500">Paid now:</span><span class="font-medium text-green-700">₦{{ number_format((float) $paidAmount, 2) }}</span></div>
+                    <div class="flex justify-between"><span class="text-gray-500">Balance due:</span><span class="font-medium text-amber-700">₦{{ number_format(max(0, (float) $reservation->total_amount - (float) $paidAmount), 2) }}</span></div>
+                    <form method="POST" action="{{ route('customer.reservations.pay-balance', $reservation) }}" class="mt-4">
+                        @csrf
+                        <button type="submit" class="w-full rounded-lg bg-primary px-4 py-2 text-white hover:bg-primary/90">
+                            Pay remaining balance
+                        </button>
+                    </form>
+                    @endif
+                    <div class="flex justify-between"><span>Processing fee</span><span class="font-medium">₦{{ number_format((float) $reservation->processing_fee) }}</span></div>
+                    <div class="flex justify-between"><span>Refundable caution fee</span><span class="font-medium">₦{{ number_format((float) $reservation->caution_fee) }} · {{ ucfirst(str_replace('_', ' ', $reservation->caution_fee_status ?? 'pending')) }}</span></div>
                     @if($reservation->refund_status)
                     <div class="flex justify-between">
                         <span class="text-gray-500">Refund:</span>
@@ -63,7 +76,7 @@
             </div>
         </div>
         
-        <div class="mt-6 p-6 bg-white rounded-lg shadow">
+        <div id="payment" class="mt-6 p-6 bg-white rounded-lg shadow">
             <h2 class="mb-4 text-xl font-semibold">Payment History</h2>
             @forelse($reservation->payments as $payment)
             <div class="flex justify-between items-center py-3 border-b">
@@ -104,7 +117,7 @@
                 <p class="text-sm text-gray-600 mb-4">
                     <a href="{{ route('pages.cancellation') }}" class="text-blue-600 hover:underline" target="_blank">Read the full cancellation policy</a>.
                     @if(in_array($reservation->payment_status, ['paid', 'partial'], true))
-                    You have paid for this booking, so any refund due under the policy will be reviewed by our team after you cancel.
+                    You have paid for this booking, so any refund due under the policy will be reviewed by our team after you cancel. The processing fee is non-refundable; the caution fee is reviewed separately.
                     @endif
                 </p>
                 <form action="{{ route('customer.reservations.cancel', $reservation) }}" method="POST" class="space-y-3">

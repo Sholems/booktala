@@ -70,7 +70,7 @@ class PwaTest extends TestCase
 
         foreach ($pages as [$role, $path]) {
             if ($role) {
-                $user = User::create(['name' => ucfirst($role), 'email' => $role . '@example.com', 'password' => 'password123', 'status' => 'active']);
+                $user = User::create(['name' => ucfirst($role), 'email' => $role.'@example.com', 'password' => 'password123', 'status' => 'active']);
                 $user->assignRole($role);
                 $this->actingAs($user);
             }

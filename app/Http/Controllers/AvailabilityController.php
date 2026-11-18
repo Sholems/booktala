@@ -27,6 +27,7 @@ class AvailabilityController extends Controller
 
         if ($request->property_id) {
             $property = Property::with('images')->active()->findOrFail($request->property_id);
+
             return response()->json($this->checkPropertyAvailability($property, $checkIn, $checkOut, $nights));
         }
 
@@ -47,7 +48,14 @@ class AvailabilityController extends Controller
 
     private function checkPropertyAvailability(Property $property, Carbon $checkIn, Carbon $checkOut, int $nights): array
     {
-        $available = $this->pricingService->isAvailable($property, $checkIn, $checkOut);
+        $pricing = null;
+
+        try {
+            $pricing = $this->pricingService->calculatePrice($property, $checkIn, $checkOut);
+            $available = true;
+        } catch (\Exception) {
+            $available = false;
+        }
 
         return [
             'id' => $property->id,
@@ -57,7 +65,11 @@ class AvailabilityController extends Controller
             'available_rooms' => $available ? 1 : 0,
             'total_rooms' => 1,
             'price_per_night' => $property->price_per_night,
-            'total_price' => $property->price_per_night * $nights,
+            'subtotal' => $pricing['subtotal'] ?? (float) $property->price_per_night * $nights,
+            'tax_amount' => $pricing['tax_amount'] ?? null,
+            'processing_fee' => $pricing['processing_fee'] ?? (float) config('booking.processing_fee'),
+            'caution_fee' => $pricing['caution_fee'] ?? (float) config('booking.caution_fee'),
+            'total_price' => $pricing['total_amount'] ?? null,
             'nights' => $nights,
             'images' => $property->images->take(3)->map(fn ($img) => $img->image_path)->values(),
         ];
@@ -70,7 +82,7 @@ class AvailabilityController extends Controller
         $endDate = now()->addMonths(6)->endOfMonth()->startOfDay();
 
         $reservations = Reservation::where('property_id', $property->id)
-            ->whereIn('booking_status', ['pending', 'confirmed', 'checked_in'])
+            ->blockingAvailability()
             ->whereDate('check_out', '>', $startDate)
             ->whereDate('check_in', '<=', $endDate)
             ->get(['check_in', 'check_out', 'booking_status']);
@@ -94,7 +106,7 @@ class AvailabilityController extends Controller
 
             $calendar[] = [
                 'date' => $dateStr,
-                'available' => !$reserved && !$blocked,
+                'available' => ! $reserved && ! $blocked,
                 'status' => $reserved ? $reserved->booking_status : ($blocked ? 'blocked' : 'available'),
             ];
         }

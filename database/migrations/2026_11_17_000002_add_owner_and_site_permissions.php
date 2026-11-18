@@ -10,7 +10,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        (new RolePermissionSeeder())->run();
+        (new RolePermissionSeeder)->run();
     }
 
     public function down(): void

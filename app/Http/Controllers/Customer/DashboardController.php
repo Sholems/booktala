@@ -4,9 +4,9 @@ namespace App\Http\Controllers\Customer;
 
 use App\Http\Controllers\Controller;
 use App\Models\Reservation;
-use App\Models\Wishlist;
 use App\Models\Review;
-use Illuminate\Http\Request;
+use App\Models\Wishlist;
+use App\Support\GuestJourney;
 use Illuminate\Support\Facades\Auth;
 
 class DashboardController extends Controller
@@ -25,7 +25,7 @@ class DashboardController extends Controller
         // Other bookings with something for the guest to do.
         $needsAction = $reservations
             ->reject(fn ($r) => $currentStay && $r->is($currentStay))
-            ->filter(fn ($r) => \App\Support\GuestJourney::next($r) !== null
+            ->filter(fn ($r) => GuestJourney::next($r) !== null
                 && ($r->check_out->isAfter(today()->subDays(30))))
             ->take(3);
 

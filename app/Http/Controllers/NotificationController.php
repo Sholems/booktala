@@ -16,8 +16,8 @@ class NotificationController extends Controller
 
         return view('notifications.index', [
             'notifications' => $request->user()->notifications()->paginate(25),
-            'layout' => 'layouts.' . $portal,
-            'routePrefix' => $portal . '.notifications',
+            'layout' => 'layouts.'.$portal,
+            'routePrefix' => $portal.'.notifications',
         ]);
     }
 

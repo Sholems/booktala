@@ -2,41 +2,46 @@
 
 namespace App\Services;
 
-use App\Models\Reservation;
+use App\Models\DiscountCode;
 use App\Models\Payment;
-use App\Notifications\BookingConfirmed;
+use App\Models\PaymentEvent;
+use App\Models\Reservation;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
 class PaymentService
 {
-    private $paystackSecretKey;
+    private ?string $paystackSecretKey;
 
-    public function __construct()
+    public function __construct(private ReservationLifecycle $reservationLifecycle)
     {
-        $this->paystackSecretKey = config('services.paystack.secret');
-
-        if (empty($this->paystackSecretKey)) {
-            Log::error('Paystack secret key is not configured');
-            throw new \Exception('Payment system is not configured. Please contact support.');
-        }
+        $secret = config('services.paystack.secret');
+        $this->paystackSecretKey = is_string($secret) && $secret !== '' ? $secret : null;
     }
 
-    public function initializePayment(Reservation $reservation, $email)
+    public function initializePayment(Reservation $reservation, string $email, ?float $amountOverride = null, ?string $referenceOverride = null): array
     {
-        $amount = (int) round($reservation->total_amount * 100);
+        $secret = $this->requireSecret();
+        $amountDue = $amountOverride === null
+            ? (float) $reservation->total_amount
+            : max(1, min((float) $reservation->total_amount, $amountOverride));
+        $amount = (int) round($amountDue * 100);
+        $reference = $referenceOverride ?: $reservation->booking_ref;
 
-        $response = Http::withToken($this->paystackSecretKey)
+        $response = Http::withToken($secret)
             ->post('https://api.paystack.co/transaction/initialize', [
                 'email' => $email,
                 'amount' => $amount,
                 'currency' => 'NGN',
-                'reference' => $reservation->booking_ref,
+                'reference' => $reference,
                 'callback_url' => route('booking.callback'),
                 'metadata' => [
                     'reservation_id' => $reservation->id,
                     'booking_ref' => $reservation->booking_ref,
+                    'payment_reference' => $reference,
                 ],
             ]);
 
@@ -52,10 +57,11 @@ class PaymentService
         throw new \Exception('Failed to initialize payment. Please try again or contact support.');
     }
 
-    public function verifyPayment($reference)
+    public function verifyPayment(string $reference): array
     {
-        $response = Http::withToken($this->paystackSecretKey)
-            ->get('https://api.paystack.co/transaction/verify/' . rawurlencode($reference));
+        $secret = $this->requireSecret();
+        $response = Http::withToken($secret)
+            ->get('https://api.paystack.co/transaction/verify/'.rawurlencode($reference));
 
         if ($response->successful()) {
             return $response->json();
@@ -64,9 +70,9 @@ class PaymentService
         throw new \Exception('Failed to verify payment');
     }
 
-    public function handleWebhook(string $rawPayload, string $signature)
+    public function handleWebhook(string $rawPayload, string $signature): JsonResponse
     {
-        if (!$this->verifySignature($rawPayload, $signature)) {
+        if (! $this->verifySignature($rawPayload, $signature)) {
             return response()->json(['error' => 'Invalid signature'], 401);
         }
 
@@ -74,17 +80,40 @@ class PaymentService
         $event = $payload['event'] ?? null;
         $data = $payload['data'] ?? [];
 
-        switch ($event) {
-            case 'charge.success':
-                $this->markPaymentSuccessful($data);
-                break;
-            case 'refund.processed':
-            case 'refund':
-                $this->handleRefund($data);
-                break;
-        }
+        $eventId = $data['id'] ?? null;
+        $eventKey = is_string($eventId) || is_int($eventId)
+            ? hash('sha256', 'paystack:'.$eventId)
+            : hash('sha256', 'paystack:'.hash('sha256', $rawPayload));
 
-        return response()->json(['success' => true]);
+        return Cache::lock('payment-event:'.$eventKey, 30)->block(5, function () use ($eventKey, $event, $payload, $data) {
+            $paymentEvent = PaymentEvent::firstOrCreate(
+                ['event_key' => $eventKey],
+                [
+                    'provider' => 'paystack',
+                    'event_type' => is_string($event) ? $event : null,
+                    'payload' => $payload,
+                    'processed_at' => null,
+                ],
+            );
+
+            if ($paymentEvent->processed_at !== null) {
+                return response()->json(['success' => true, 'duplicate' => true]);
+            }
+
+            switch ($event) {
+                case 'charge.success':
+                    $this->markPaymentSuccessful($data);
+                    break;
+                case 'refund.processed':
+                case 'refund':
+                    $this->handleRefund($data);
+                    break;
+            }
+
+            $paymentEvent->update(['processed_at' => now()]);
+
+            return response()->json(['success' => true]);
+        });
     }
 
     /**
@@ -95,7 +124,7 @@ class PaymentService
     {
         $reference = $data['reference'] ?? null;
 
-        if (!$reference || ($data['status'] ?? null) !== 'success') {
+        if (! $reference || ($data['status'] ?? null) !== 'success') {
             return null;
         }
 
@@ -105,24 +134,32 @@ class PaymentService
             $reservation = $payment?->reservation
                 ?? Reservation::where('booking_ref', $reference)->lockForUpdate()->first();
 
-            if (!$reservation) {
+            if (! $reservation) {
                 Log::warning('Paystack payment for unknown reservation', ['reference' => $reference]);
+
                 return null;
             }
 
             $paidAmount = ($data['amount'] ?? 0) / 100;
             $expectedAmount = (float) $reservation->total_amount;
 
-            if (($data['currency'] ?? 'NGN') !== 'NGN' || $paidAmount + 0.01 < $expectedAmount) {
+            $expectedPartialAmount = round($expectedAmount * 0.5, 2);
+            $expectedPaymentAmount = $payment
+                ? (float) $payment->amount
+                : $expectedPartialAmount;
+            if (($data['currency'] ?? 'NGN') !== 'NGN'
+                || $paidAmount + 0.01 < $expectedPaymentAmount) {
                 Log::error('Paystack amount mismatch', [
                     'reference' => $reference,
                     'paid' => $paidAmount,
-                    'expected' => $expectedAmount,
+                    'minimum_partial' => $expectedPartialAmount,
+                    'expected_full' => $expectedAmount,
                 ]);
+
                 return null;
             }
 
-            if (!$payment) {
+            if (! $payment) {
                 $payment = $this->createPayment($reservation, $reference, $paidAmount);
             }
 
@@ -132,80 +169,134 @@ class PaymentService
                 'payment_method' => $data['channel'] ?? 'card',
             ]);
 
+            $successfulPayments = (float) Payment::where('reservation_id', $reservation->id)
+                ->where('type', 'payment')
+                ->where('paystack_status', 'success')
+                ->sum('amount');
+            $paymentStatus = $successfulPayments + 0.01 >= $expectedAmount ? 'paid' : 'partial';
+
             // Money arriving for a booking that was cancelled meanwhile must not revive it:
             // record the payment and flag it for a refund instead.
             if (in_array($reservation->booking_status, ['cancelled', 'no_show'], true)) {
                 $reservation->update([
-                    'payment_status' => 'paid',
+                    'payment_status' => $paymentStatus,
                     'payment_method' => $data['channel'] ?? 'card',
                     'paystack_reference' => $reference,
                     'refund_status' => $reservation->refund_status ?? 'pending',
+                    'caution_fee_status' => (float) $reservation->caution_fee > 0 ? 'refund_pending' : null,
+                    'hold_expires_at' => null,
                 ]);
 
                 return $reservation;
             }
 
-            $alreadyConfirmed = $reservation->payment_status === 'paid'
+            $alreadyConfirmed = in_array($reservation->payment_status, ['paid', 'partial'], true)
                 && $reservation->booking_status === 'confirmed';
+            $wasRecorded = in_array($reservation->payment_status, ['paid', 'partial'], true);
+            $wasPending = $reservation->payment_status === 'pending';
 
-            if (!$alreadyConfirmed) {
+            if (! $wasRecorded || $reservation->payment_status !== $paymentStatus) {
                 $reservation->update([
-                    'payment_status' => 'paid',
+                    'payment_status' => $paymentStatus,
                     'payment_method' => $data['channel'] ?? 'card',
                     'paystack_reference' => $reference,
-                    'booking_status' => 'confirmed',
-                    'confirmed_at' => now(),
                 ]);
 
-                // A mail failure must not roll back a payment that already succeeded.
-                try {
-                    $reservation->user?->notify(new BookingConfirmed($reservation));
-                } catch (\Throwable $e) {
-                    Log::error('Booking confirmation notification failed', [
-                        'reservation_id' => $reservation->id,
-                        'error' => $e->getMessage(),
-                    ]);
+                if ($wasPending && $reservation->discount_code) {
+                    DiscountCode::where('code', $reservation->discount_code)->increment('used_count');
                 }
+            }
+
+            if (! $alreadyConfirmed && $reservation->booking_status === 'pending') {
+                $this->reservationLifecycle->confirmAfterPayment($reservation);
+            } elseif ($reservation->booking_status === 'confirmed') {
+                $reservation->update([
+                    'hold_expires_at' => null,
+                    'caution_fee_status' => $paymentStatus === 'paid' && (float) $reservation->caution_fee > 0
+                        ? 'held'
+                        : $reservation->caution_fee_status,
+                ]);
             }
 
             return $reservation;
         });
     }
 
-    private function handleRefund($data)
+    private function handleRefund(array $data): void
     {
         $reference = $data['transaction_reference']
             ?? ($data['transaction']['reference'] ?? ($data['transaction'] ?? null));
 
-        if (!is_string($reference)) {
+        if (! is_string($reference)) {
             return;
         }
 
-        $payment = Payment::where('paystack_reference', $reference)->first();
+        DB::transaction(function () use ($data, $reference) {
+            $payment = Payment::where('paystack_reference', $reference)
+                ->where('type', 'payment')
+                ->lockForUpdate()
+                ->first();
 
-        if ($payment) {
-            $payment->update([
-                'type' => 'refund',
-                'paystack_status' => 'refunded',
-            ]);
+            if (! $payment) {
+                return;
+            }
+
+            $refundAmount = isset($data['amount'])
+                ? round((float) $data['amount'] / 100, 2)
+                : (float) $payment->amount;
+            $refundId = $data['id'] ?? hash('sha256', json_encode($data));
+
+            Payment::firstOrCreate(
+                ['paystack_reference' => 'REF-'.(string) $refundId],
+                [
+                    'reservation_id' => $payment->reservation_id,
+                    'user_id' => $payment->user_id,
+                    'amount' => $refundAmount,
+                    'currency' => $data['currency'] ?? $payment->currency,
+                    'paystack_status' => 'refunded',
+                    'payment_method' => $payment->payment_method,
+                    'type' => 'refund',
+                    'metadata' => ['original_reference' => $reference],
+                ],
+            );
+
+            $totalPaid = (float) Payment::where('reservation_id', $payment->reservation_id)
+                ->where('type', 'payment')
+                ->where('paystack_status', 'success')
+                ->sum('amount');
+            $totalRefunded = (float) Payment::where('reservation_id', $payment->reservation_id)
+                ->where('type', 'refund')
+                ->where('paystack_status', 'refunded')
+                ->sum('amount');
 
             $payment->reservation->update([
-                'payment_status' => 'refunded',
+                'payment_status' => $totalRefunded + 0.01 >= $totalPaid ? 'refunded' : 'partial',
             ]);
-        }
+        });
     }
 
     private function verifySignature(string $rawPayload, string $signature): bool
     {
-        if ($signature === '') {
+        if ($signature === '' || $this->paystackSecretKey === null) {
             return false;
         }
 
         $expectedSignature = hash_hmac('sha512', $rawPayload, $this->paystackSecretKey);
+
         return hash_equals($expectedSignature, $signature);
     }
 
-    public function createPayment(Reservation $reservation, $paystackReference, $amount)
+    private function requireSecret(): string
+    {
+        if ($this->paystackSecretKey === null) {
+            Log::error('Paystack secret key is not configured');
+            throw new \Exception('Payment system is not configured. Please contact support.');
+        }
+
+        return $this->paystackSecretKey;
+    }
+
+    public function createPayment(Reservation $reservation, string $paystackReference, float|int|string $amount): Payment
     {
         return Payment::firstOrCreate(['paystack_reference' => $paystackReference], [
             'reservation_id' => $reservation->id,

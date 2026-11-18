@@ -2,26 +2,27 @@
 
 namespace App\Models;
 
+use App\Traits\LogsActivity;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Laravel\Sanctum\HasApiTokens;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 use Spatie\Permission\Traits\HasRoles;
-use App\Traits\LogsActivity;
 
 #[Fillable(['name', 'email', 'phone', 'password', 'status', 'avatar', 'id_document', 'id_verified', 'google_id', 'api_token'])]
 #[Hidden(['password', 'remember_token', 'api_token'])]
 class User extends Authenticatable implements HasMedia, MustVerifyEmail
 {
-    use HasFactory, Notifiable, InteractsWithMedia, HasRoles, HasApiTokens, LogsActivity;
+    use HasApiTokens, HasFactory, HasRoles, InteractsWithMedia, LogsActivity, Notifiable;
 
     protected $fillable = [
         'name',
@@ -53,7 +54,7 @@ class User extends Authenticatable implements HasMedia, MustVerifyEmail
     /**
      * Shifts are attached to the user's staff profile.
      */
-    public function staffSchedules(): \Illuminate\Database\Eloquent\Relations\HasManyThrough
+    public function staffSchedules(): HasManyThrough
     {
         return $this->hasManyThrough(StaffSchedule::class, Staff::class, 'user_id', 'staff_id');
     }
@@ -102,6 +103,7 @@ class User extends Authenticatable implements HasMedia, MustVerifyEmail
     {
         $this->api_token = hash('sha256', bin2hex(random_bytes(32)));
         $this->save();
+
         return $this->api_token;
     }
 

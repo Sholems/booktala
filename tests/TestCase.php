@@ -26,7 +26,7 @@ abstract class TestCase extends BaseTestCase
     protected function staffWorkEverywhere(): void
     {
         foreach (User::role('staff')->doesntHave('staff')->get() as $user) {
-            Staff::create(['user_id' => $user->id, 'department' => 'frontdesk', 'employee_id' => 'T-' . $user->id, 'hire_date' => today()]);
+            Staff::create(['user_id' => $user->id, 'department' => 'frontdesk', 'employee_id' => 'T-'.$user->id, 'hire_date' => today()]);
         }
 
         foreach (Staff::with('activeAssignments')->get() as $staff) {
@@ -34,7 +34,7 @@ abstract class TestCase extends BaseTestCase
                 ?? Position::where('name', 'Receptionist')->firstOrFail();
 
             foreach (Site::all() as $site) {
-                if (!$staff->activeAssignments->contains('site_id', $site->id)) {
+                if (! $staff->activeAssignments->contains('site_id', $site->id)) {
                     $staff->assignTo($site, $position);
                 }
             }

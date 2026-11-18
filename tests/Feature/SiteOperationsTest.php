@@ -14,7 +14,7 @@ use App\Models\User;
 use App\Notifications\OperationsAlert;
 use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Collection;
 use Tests\TestCase;
 
 /**
@@ -28,9 +28,13 @@ class SiteOperationsTest extends TestCase
     use RefreshDatabase;
 
     private Site $lekki;
+
     private Site $abuja;
+
     private Property $lekkiFlat;
+
     private Property $abujaFlat;
+
     private User $admin;
 
     protected function setUp(): void
@@ -50,7 +54,7 @@ class SiteOperationsTest extends TestCase
 
     private function makeUser(string $role): User
     {
-        $user = User::create(['name' => ucfirst($role) . ' ' . uniqid(), 'email' => $role . uniqid() . '@example.com', 'password' => 'password123', 'status' => 'active']);
+        $user = User::create(['name' => ucfirst($role).' '.uniqid(), 'email' => $role.uniqid().'@example.com', 'password' => 'password123', 'status' => 'active']);
         $user->assignRole($role);
 
         return $user;
@@ -59,7 +63,7 @@ class SiteOperationsTest extends TestCase
     private function makeStaff(string $position, Site $site): User
     {
         $user = $this->makeUser('staff');
-        $staff = Staff::create(['user_id' => $user->id, 'employee_id' => 'T-' . $user->id, 'hire_date' => today()]);
+        $staff = Staff::create(['user_id' => $user->id, 'employee_id' => 'T-'.$user->id, 'hire_date' => today()]);
         $staff->assignTo($site, Position::where('name', $position)->firstOrFail());
 
         return $user->fresh();
@@ -68,7 +72,7 @@ class SiteOperationsTest extends TestCase
     private function makeProperty(string $title, Site $site): Property
     {
         return Property::create([
-            'title' => $title . ' ' . uniqid(), 'description' => 'Nice', 'address' => '1 Street', 'city' => 'Lagos', 'state' => 'Lagos',
+            'title' => $title.' '.uniqid(), 'description' => 'Nice', 'address' => '1 Street', 'city' => 'Lagos', 'state' => 'Lagos',
             'price_per_night' => 10000, 'max_guests' => 2, 'bedrooms' => 1, 'bathrooms' => 1, 'toilets' => 1, 'status' => 'active',
             'site_id' => $site->id,
         ]);
@@ -84,7 +88,7 @@ class SiteOperationsTest extends TestCase
         ]);
     }
 
-    private function alertsFor(User $user): \Illuminate\Support\Collection
+    private function alertsFor(User $user): Collection
     {
         return $user->notifications()->get()->where('type', OperationsAlert::class);
     }

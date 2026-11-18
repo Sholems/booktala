@@ -17,6 +17,8 @@ class Invoice extends Model
         'user_id',
         'subtotal',
         'vat_amount',
+        'processing_fee',
+        'caution_fee',
         'discount_amount',
         'total_amount',
         'paid_amount',
@@ -32,6 +34,8 @@ class Invoice extends Model
         return [
             'subtotal' => 'decimal:2',
             'vat_amount' => 'decimal:2',
+            'processing_fee' => 'decimal:2',
+            'caution_fee' => 'decimal:2',
             'discount_amount' => 'decimal:2',
             'total_amount' => 'decimal:2',
             'paid_amount' => 'decimal:2',
@@ -75,6 +79,6 @@ class Invoice extends Model
 
     public static function generateInvoiceNumber()
     {
-        return 'INV-' . date('Y') . '-' . str_pad(Invoice::count() + 1, 5, '0', STR_PAD_LEFT);
+        return 'INV-'.date('Y').'-'.str_pad(Invoice::count() + 1, 5, '0', STR_PAD_LEFT);
     }
 }

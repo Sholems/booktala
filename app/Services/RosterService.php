@@ -15,7 +15,7 @@ class RosterService
 {
     public function schedule(Staff $staff, Site $site, string $date, string $shiftType, ?string $notes, ?User $by): StaffSchedule
     {
-        if (!array_key_exists($shiftType, StaffSchedule::SHIFT_TIMES)) {
+        if (! array_key_exists($shiftType, StaffSchedule::SHIFT_TIMES)) {
             throw ValidationException::withMessages(['shift_type' => 'Choose a valid shift.']);
         }
 
@@ -24,8 +24,8 @@ class RosterService
             ->whereDate('starts_on', '<=', $date)
             ->where(fn ($q) => $q->whereNull('ends_on')->orWhereDate('ends_on', '>=', $date))
             ->exists();
-        if (!$worksThere) {
-            throw ValidationException::withMessages(['staff_id' => ($staff->user->name ?? 'This staff member') . ' is not assigned to ' . $site->name . ' on that date.']);
+        if (! $worksThere) {
+            throw ValidationException::withMessages(['staff_id' => ($staff->user->name ?? 'This staff member').' is not assigned to '.$site->name.' on that date.']);
         }
 
         [$start, $end] = StaffSchedule::SHIFT_TIMES[$shiftType];

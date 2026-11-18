@@ -12,6 +12,7 @@ class BlogController extends Controller
     public function index()
     {
         $blogs = Blog::with('author')->latest()->paginate(20);
+
         return view('admin.blogs.index', compact('blogs'));
     }
 
@@ -66,10 +67,10 @@ class BlogController extends Controller
         }
 
         $validated['is_published'] = $request->has('is_published');
-        
-        if ($request->has('is_published') && !$blog->is_published) {
+
+        if ($request->has('is_published') && ! $blog->is_published) {
             $validated['published_at'] = now();
-        } elseif (!$request->has('is_published')) {
+        } elseif (! $request->has('is_published')) {
             $validated['published_at'] = null;
         }
 
@@ -91,6 +92,7 @@ class BlogController extends Controller
             \Storage::disk('public')->delete($blog->image);
         }
         $blog->delete();
+
         return back()->with('success', 'Blog post deleted');
     }
 }

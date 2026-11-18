@@ -8,6 +8,8 @@ use App\Models\Message;
 use App\Models\Reservation;
 use App\Models\RoomServiceOrder;
 use App\Models\Task;
+use App\Models\User;
+use Carbon\CarbonInterface;
 use Illuminate\Support\Collection;
 
 /**
@@ -77,7 +79,7 @@ class OperationsOverview
      *
      * @return array<int, array{label: string, count: int, url: string, icon: string, color: string}>
      */
-    public function staffToday(\App\Models\User $staff): array
+    public function staffToday(User $staff): array
     {
         return [
             [
@@ -129,7 +131,7 @@ class OperationsOverview
     /**
      * A readable feed of recent operational events, newest first.
      *
-     * @return Collection<int, array{at: \Carbon\CarbonInterface, icon: string, text: string, url: ?string}>
+     * @return Collection<int, array{at: CarbonInterface, icon: string, text: string, url: ?string}>
      */
     public function recentActivity(int $limit = 12): Collection
     {
@@ -150,20 +152,20 @@ class OperationsOverview
             $guest = $r->user->name ?? 'A guest';
             $apt = $r->property->name ?? 'an apartment';
             $url = route('admin.reservations.show', $r);
-            $by = fn ($user) => $user ? ' by ' . $user->name : '';
+            $by = fn ($user) => $user ? ' by '.$user->name : '';
 
             $events->push(['at' => $r->created_at, 'icon' => 'fa-calendar-plus', 'text' => "{$guest} booked {$apt} ({$r->booking_ref})", 'url' => $url]);
             if ($r->confirmed_at) {
-                $events->push(['at' => $r->confirmed_at, 'icon' => 'fa-check-circle', 'text' => "Booking {$r->booking_ref} confirmed" . $by($r->confirmedBy), 'url' => $url]);
+                $events->push(['at' => $r->confirmed_at, 'icon' => 'fa-check-circle', 'text' => "Booking {$r->booking_ref} confirmed".$by($r->confirmedBy), 'url' => $url]);
             }
             if ($r->checked_in_at) {
-                $events->push(['at' => $r->checked_in_at, 'icon' => 'fa-sign-in-alt', 'text' => "{$guest} checked in to {$apt}" . $by($r->checkedInBy), 'url' => $url]);
+                $events->push(['at' => $r->checked_in_at, 'icon' => 'fa-sign-in-alt', 'text' => "{$guest} checked in to {$apt}".$by($r->checkedInBy), 'url' => $url]);
             }
             if ($r->checked_out_at) {
-                $events->push(['at' => $r->checked_out_at, 'icon' => 'fa-sign-out-alt', 'text' => "{$guest} checked out of {$apt}" . $by($r->checkedOutBy), 'url' => $url]);
+                $events->push(['at' => $r->checked_out_at, 'icon' => 'fa-sign-out-alt', 'text' => "{$guest} checked out of {$apt}".$by($r->checkedOutBy), 'url' => $url]);
             }
             if ($r->cancelled_at) {
-                $events->push(['at' => $r->cancelled_at, 'icon' => 'fa-times-circle', 'text' => "Booking {$r->booking_ref} cancelled" . $by($r->cancelledBy), 'url' => $url]);
+                $events->push(['at' => $r->cancelled_at, 'icon' => 'fa-times-circle', 'text' => "Booking {$r->booking_ref} cancelled".$by($r->cancelledBy), 'url' => $url]);
             }
         }
 
@@ -171,7 +173,7 @@ class OperationsOverview
             ->each(fn ($c) => $events->push([
                 'at' => $c->verified_at,
                 'icon' => 'fa-id-card',
-                'text' => 'ID verified for ' . ($c->reservation->user->name ?? 'a guest') . ' by ' . ($c->verifiedBy->name ?? 'staff'),
+                'text' => 'ID verified for '.($c->reservation->user->name ?? 'a guest').' by '.($c->verifiedBy->name ?? 'staff'),
                 'url' => $c->reservation ? route('admin.reservations.show', $c->reservation) : null,
             ]));
 
@@ -179,7 +181,7 @@ class OperationsOverview
             ->each(fn ($o) => $events->push([
                 'at' => $o->delivered_at,
                 'icon' => 'fa-concierge-bell',
-                'text' => 'Room service delivered to ' . ($o->user->name ?? 'a guest') . ($o->handledBy ? ' by ' . $o->handledBy->name : ''),
+                'text' => 'Room service delivered to '.($o->user->name ?? 'a guest').($o->handledBy ? ' by '.$o->handledBy->name : ''),
                 'url' => route('admin.room-service.index', ['show' => 'done']),
             ]));
 
@@ -187,7 +189,7 @@ class OperationsOverview
             ->each(fn ($m) => $events->push([
                 'at' => $m->resolved_at,
                 'icon' => 'fa-wrench',
-                'text' => "Fixed: {$m->title}" . ($m->assignedTo ? ' by ' . $m->assignedTo->name : ''),
+                'text' => "Fixed: {$m->title}".($m->assignedTo ? ' by '.$m->assignedTo->name : ''),
                 'url' => route('admin.maintenance.index', ['show' => 'resolved']),
             ]));
 

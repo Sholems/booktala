@@ -64,6 +64,7 @@ class GuestProfile extends Model
                 return $key;
             }
         }
+
         return 'bronze';
     }
 
@@ -86,6 +87,7 @@ class GuestProfile extends Model
                 if ($this->loyalty_tier !== $key) {
                     $this->update(['loyalty_tier' => $key]);
                 }
+
                 return;
             }
         }

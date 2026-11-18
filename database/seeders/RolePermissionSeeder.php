@@ -3,8 +3,9 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
+use Spatie\Permission\Models\Role;
+use Spatie\Permission\PermissionRegistrar;
 
 /**
  * Roles and what each may do. Admin routes check these permissions
@@ -58,7 +59,7 @@ class RolePermissionSeeder extends Seeder
 
     public function run(): void
     {
-        app()->make(\Spatie\Permission\PermissionRegistrar::class)->forgetCachedPermissions();
+        app()->make(PermissionRegistrar::class)->forgetCachedPermissions();
 
         foreach (self::PERMISSIONS as $permission) {
             Permission::firstOrCreate(['name' => $permission, 'guard_name' => 'web']);
@@ -72,6 +73,6 @@ class RolePermissionSeeder extends Seeder
                 ->syncPermissions($rolePermissions);
         }
 
-        app()->make(\Spatie\Permission\PermissionRegistrar::class)->forgetCachedPermissions();
+        app()->make(PermissionRegistrar::class)->forgetCachedPermissions();
     }
 }

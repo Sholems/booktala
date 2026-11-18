@@ -97,8 +97,32 @@
             </p>
 
             <p class="text-sm text-gray-600">Payment: <strong>{{ ucfirst($reservation->payment_status ?? 'unpaid') }}</strong></p>
+            <p class="text-sm text-gray-600">Processing fee: <strong>&#8358;{{ number_format((float) $reservation->processing_fee, 2) }}</strong></p>
+            <p class="text-sm text-gray-600">Caution fee: <strong>&#8358;{{ number_format((float) $reservation->caution_fee, 2) }}</strong> · {{ ucfirst(str_replace('_', ' ', $reservation->caution_fee_status ?? 'pending')) }}</p>
             <p class="text-sm text-gray-600">Total: <strong>&#8358;{{ number_format((float) ($reservation->total_amount ?? 0), 2) }}</strong></p>
+            @if($reservation->room)
+            <p class="text-sm text-gray-600">Room: <strong>{{ $reservation->room->room_number }}</strong></p>
+            @endif
         </div>
+
+        @if($reservation->caution_fee_status === 'refund_pending')
+        <div class="bg-blue-50 border border-blue-200 rounded-lg p-6">
+            <h3 class="text-lg font-bold text-blue-900 mb-1">Caution fee refund</h3>
+            <p class="text-sm text-blue-800 mb-4">Refund &#8358;{{ number_format((float) $reservation->caution_fee, 2) }} after the property inspection, or record that it was forfeited.</p>
+            <div class="flex gap-2">
+                <form method="POST" action="{{ route('admin.reservations.caution-refund', $reservation) }}" class="flex-1">
+                    @csrf @method('PATCH')
+                    <input type="hidden" name="caution_fee_status" value="refunded">
+                    <button class="w-full px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700">Mark refunded</button>
+                </form>
+                <form method="POST" action="{{ route('admin.reservations.caution-refund', $reservation) }}" class="flex-1">
+                    @csrf @method('PATCH')
+                    <input type="hidden" name="caution_fee_status" value="forfeited">
+                    <button class="w-full px-4 py-2 rounded-lg border border-blue-600 text-blue-800 hover:bg-blue-100">Mark forfeited</button>
+                </form>
+            </div>
+        </div>
+        @endif
 
         @php
             $lifecycle = app(\App\Services\ReservationLifecycle::class);
@@ -109,7 +133,8 @@
         @if($reservation->refund_status === 'pending')
         <div class="bg-amber-50 border border-amber-200 rounded-lg p-6">
             <h3 class="text-lg font-bold text-amber-900 mb-1">Refund to review</h3>
-            <p class="text-sm text-amber-800 mb-4">This booking was paid and then cancelled. Check the cancellation policy, pay any refund through Paystack or bank transfer, then record the outcome here.</p>
+            <p class="text-sm text-amber-800 mb-1">This booking was paid and then cancelled. Check the cancellation policy, pay any refund through Paystack or bank transfer, then record the outcome here.</p>
+            <p class="text-sm font-medium text-amber-900 mb-4">Maximum booking refund: &#8358;{{ number_format($reservation->booking_refundable_amount, 2) }}. The processing fee is non-refundable and the caution fee is handled separately.</p>
             <div class="flex gap-2">
                 <form method="POST" action="{{ route('admin.reservations.refund', $reservation) }}" class="flex-1">
                     @csrf @method('PATCH')
@@ -146,6 +171,17 @@
                     <form method="POST" action="{{ route('admin.reservations.checkin', $reservation) }}">
                         @csrf
                         @method('PATCH')
+                        @if($availableRooms->isNotEmpty())
+                        <label class="block text-sm text-gray-600 mb-1" for="room_id">Assign room</label>
+                        <select id="room_id" name="room_id" class="w-full border rounded-lg px-3 py-2 mb-3">
+                            <option value="">Select an available room</option>
+                            @foreach($availableRooms as $room)
+                            <option value="{{ $room->id }}">
+                                {{ $room->room_number }}{{ $room->building ? ' · '.$room->building : '' }} · {{ ucfirst($room->status) }}
+                            </option>
+                            @endforeach
+                        </select>
+                        @endif
                         @unless($isPaid)
                         <input type="hidden" name="allow_unpaid" value="1">
                         <p class="text-sm text-amber-700 mb-2"><i class="fas fa-exclamation-triangle mr-1"></i>No payment recorded for this booking.</p>

@@ -11,6 +11,7 @@ class PageController extends Controller
     public function index()
     {
         $pages = Page::orderBy('title')->paginate(20);
+
         return view('admin.pages.index', compact('pages'));
     }
 
@@ -45,7 +46,7 @@ class PageController extends Controller
     {
         $validated = $request->validate([
             'title' => 'required|string|max:255',
-            'slug' => 'required|string|max:255|unique:pages,slug,' . $page->id,
+            'slug' => 'required|string|max:255|unique:pages,slug,'.$page->id,
             'content' => 'required',
             'meta_title' => 'nullable|string|max:255',
             'meta_description' => 'nullable|string',
@@ -61,6 +62,7 @@ class PageController extends Controller
     public function destroy(Page $page)
     {
         $page->delete();
+
         return back()->with('success', 'Page deleted');
     }
 }

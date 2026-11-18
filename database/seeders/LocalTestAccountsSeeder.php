@@ -42,13 +42,13 @@ class LocalTestAccountsSeeder extends Seeder
             if ($role === 'staff') {
                 $staff = Staff::firstOrCreate(['user_id' => $user->id], [
                     'department' => 'frontdesk',
-                    'employee_id' => 'WP-TEST-' . $user->id,
+                    'employee_id' => 'WP-TEST-'.$user->id,
                     'hire_date' => today(),
                 ]);
 
                 // Receptionist at every site, so the demo login sees all demo data.
                 $receptionist = Position::where('name', 'Receptionist')->first();
-                if ($receptionist && !$staff->activeAssignments()->exists()) {
+                if ($receptionist && ! $staff->activeAssignments()->exists()) {
                     foreach (Site::orderBy('id')->get() as $site) {
                         $staff->assignTo($site, $receptionist);
                     }

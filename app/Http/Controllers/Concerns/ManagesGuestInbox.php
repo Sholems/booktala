@@ -72,6 +72,6 @@ trait ManagesGuestInbox
 
         $conversation->update(['last_message_at' => now()]);
 
-        return back()->with('success', 'Reply sent to ' . ($conversation->user->name ?? 'the guest'));
+        return back()->with('success', 'Reply sent to '.($conversation->user->name ?? 'the guest'));
     }
 }

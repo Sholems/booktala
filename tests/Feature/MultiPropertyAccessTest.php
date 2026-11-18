@@ -31,11 +31,17 @@ class MultiPropertyAccessTest extends TestCase
     use RefreshDatabase;
 
     private Site $lekki;
+
     private Site $abuja;
+
     private Property $lekkiFlat;
+
     private Property $abujaFlat;
+
     private User $admin;
+
     private User $lekkiDesk;
+
     private User $guest;
 
     protected function setUp(): void
@@ -59,8 +65,8 @@ class MultiPropertyAccessTest extends TestCase
     private function makeUser(string $role): User
     {
         $user = User::create([
-            'name' => ucfirst($role) . ' ' . uniqid(),
-            'email' => $role . uniqid() . '@example.com',
+            'name' => ucfirst($role).' '.uniqid(),
+            'email' => $role.uniqid().'@example.com',
             'password' => 'password123',
             'status' => 'active',
         ]);
@@ -72,7 +78,7 @@ class MultiPropertyAccessTest extends TestCase
     private function makeStaff(string $position, ?Site $site): User
     {
         $user = $this->makeUser('staff');
-        $staff = Staff::create(['user_id' => $user->id, 'employee_id' => 'T-' . $user->id, 'hire_date' => today()]);
+        $staff = Staff::create(['user_id' => $user->id, 'employee_id' => 'T-'.$user->id, 'hire_date' => today()]);
         if ($site) {
             $staff->assignTo($site, Position::where('name', $position)->firstOrFail());
         }
@@ -83,7 +89,7 @@ class MultiPropertyAccessTest extends TestCase
     private function makeProperty(string $title, ?Site $site = null): Property
     {
         return Property::create(array_filter([
-            'title' => $title . ' ' . uniqid(),
+            'title' => $title.' '.uniqid(),
             'description' => 'Nice place',
             'address' => '1 Test Street',
             'city' => 'Lagos',

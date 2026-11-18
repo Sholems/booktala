@@ -9,15 +9,15 @@ return new class extends Migration
 {
     public function up(): void
     {
-        if (!in_array(DB::getDriverName(), ['mysql', 'mariadb'], true)) {
+        if (! in_array(DB::getDriverName(), ['mysql', 'mariadb'], true)) {
             return;
         }
 
-        if (!Schema::hasTable('loyalty_transactions')) {
+        if (! Schema::hasTable('loyalty_transactions')) {
             return;
         }
 
-        if (Schema::hasTable('guest_profiles') && !$this->hasForeignKey('loyalty_transactions_guest_profile_id_foreign')) {
+        if (Schema::hasTable('guest_profiles') && ! $this->hasForeignKey('loyalty_transactions_guest_profile_id_foreign')) {
             Schema::table('loyalty_transactions', function (Blueprint $table) {
                 $table->foreign('guest_profile_id')
                     ->references('id')
@@ -26,7 +26,7 @@ return new class extends Migration
             });
         }
 
-        if (Schema::hasTable('reservations') && !$this->hasForeignKey('loyalty_transactions_reservation_id_foreign')) {
+        if (Schema::hasTable('reservations') && ! $this->hasForeignKey('loyalty_transactions_reservation_id_foreign')) {
             Schema::table('loyalty_transactions', function (Blueprint $table) {
                 $table->foreign('reservation_id')
                     ->references('id')
@@ -38,11 +38,11 @@ return new class extends Migration
 
     public function down(): void
     {
-        if (!in_array(DB::getDriverName(), ['mysql', 'mariadb'], true)) {
+        if (! in_array(DB::getDriverName(), ['mysql', 'mariadb'], true)) {
             return;
         }
 
-        if (!Schema::hasTable('loyalty_transactions')) {
+        if (! Schema::hasTable('loyalty_transactions')) {
             return;
         }
 
@@ -60,7 +60,7 @@ return new class extends Migration
     {
         $driver = DB::getDriverName();
 
-        if (!in_array($driver, ['mysql', 'mariadb'], true)) {
+        if (! in_array($driver, ['mysql', 'mariadb'], true)) {
             return false;
         }
 

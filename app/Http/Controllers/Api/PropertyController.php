@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\ApiBookPropertyRequest;
 use App\Models\Property;
 use App\Models\Reservation;
 use App\Services\BookingService;
@@ -16,7 +17,7 @@ class PropertyController extends Controller
         $query = Property::with('images', 'amenities')->active();
 
         if ($request->location) {
-            $location = '%' . $request->location . '%';
+            $location = '%'.$request->location.'%';
             $query->where(function ($q) use ($location) {
                 $q->where('city', 'like', $location)
                     ->orWhere('state', 'like', $location)
@@ -81,17 +82,11 @@ class PropertyController extends Controller
         return response()->json(array_merge(['available' => true], $pricing));
     }
 
-    public function book(Request $request, $id, BookingService $bookingService)
+    public function book(ApiBookPropertyRequest $request, $id, BookingService $bookingService)
     {
         $property = Property::active()->findOrFail($id);
 
-        $data = $request->validate([
-            'check_in' => 'required|date|after:today',
-            'check_out' => 'required|date|after:check_in',
-            'guests' => 'required|integer|min:1|max:' . $property->max_guests,
-            'discount_code' => 'nullable|string',
-            'special_requests' => 'nullable|string|max:2000',
-        ]);
+        $data = $request->validated();
 
         // Price is always computed server-side; any client-sent total is ignored.
         try {

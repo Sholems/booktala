@@ -23,8 +23,8 @@ class AttendanceService
         if ($staff->openAttendance()->exists()) {
             throw ValidationException::withMessages(['site_id' => 'You are already clocked in. Clock out first.']);
         }
-        if (!$staff->activeAssignments()->where('site_id', $site->id)->exists()) {
-            throw ValidationException::withMessages(['site_id' => 'You are not assigned to ' . $site->name . '.']);
+        if (! $staff->activeAssignments()->where('site_id', $site->id)->exists()) {
+            throw ValidationException::withMessages(['site_id' => 'You are not assigned to '.$site->name.'.']);
         }
 
         $schedule = $this->shiftFor($staff, $site);
@@ -51,7 +51,7 @@ class AttendanceService
     public function clockOut(Staff $staff, ?float $lat, ?float $lng, ?int $accuracy, ?string $handoverNote): Attendance
     {
         $attendance = $staff->openAttendance()->with('site', 'schedule')->first();
-        if (!$attendance) {
+        if (! $attendance) {
             throw ValidationException::withMessages(['clock' => 'You are not clocked in.']);
         }
 
@@ -116,11 +116,11 @@ class AttendanceService
     }
 
     /**
-     * @return array{0: ?int, 1: string}  distance in metres and on_site|off_site|unknown
+     * @return array{0: ?int, 1: string} distance in metres and on_site|off_site|unknown
      */
     private function locate(Site $site, ?float $lat, ?float $lng, ?int $accuracy): array
     {
-        if ($lat === null || $lng === null || !$site->hasLocation()) {
+        if ($lat === null || $lng === null || ! $site->hasLocation()) {
             return [null, 'unknown'];
         }
 

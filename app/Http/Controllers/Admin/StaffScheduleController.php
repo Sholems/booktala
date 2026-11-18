@@ -38,15 +38,15 @@ class StaffScheduleController extends Controller
             'staff_id' => 'required|exists:staff,id',
             'site_id' => 'nullable|exists:sites,id',
             'date' => 'required|date',
-            'shift_type' => 'required|in:' . implode(',', array_keys(StaffSchedule::SHIFT_TIMES)),
+            'shift_type' => 'required|in:'.implode(',', array_keys(StaffSchedule::SHIFT_TIMES)),
             'notes' => 'nullable|string|max:500',
         ]);
 
         $staff = Staff::findOrFail($data['staff_id']);
         // Default to the person's primary site when none is chosen.
         $site = isset($data['site_id']) ? Site::findOrFail($data['site_id']) : $staff->primaryAssignment?->site;
-        if (!$site) {
-            return back()->withErrors(['site_id' => ($staff->user->name ?? 'This staff member') . ' is not assigned to any site yet.'])->withInput();
+        if (! $site) {
+            return back()->withErrors(['site_id' => ($staff->user->name ?? 'This staff member').' is not assigned to any site yet.'])->withInput();
         }
 
         $roster->schedule($staff, $site, $data['date'], $data['shift_type'], $data['notes'] ?? null, $request->user());
@@ -68,6 +68,7 @@ class StaffScheduleController extends Controller
     public function destroy(StaffSchedule $schedule)
     {
         $schedule->delete();
+
         return back()->with('success', 'Schedule deleted');
     }
 

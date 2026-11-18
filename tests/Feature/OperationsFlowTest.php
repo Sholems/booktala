@@ -2,16 +2,18 @@
 
 namespace Tests\Feature;
 
-use App\Models\GuestCheckin;
 use App\Models\MaintenanceReport;
+use App\Models\Position;
 use App\Models\Property;
 use App\Models\Reservation;
 use App\Models\RoomServiceOrder;
+use App\Models\Site;
 use App\Models\Staff;
 use App\Models\StaffSchedule;
 use App\Models\Task;
 use App\Models\User;
 use App\Notifications\BookingCheckinReminder;
+use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
 use Spatie\Permission\Models\Role;
@@ -32,14 +34,14 @@ class OperationsFlowTest extends TestCase
         foreach (['super_admin', 'admin', 'staff', 'customer'] as $role) {
             Role::firstOrCreate(['name' => $role, 'guard_name' => 'web']);
         }
-        $this->seed(\Database\Seeders\RolePermissionSeeder::class);
+        $this->seed(RolePermissionSeeder::class);
     }
 
     private function makeUser(string $role, array $attrs = []): User
     {
         $user = User::create(array_merge([
-            'name' => ucfirst($role) . ' ' . uniqid(),
-            'email' => $role . uniqid() . '@example.com',
+            'name' => ucfirst($role).' '.uniqid(),
+            'email' => $role.uniqid().'@example.com',
             'password' => 'password123',
             'status' => 'active',
         ], $attrs));
@@ -49,7 +51,7 @@ class OperationsFlowTest extends TestCase
             Staff::create([
                 'user_id' => $user->id,
                 'department' => 'housekeeping',
-                'employee_id' => 'T-' . $user->id,
+                'employee_id' => 'T-'.$user->id,
                 'hire_date' => today(),
             ]);
         }
@@ -64,7 +66,7 @@ class OperationsFlowTest extends TestCase
     private function makeReservation(User $guest, array $attrs = []): Reservation
     {
         $property = Property::create([
-            'title' => 'Apartment ' . uniqid(),
+            'title' => 'Apartment '.uniqid(),
             'description' => 'Nice place',
             'address' => '1 Test Street',
             'city' => 'Lagos',
@@ -141,7 +143,7 @@ class OperationsFlowTest extends TestCase
         $this->actingAs($staff)->patch(route('staff.checkin.process', $reservation))->assertSessionHas('success');
         $this->assertSame('completed', $online->fresh()->status);
         $this->actingAs($admin)->get(route('admin.reservations.show', $reservation))
-            ->assertOk()->assertSee('ID verified by ' . $staff->name);
+            ->assertOk()->assertSee('ID verified by '.$staff->name);
     }
 
     public function test_guest_cannot_check_in_online_for_someone_elses_booking(): void
@@ -348,8 +350,8 @@ class OperationsFlowTest extends TestCase
         $this->actingAs($admin)->post(route('admin.staff.store'), [
             'name' => 'Bola Ade',
             'email' => 'bola@example.com',
-            'position_id' => \App\Models\Position::where('name', 'Receptionist')->value('id'),
-            'site_id' => \App\Models\Site::create(['name' => 'HQ', 'address' => '1 Road', 'city' => 'Lagos', 'state' => 'Lagos'])->id,
+            'position_id' => Position::where('name', 'Receptionist')->value('id'),
+            'site_id' => Site::create(['name' => 'HQ', 'address' => '1 Road', 'city' => 'Lagos', 'state' => 'Lagos'])->id,
             'password' => 'Secret1234',
         ])->assertSessionHasNoErrors();
         $staff = User::where('email', 'bola@example.com')->firstOrFail();

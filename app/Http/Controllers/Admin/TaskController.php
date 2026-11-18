@@ -3,9 +3,11 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Property;
 use App\Models\Task;
+use App\Models\User;
+use App\Rules\WorksAtProperty;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 
 class TaskController extends Controller
 {
@@ -22,8 +24,8 @@ class TaskController extends Controller
             ->orderBy('due_date')
             ->paginate(20)
             ->withQueryString();
-        $properties = \App\Models\Property::active()->get();
-        $staff = \App\Models\User::role('staff')->where('status', 'active')->orderBy('name')->get();
+        $properties = Property::active()->get();
+        $staff = User::role('staff')->where('status', 'active')->orderBy('name')->get();
 
         return view('admin.tasks.index', compact('tasks', 'properties', 'staff', 'show'));
     }
@@ -33,7 +35,7 @@ class TaskController extends Controller
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'property_id' => 'required|exists:properties,id',
-            'assigned_to' => ['nullable', new \App\Rules\WorksAtProperty($request->integer('property_id') ?: null)],
+            'assigned_to' => ['nullable', new WorksAtProperty($request->integer('property_id') ?: null)],
             'priority' => 'nullable|in:low,medium,high,urgent',
             'type' => 'required|in:cleaning,maintenance,inspection,checkin_prep',
             'due_date' => 'nullable|date',
@@ -53,7 +55,7 @@ class TaskController extends Controller
     public function update(Request $request, Task $task)
     {
         $validated = $request->validate([
-            'assigned_to' => ['nullable', new \App\Rules\WorksAtProperty($task->property_id)],
+            'assigned_to' => ['nullable', new WorksAtProperty($task->property_id)],
             'status' => 'sometimes|in:pending,in_progress,completed',
         ]);
 
@@ -69,7 +71,7 @@ class TaskController extends Controller
     public function show(Task $task)
     {
         $task->load(['property', 'assignedTo', 'assignedBy', 'reservation', 'taskNotes.user']);
-        $staff = \App\Models\User::role('staff')->where('status', 'active')->orderBy('name')->get();
+        $staff = User::role('staff')->where('status', 'active')->orderBy('name')->get();
 
         return view('admin.tasks.show', compact('task', 'staff'));
     }
@@ -86,6 +88,6 @@ class TaskController extends Controller
             'body' => trim($validated['notes']),
         ]);
 
-        return back()->with('success', 'Reply added' . ($task->assignedTo ? ' for ' . $task->assignedTo->name : ''));
+        return back()->with('success', 'Reply added'.($task->assignedTo ? ' for '.$task->assignedTo->name : ''));
     }
 }

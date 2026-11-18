@@ -3,6 +3,7 @@
 namespace App\Listeners;
 
 use App\Events\ReservationStatusChanged;
+use App\Models\HousekeepingTask;
 use App\Models\Reservation;
 use App\Models\Task;
 use App\Services\WorkRouter;
@@ -39,9 +40,9 @@ class CreateCleaningTaskAfterCheckout
         $cleaner = $router->pick($reservation->property_id, ['housekeeping', 'laundry'], onShiftOnly: true, strict: false);
 
         $task = Task::create([
-            'title' => 'Clean ' . ($reservation->property->name ?? 'apartment') . ' after check-out',
-            'description' => 'Guest checked out of booking ' . $reservation->booking_ref . '.'
-                . ($nextArrivalToday ? ' Another guest arrives today: prepare before check-in time.' : ''),
+            'title' => 'Clean '.($reservation->property->name ?? 'apartment').' after check-out',
+            'description' => 'Guest checked out of booking '.$reservation->booking_ref.'.'
+                .($nextArrivalToday ? ' Another guest arrives today: prepare before check-in time.' : ''),
             'property_id' => $reservation->property_id,
             'reservation_id' => $reservation->id,
             'assigned_to' => $cleaner?->id,
@@ -54,6 +55,22 @@ class CreateCleaningTaskAfterCheckout
 
         if ($cleaner) {
             $router->notifyAssigned($cleaner, $task->title, $nextArrivalToday ? 'Next guest arrives today.' : 'Due today.', route('staff.tasks.show', $task));
+        }
+
+        if ($reservation->room_id
+            && ! HousekeepingTask::where('room_id', $reservation->room_id)
+                ->where('scheduled_date', today())
+                ->whereIn('status', ['pending', 'in_progress'])
+                ->exists()) {
+            HousekeepingTask::create([
+                'room_id' => $reservation->room_id,
+                'assigned_to' => $cleaner?->id,
+                'task_type' => 'turnover',
+                'priority' => $nextArrivalToday ? 'urgent' : 'high',
+                'status' => 'pending',
+                'scheduled_date' => today(),
+                'notes' => 'Turnover for booking '.$reservation->booking_ref,
+            ]);
         }
     }
 }

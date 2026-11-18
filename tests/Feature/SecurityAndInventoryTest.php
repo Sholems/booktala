@@ -18,6 +18,7 @@ use Carbon\CarbonImmutable;
 use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
@@ -30,12 +31,19 @@ class SecurityAndInventoryTest extends TestCase
     use RefreshDatabase;
 
     private Site $lekki;
+
     private Site $abuja;
+
     private Property $lekkiFlat;
+
     private User $admin;
+
     private User $guard;
+
     private User $supervisor;
+
     private User $manager;
+
     private User $abujaGuard;
 
     protected function setUp(): void
@@ -60,7 +68,7 @@ class SecurityAndInventoryTest extends TestCase
 
     private function makeUser(string $role): User
     {
-        $user = User::create(['name' => ucfirst($role) . ' ' . uniqid(), 'email' => $role . uniqid() . '@example.com', 'password' => 'password123', 'status' => 'active']);
+        $user = User::create(['name' => ucfirst($role).' '.uniqid(), 'email' => $role.uniqid().'@example.com', 'password' => 'password123', 'status' => 'active']);
         $user->assignRole($role);
 
         return $user;
@@ -69,7 +77,7 @@ class SecurityAndInventoryTest extends TestCase
     private function makeStaff(string $position, Site $site): User
     {
         $user = $this->makeUser('staff');
-        $staff = Staff::create(['user_id' => $user->id, 'employee_id' => 'T-' . $user->id, 'hire_date' => '2026-01-01']);
+        $staff = Staff::create(['user_id' => $user->id, 'employee_id' => 'T-'.$user->id, 'hire_date' => '2026-01-01']);
         $staff->assignTo($site, Position::where('name', $position)->firstOrFail(), true, '2026-01-01');
 
         return $user->fresh();
@@ -84,7 +92,7 @@ class SecurityAndInventoryTest extends TestCase
         ]);
     }
 
-    private function alerts(User $user): \Illuminate\Support\Collection
+    private function alerts(User $user): Collection
     {
         return $user->notifications()->get()->where('type', OperationsAlert::class);
     }

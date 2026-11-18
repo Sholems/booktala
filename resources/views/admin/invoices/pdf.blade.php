@@ -114,6 +114,14 @@
                 <span style="color: #059669;">-₦{{ number_format($invoice->discount_amount, 2) }}</span>
             </div>
             @endif
+            <div class="summary-row">
+                <span>Processing fee</span>
+                <span>₦{{ number_format($invoice->processing_fee, 2) }}</span>
+            </div>
+            <div class="summary-row">
+                <span>Refundable caution fee</span>
+                <span>₦{{ number_format($invoice->caution_fee, 2) }}</span>
+            </div>
             <div class="row total">
                 <span>Total</span>
                 <span>₦{{ number_format($invoice->total_amount, 2) }}</span>

@@ -69,7 +69,7 @@ return new class extends Migration
 
         // Laravel's in-app notifications. Booking notifications already send to the
         // "database" channel, which failed without this table.
-        if (!Schema::hasTable('notifications')) {
+        if (! Schema::hasTable('notifications')) {
             Schema::create('notifications', function (Blueprint $table) {
                 $table->uuid('id')->primary();
                 $table->string('type');

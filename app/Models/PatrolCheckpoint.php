@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Traits\VisibleBySite;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -15,7 +16,7 @@ use Illuminate\Support\Str;
  */
 class PatrolCheckpoint extends Model
 {
-    use \App\Traits\VisibleBySite;
+    use VisibleBySite;
 
     protected $fillable = ['site_id', 'name', 'token', 'is_active', 'missed_alerted_at'];
 

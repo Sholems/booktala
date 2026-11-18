@@ -30,9 +30,9 @@ class AttendanceController extends Controller
             isset($data['accuracy']) ? (int) round($data['accuracy']) : null,
         );
 
-        $message = 'Clocked in at ' . $record->clock_in_at->format('g:i A') . ' — ' . $record->site->name . '.';
+        $message = 'Clocked in at '.$record->clock_in_at->format('g:i A').' — '.$record->site->name.'.';
         if ($record->clock_in_location === 'off_site') {
-            $message .= ' Your location looks ' . number_format($record->clock_in_distance_m) . ' m from the site; your supervisor will see this.';
+            $message .= ' Your location looks '.number_format($record->clock_in_distance_m).' m from the site; your supervisor will see this.';
         } elseif ($record->clock_in_location === 'unknown' && $record->site->hasLocation()) {
             $message .= ' Location was not shared, so your supervisor will see this clock-in as unverified.';
         }
@@ -57,7 +57,7 @@ class AttendanceController extends Controller
             $data['handover_note'] ?? null,
         );
 
-        return back()->with('success', 'Clocked out. You worked ' . $record->workedLabel() . ' this shift.');
+        return back()->with('success', 'Clocked out. You worked '.$record->workedLabel().' this shift.');
     }
 
     private function staff(Request $request)

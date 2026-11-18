@@ -23,19 +23,18 @@ class OperationsAlert extends Notification
         public ?string $url = null,
         public string $kind = 'info',
         public bool $email = true,
-    ) {
-    }
+    ) {}
 
     public function via(object $notifiable): array
     {
-        return $this->email && !empty($notifiable->email) ? ['database', 'mail'] : ['database'];
+        return $this->email && ! empty($notifiable->email) ? ['database', 'mail'] : ['database'];
     }
 
     public function toMail(object $notifiable): MailMessage
     {
         $mail = (new MailMessage)
             ->subject($this->title)
-            ->greeting('Hello ' . strtok((string) $notifiable->name, ' ') . ',')
+            ->greeting('Hello '.strtok((string) $notifiable->name, ' ').',')
             ->line($this->body);
 
         return $this->url ? $mail->action('Open in BookTala', $this->url) : $mail;

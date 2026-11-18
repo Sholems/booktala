@@ -23,7 +23,7 @@ use Carbon\CarbonImmutable;
 class PayrollCalculator
 {
     /**
-     * @return array<string, mixed>  payslip attributes, including 'details'
+     * @return array<string, mixed> payslip attributes, including 'details'
      */
     public function calculate(Staff $staff, CarbonImmutable $start, CarbonImmutable $end, array $settings): array
     {
@@ -134,7 +134,7 @@ class PayrollCalculator
     /**
      * Share of this person's cost per site, by hours worked there (primary site if none).
      *
-     * @return array<int, float>  site_id => fraction
+     * @return array<int, float> site_id => fraction
      */
     private function siteSplit(Staff $staff, $attendance): array
     {

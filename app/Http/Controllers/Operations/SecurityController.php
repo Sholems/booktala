@@ -14,6 +14,7 @@ use Carbon\CarbonImmutable;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 
 /**
  * Site security for gate staff, front desk, supervisors and head office:
@@ -23,16 +24,14 @@ class SecurityController extends Controller
 {
     use SiteScopedPortal;
 
-    public function __construct(private SecurityService $security)
-    {
-    }
+    public function __construct(private SecurityService $security) {}
 
     public function index(Request $request)
     {
         $user = $request->user();
         $sites = $this->portalSites($user);
         $site = $this->selectedSite($request, $sites);
-        if (!$site) {
+        if (! $site) {
             return view('operations.no-site', $this->viewData($request, ['title' => 'Security']));
         }
 
@@ -76,19 +75,19 @@ class SecurityController extends Controller
 
         VisitorLog::create($data + ['arrived_at' => now(), 'logged_by' => $request->user()->id]);
 
-        return back()->with('success', $data['visitor_name'] . ' signed in');
+        return back()->with('success', $data['visitor_name'].' signed in');
     }
 
     public function signOutVisitor(Request $request, VisitorLog $visitor)
     {
         $this->ensureSees($request->user(), $visitor->site_id);
         if ($visitor->left_at) {
-            return back()->with('error', $visitor->visitor_name . ' already signed out.');
+            return back()->with('error', $visitor->visitor_name.' already signed out.');
         }
 
         $visitor->update(['left_at' => now(), 'signed_out_by' => $request->user()->id]);
 
-        return back()->with('success', $visitor->visitor_name . ' signed out');
+        return back()->with('success', $visitor->visitor_name.' signed out');
     }
 
     // --- Incidents -----------------------------------------------------------------------
@@ -118,8 +117,8 @@ class SecurityController extends Controller
         $incident = Incident::create($data + ['reported_by' => $request->user()->id, 'status' => 'open']);
         $this->security->alertIncident($incident->load('site', 'reportedBy'));
 
-        return redirect()->route($this->portal($request) . '.security.incidents.show', $incident)
-            ->with('success', 'Incident recorded' . ($incident->isSerious() ? '. Your supervisor and head office have been alerted.' : '.'));
+        return redirect()->route($this->portal($request).'.security.incidents.show', $incident)
+            ->with('success', 'Incident recorded'.($incident->isSerious() ? '. Your supervisor and head office have been alerted.' : '.'));
     }
 
     public function showIncident(Request $request, Incident $incident)
@@ -166,7 +165,7 @@ class SecurityController extends Controller
         ]);
         $site->update($data);
 
-        return back()->with('success', $data['patrol_interval_minutes'] ? 'Patrol schedule saved' : 'Patrol checks turned off for ' . $site->name);
+        return back()->with('success', $data['patrol_interval_minutes'] ? 'Patrol schedule saved' : 'Patrol checks turned off for '.$site->name);
     }
 
     public function storeCheckpoint(Request $request)
@@ -205,7 +204,7 @@ class SecurityController extends Controller
     private function ensurePropertyAtSite(?string $propertyId, int $siteId): void
     {
         if ($propertyId && (int) Property::whereKey($propertyId)->value('site_id') !== $siteId) {
-            throw \Illuminate\Validation\ValidationException::withMessages(['property_id' => 'That property is not at this site.']);
+            throw ValidationException::withMessages(['property_id' => 'That property is not at this site.']);
         }
     }
 }

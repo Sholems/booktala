@@ -18,7 +18,7 @@ class StorageController extends Controller
 
         $disk = Storage::disk('public');
 
-        if (!$disk->exists($path)) {
+        if (! $disk->exists($path)) {
             abort(404);
         }
 

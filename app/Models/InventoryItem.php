@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Traits\VisibleBySite;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -12,7 +13,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  */
 class InventoryItem extends Model
 {
-    use \App\Traits\VisibleBySite;
+    use VisibleBySite;
 
     public const CATEGORIES = [
         'linen' => 'Linen & towels',
@@ -62,6 +63,6 @@ class InventoryItem extends Model
 
     public function quantityLabel(float $quantity): string
     {
-        return rtrim(rtrim(number_format($quantity, 2), '0'), '.') . ' ' . $this->unit;
+        return rtrim(rtrim(number_format($quantity, 2), '0'), '.').' '.$this->unit;
     }
 }

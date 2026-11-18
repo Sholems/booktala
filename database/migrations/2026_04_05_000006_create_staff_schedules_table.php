@@ -18,7 +18,7 @@ return new class extends Migration
             $table->text('notes')->nullable();
             $table->enum('status', ['scheduled', 'completed', 'cancelled', 'no_show'])->default('scheduled');
             $table->timestamps();
-            
+
             $table->unique(['staff_id', 'date']);
         });
     }

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Customer;
 
 use App\Http\Controllers\Controller;
 use App\Models\Reservation;
+use App\Services\BookingService;
 use App\Services\ReservationLifecycle;
 use Illuminate\Http\Request;
 
@@ -15,7 +16,7 @@ class ReservationController extends Controller
             ->with('property', 'payments')
             ->orderBy('created_at', 'desc')
             ->paginate(15);
-        
+
         return view('customer.reservations.index', compact('reservations'));
     }
 
@@ -24,8 +25,9 @@ class ReservationController extends Controller
         if ($reservation->user_id !== auth()->id()) {
             abort(403);
         }
-        
+
         $reservation->load('property', 'payments', 'review', 'guestCheckin');
+
         return view('customer.reservations.show', compact('reservation'));
     }
 
@@ -48,16 +50,31 @@ class ReservationController extends Controller
         return redirect()->route('customer.reservations.show', $reservation)->with('success', $message);
     }
 
+    public function payBalance(Reservation $reservation, BookingService $bookingService)
+    {
+        if ($reservation->user_id !== auth()->id()) {
+            abort(403);
+        }
+
+        try {
+            [, $authorizationUrl] = $bookingService->startBalancePayment($reservation);
+        } catch (\Exception $e) {
+            return back()->with('error', $e->getMessage());
+        }
+
+        return redirect()->away($authorizationUrl);
+    }
+
     public function submitReview(Request $request, Reservation $reservation)
     {
         if ($reservation->user_id !== auth()->id()) {
             abort(403);
         }
-        
+
         if ($reservation->booking_status !== 'checked_out') {
             return back()->with('error', 'You can only review after checkout');
         }
-        
+
         if ($reservation->review()->exists()) {
             return back()->with('error', 'You have already reviewed this stay.');
         }
@@ -68,7 +85,7 @@ class ReservationController extends Controller
             'location_rating' => 'nullable|integer|min:1|max:5',
             'value_rating' => 'nullable|integer|min:1|max:5',
             'communication_rating' => 'nullable|integer|min:1|max:5',
-            'comment' => 'nullable|string|max:1000'
+            'comment' => 'nullable|string|max:1000',
         ]);
 
         // Detailed ratings are optional; fall back to the overall score.
@@ -82,9 +99,9 @@ class ReservationController extends Controller
             'value_rating' => $validated['value_rating'] ?? $overall,
             'communication_rating' => $validated['communication_rating'] ?? $overall,
             'comment' => $validated['comment'] ?? null,
-            'is_published' => true
+            'is_published' => true,
         ]);
-        
+
         return back()->with('success', 'Review submitted successfully');
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Traits\VisibleBySite;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -12,7 +13,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class Incident extends Model
 {
-    use \App\Traits\VisibleBySite;
+    use VisibleBySite;
 
     public const CATEGORIES = [
         'theft' => 'Theft / burglary',

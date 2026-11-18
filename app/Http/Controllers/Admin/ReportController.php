@@ -3,16 +3,16 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Reservation;
-use App\Models\Property;
-use App\Models\Room;
-use App\Models\RoomType;
-use App\Models\User;
 use App\Models\GuestProfile;
 use App\Models\Payment;
+use App\Models\Property;
+use App\Models\Reservation;
+use App\Models\Room;
+use App\Models\RoomType;
 use App\Models\SystemSetting;
-use Illuminate\Http\Request;
+use App\Models\User;
 use Carbon\Carbon;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class ReportController extends Controller
@@ -20,7 +20,7 @@ class ReportController extends Controller
     public function index(Request $request)
     {
         $isHotelMode = SystemSetting::get('hotel_mode', false);
-        
+
         $startDate = $request->start_date ?? Carbon::now()->startOfMonth()->toDateString();
         $endDate = $request->end_date ?? Carbon::now()->endOfMonth()->toDateString();
 
@@ -68,7 +68,7 @@ class ReportController extends Controller
                 'name' => $type->name,
                 'total' => $type->total_rooms,
                 'occupied' => $occupied,
-                'rate' => $type->total_rooms > 0 ? round(($occupied / $type->total_rooms) * 100) : 0
+                'rate' => $type->total_rooms > 0 ? round(($occupied / $type->total_rooms) * 100) : 0,
             ];
         }
 
@@ -191,24 +191,24 @@ class ReportController extends Controller
         $endDate = $request->end_date ?? Carbon::now()->toDateString();
         [$yearExpression, $monthExpression] = $this->yearMonthExpressions('created_at');
 
-        $revenueByMonth = Payment::whereBetween('created_at', [$startDate, $endDate])
-            ->where('paystack_status', 'successful')
-            ->selectRaw("{$yearExpression} as year, {$monthExpression} as month, SUM(amount) as total")
+        $revenueByMonth = Reservation::whereBetween('created_at', [$startDate, $endDate])
+            ->paid()
+            ->selectRaw("{$yearExpression} as year, {$monthExpression} as month, SUM(total_amount - caution_fee) as total")
             ->groupByRaw("{$yearExpression}, {$monthExpression}")
             ->orderByRaw($yearExpression)
             ->orderByRaw($monthExpression)
             ->get();
 
         $revenueByProperty = Reservation::whereBetween('check_in', [$startDate, $endDate])
-            ->where('booking_status', 'completed')
+            ->where('booking_status', 'checked_out')
             ->with('property')
             ->get()
             ->groupBy('property_id')
             ->map(function ($reservations) {
                 return [
                     'property' => $reservations->first()->property->title ?? 'Unknown',
-                    'total' => $reservations->sum('total_amount'),
-                    'count' => $reservations->count()
+                    'total' => $reservations->sum('revenue_amount'),
+                    'count' => $reservations->count(),
                 ];
             })
             ->sortByDesc('total')
@@ -227,7 +227,7 @@ class ReportController extends Controller
             for ($month = 1; $month <= 12; $month++) {
                 $startOfMonth = Carbon::create($year, $month, 1);
                 $endOfMonth = $startOfMonth->copy()->endOfMonth();
-                
+
                 $totalRoomDays = Room::count() * $startOfMonth->daysInMonth;
                 $occupiedDays = Reservation::whereBetween('check_in', [$startOfMonth, $endOfMonth])
                     ->whereIn('booking_status', ['confirmed', 'checked_in', 'completed'])
@@ -237,18 +237,19 @@ class ReportController extends Controller
                     'month' => $startOfMonth->format('M'),
                     'rate' => $totalRoomDays > 0 ? round(($occupiedDays / $totalRoomDays) * 100) : 0,
                     'occupied' => $occupiedDays,
-                    'available' => $totalRoomDays - $occupiedDays
+                    'available' => $totalRoomDays - $occupiedDays,
                 ];
             }
 
             $roomTypeStats = RoomType::with('rooms')->get()->map(function ($type) {
                 $occupied = $type->rooms()->where('paystack_status', 'occupied')->count();
+
                 return [
                     'name' => $type->name,
                     'total' => $type->total_rooms,
                     'occupied' => $occupied,
                     'available' => $type->total_rooms - $occupied,
-                    'rate' => $type->total_rooms > 0 ? round(($occupied / $type->total_rooms) * 100) : 0
+                    'rate' => $type->total_rooms > 0 ? round(($occupied / $type->total_rooms) * 100) : 0,
                 ];
             });
         } else {
@@ -256,7 +257,7 @@ class ReportController extends Controller
             for ($month = 1; $month <= 12; $month++) {
                 $startOfMonth = Carbon::create($year, $month, 1);
                 $endOfMonth = $startOfMonth->copy()->endOfMonth();
-                
+
                 $totalProperties = Property::active()->count();
                 $occupiedDays = Reservation::whereBetween('check_in', [$startOfMonth, $endOfMonth])
                     ->whereIn('booking_status', ['confirmed', 'checked_in', 'completed'])
@@ -267,7 +268,7 @@ class ReportController extends Controller
                     'rate' => $totalProperties > 0 ? round(($occupiedDays / ($totalProperties * $startOfMonth->daysInMonth)) * 100) : 0,
                     'occupied' => $occupiedDays,
                 ];
-            };
+            }
 
             $roomTypeStats = null;
         }
@@ -304,8 +305,8 @@ class ReportController extends Controller
         $topGuests = User::role('customer')
             ->with('guestProfile')
             ->get()
-            ->filter(fn($u) => $u->guestProfile)
-            ->sortByDesc(fn($u) => $u->guestProfile->total_spent ?? 0)
+            ->filter(fn ($u) => $u->guestProfile)
+            ->sortByDesc(fn ($u) => $u->guestProfile->total_spent ?? 0)
             ->take(10);
 
         return view('admin.reports.guests', compact('guests', 'newGuestsByMonth', 'loyaltyTiers', 'topGuests', 'startDate', 'endDate'));
@@ -321,20 +322,22 @@ class ReportController extends Controller
             $data = Reservation::with(['user', 'property', 'property'])
                 ->whereBetween('check_in', [$startDate, $endDate])
                 ->get()
-                ->map(fn($r) => [
+                ->map(fn ($r) => [
                     'ID' => $r->id,
                     'Guest' => $r->user->name ?? 'N/A',
                     'Property' => $r->property->title ?? 'N/A',
                     'Check In' => $r->check_in,
                     'Check Out' => $r->check_out,
                     'Status' => $r->booking_status,
-                    'Amount' => $r->total_amount,
+                    'Collected Amount' => $r->total_amount,
+                    'Caution Fee' => $r->caution_fee,
+                    'Revenue Amount' => $r->revenue_amount,
                 ]);
         } else {
             $data = Payment::whereBetween('created_at', [$startDate, $endDate])
                 ->where('paystack_status', 'successful')
                 ->get()
-                ->map(fn($p) => [
+                ->map(fn ($p) => [
                     'ID' => $p->id,
                     'Amount' => $p->amount,
                     'Status' => $p->paystack_status,

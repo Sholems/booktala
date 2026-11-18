@@ -3,9 +3,9 @@
 namespace App\Http\Controllers\Public;
 
 use App\Http\Controllers\Controller;
-use App\Models\Property;
 use App\Models\Amenity;
 use App\Models\BlockedDate;
+use App\Models\Property;
 use App\Models\Reservation;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Schema;
@@ -17,7 +17,7 @@ class PropertyController extends Controller
         $query = Property::active()->with(['images', 'primaryImage', 'amenities', 'reviews']);
 
         if ($request->has('city') && $request->city) {
-            $location = '%' . $request->city . '%';
+            $location = '%'.$request->city.'%';
             $query->where(function ($q) use ($location) {
                 $q->where('city', 'like', $location)
                     ->orWhere('state', 'like', $location)
@@ -79,7 +79,7 @@ class PropertyController extends Controller
     public function show($slug)
     {
         $property = Property::where('slug', $slug)
-            ->with(['images', 'amenities', 'reviews' => function($q) {
+            ->with(['images', 'amenities', 'reviews' => function ($q) {
                 $q->where('is_published', true)->with('user');
             }])
             ->firstOrFail();
@@ -95,38 +95,38 @@ class PropertyController extends Controller
 
         return view('public.properties.show', compact('property', 'similarProperties', 'unavailableDates'));
     }
-    
+
     private function getUnavailableDates(int $propertyId): array
     {
         $dates = [];
-        
+
         $blockedDates = BlockedDate::where('property_id', $propertyId)
             ->where('end_date', '>=', now()->toDateString())
             ->get(['start_date', 'end_date']);
-            
+
         foreach ($blockedDates as $blocked) {
             $start = $blocked->start_date->format('Y-m-d');
             $end = $blocked->end_date->format('Y-m-d');
             while ($start <= $end) {
                 $dates[] = $start;
-                $start = date('Y-m-d', strtotime($start . ' +1 day'));
+                $start = date('Y-m-d', strtotime($start.' +1 day'));
             }
         }
-        
+
         $reservations = Reservation::where('property_id', $propertyId)
-            ->whereIn('booking_status', ['pending', 'confirmed', 'checked_in'])
+            ->blockingAvailability()
             ->whereDate('check_out', '>=', now()->toDateString())
             ->get(['check_in', 'check_out']);
-            
+
         foreach ($reservations as $reservation) {
             $start = $reservation->check_in->format('Y-m-d');
             $end = $reservation->check_out->format('Y-m-d');
-            while ($start <= $end) {
+            while ($start < $end) {
                 $dates[] = $start;
-                $start = date('Y-m-d', strtotime($start . ' +1 day'));
+                $start = date('Y-m-d', strtotime($start.' +1 day'));
             }
         }
-        
+
         return array_unique($dates);
     }
 }

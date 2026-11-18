@@ -29,9 +29,7 @@ class PayrollSettings
         'working_days_per_month' => 22,  // for absence deductions
     ];
 
-    public function __construct(private SettingsService $settings)
-    {
-    }
+    public function __construct(private SettingsService $settings) {}
 
     public function all(): array
     {

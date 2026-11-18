@@ -2,13 +2,14 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Events\ReservationStatusChanged;
 use App\Http\Controllers\Controller;
-use App\Models\Reservation;
-use App\Models\Property;
 use App\Models\Payment;
+use App\Models\Property;
+use App\Models\Reservation;
 use App\Models\User;
+use App\Services\ReservationLifecycle;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class AdminController extends Controller
 {
@@ -21,7 +22,7 @@ class AdminController extends Controller
         $pendingReservations = Reservation::where('booking_status', 'pending')->count();
         $confirmedReservations = Reservation::where('booking_status', 'confirmed')->count();
 
-        $totalRevenue = Payment::where('type', 'payment')->where('paystack_status', 'success')->sum('amount');
+        $totalRevenue = Reservation::paid()->sum(DB::raw('total_amount - caution_fee'));
 
         $recentReservations = Reservation::with('property', 'user')
             ->latest()
@@ -63,34 +64,26 @@ class AdminController extends Controller
         return response()->json($reservations);
     }
 
-    public function updateReservation(Request $request, $id)
+    public function updateReservation(Request $request, $id, ReservationLifecycle $lifecycle)
     {
         $reservation = Reservation::findOrFail($id);
 
         $request->validate([
-            'status' => 'required|in:' . self::BOOKING_STATUSES,
+            'status' => 'required|in:'.self::BOOKING_STATUSES,
             'reason' => 'nullable|string|max:500',
         ]);
 
-        $oldStatus = $reservation->booking_status;
         $newStatus = $request->status;
 
-        $changes = ['booking_status' => $newStatus];
-
-        if ($newStatus === 'confirmed') {
-            $changes += ['confirmed_by' => $request->user()->id, 'confirmed_at' => now()];
-        } elseif ($newStatus === 'cancelled') {
-            $changes += [
-                'cancelled_by' => $request->user()->id,
-                'cancelled_at' => now(),
-                'cancellation_reason' => $request->reason,
-            ];
-        }
-
-        $reservation->update($changes);
-
-        if ($oldStatus !== $newStatus) {
-            event(new ReservationStatusChanged($reservation, $oldStatus, $newStatus));
+        if ($reservation->booking_status !== $newStatus) {
+            match ($newStatus) {
+                'confirmed' => $lifecycle->confirm($reservation, $request->user()),
+                'checked_in' => $lifecycle->checkIn($reservation, $request->user(), $request->boolean('allow_unpaid')),
+                'checked_out' => $lifecycle->checkOut($reservation, $request->user()),
+                'cancelled' => $lifecycle->cancel($reservation, $request->user(), $request->reason),
+                'no_show' => $lifecycle->markNoShow($reservation, $request->user()),
+                default => abort(422, 'The requested reservation transition is not allowed.'),
+            };
         }
 
         return response()->json(['reservation' => $reservation]);

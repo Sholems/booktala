@@ -2,13 +2,15 @@
 
 namespace App\Models;
 
+use App\Traits\VisibleByProperty;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Task extends Model
 {
-    use \App\Traits\VisibleByProperty;
+    use VisibleByProperty;
 
     protected $fillable = [
         'title',
@@ -35,7 +37,7 @@ class Task extends Model
             if ($task->isDirty('assigned_to')) {
                 $task->assigned_at = $task->assigned_to ? now() : null;
             }
-            if ($task->isDirty('status') && $task->status === 'in_progress' && !$task->started_at) {
+            if ($task->isDirty('status') && $task->status === 'in_progress' && ! $task->started_at) {
                 $task->started_at = now();
             }
             // A new person or a start resets the escalation clock.
@@ -63,7 +65,7 @@ class Task extends Model
         return $this->hasMany(TaskNote::class)->oldest()->oldest('id');
     }
 
-    public function latestTaskNote(): \Illuminate\Database\Eloquent\Relations\HasOne
+    public function latestTaskNote(): HasOne
     {
         return $this->hasOne(TaskNote::class)->latestOfMany();
     }

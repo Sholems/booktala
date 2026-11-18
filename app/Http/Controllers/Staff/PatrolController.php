@@ -34,11 +34,11 @@ class PatrolController extends Controller
 
         // A double tap or a re-scan within two minutes counts once.
         $recent = $checkpoint->scans()->where('staff_id', $staff->id)->where('scanned_at', '>=', now()->subMinutes(2))->exists();
-        if (!$recent) {
+        if (! $recent) {
             $checkpoint->scans()->create($data + ['staff_id' => $staff->id, 'scanned_at' => now()]);
         }
 
-        return redirect()->route('staff.patrol.scan', $token)->with('success', 'Patrol recorded at ' . $checkpoint->name . ', ' . now()->format('g:i A'));
+        return redirect()->route('staff.patrol.scan', $token)->with('success', 'Patrol recorded at '.$checkpoint->name.', '.now()->format('g:i A'));
     }
 
     private function checkpoint(Request $request, string $token): PatrolCheckpoint

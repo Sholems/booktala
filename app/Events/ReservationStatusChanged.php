@@ -12,8 +12,11 @@ class ReservationStatusChanged
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
     public Reservation $reservation;
+
     public string $oldStatus;
+
     public string $newStatus;
+
     public ?int $actorId;
 
     public function __construct(Reservation $reservation, string $oldStatus, string $newStatus, ?int $actorId = null)

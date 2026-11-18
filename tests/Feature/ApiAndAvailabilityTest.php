@@ -10,6 +10,7 @@ use App\Models\Property;
 use App\Models\Reservation;
 use App\Models\User;
 use App\Notifications\BookingConfirmed;
+use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Http;
@@ -31,14 +32,14 @@ class ApiAndAvailabilityTest extends TestCase
         foreach (['super_admin', 'admin', 'staff', 'customer'] as $role) {
             Role::firstOrCreate(['name' => $role, 'guard_name' => 'web']);
         }
-        $this->seed(\Database\Seeders\RolePermissionSeeder::class);
+        $this->seed(RolePermissionSeeder::class);
     }
 
     private function makeUser(string $role, array $attrs = []): User
     {
         $user = User::create(array_merge([
-            'name' => ucfirst($role) . ' User',
-            'email' => $role . uniqid() . '@example.com',
+            'name' => ucfirst($role).' User',
+            'email' => $role.uniqid().'@example.com',
             'password' => 'password123',
             'status' => 'active',
         ], $attrs));
@@ -50,7 +51,7 @@ class ApiAndAvailabilityTest extends TestCase
     private function makeProperty(array $attrs = []): Property
     {
         return Property::create(array_merge([
-            'title' => 'Test Apartment ' . uniqid(),
+            'title' => 'Test Apartment '.uniqid(),
             'description' => 'Nice place',
             'address' => '1 Test Street',
             'city' => 'Lagos',
@@ -93,7 +94,13 @@ class ApiAndAvailabilityTest extends TestCase
 
         $this->getJson("/availability/check?property_id={$property->id}&check_in=2030-05-12&check_out=2030-05-14")
             ->assertOk()
-            ->assertJson(['available' => true, 'total_price' => 20000]);
+            ->assertJson([
+                'available' => true,
+                'subtotal' => 20000,
+                'processing_fee' => 2000,
+                'caution_fee' => 20000,
+                'total_price' => 43500,
+            ]);
 
         $this->getJson('/availability/check?check_in=2030-05-12&check_out=2030-05-14')
             ->assertOk()
@@ -321,5 +328,38 @@ class ApiAndAvailabilityTest extends TestCase
     public function test_property_name_falls_back_to_title(): void
     {
         $this->assertSame('Garden Suite', $this->makeProperty(['title' => 'Garden Suite'])->name);
+    }
+
+    public function test_admin_can_export_property_reservations_as_ical(): void
+    {
+        $admin = $this->makeUser('admin');
+        $property = $this->makeProperty(['title' => 'Calendar Apartment']);
+        $customer = $this->makeUser('customer', ['name' => 'Calendar Guest']);
+        $this->makeReservation($customer, $property, '2030-12-10', '2030-12-12');
+        $this->makeReservation($customer, $property, '2030-12-20', '2030-12-22', ['booking_status' => 'cancelled']);
+
+        $response = $this->actingAs($admin)
+            ->get("/admin/ical/property/{$property->id}")
+            ->assertOk()
+            ->assertHeader('Content-Type', 'text/calendar; charset=UTF-8');
+
+        $ical = $response->getContent();
+        $this->assertStringContainsString('BEGIN:VCALENDAR', $ical);
+        $this->assertStringContainsString('Calendar Apartment - Calendar Guest', $ical);
+        $this->assertStringContainsString('DTSTART;VALUE=DATE:20301210', $ical);
+        $this->assertStringContainsString('END:VCALENDAR', $ical);
+        $this->assertStringNotContainsString('20301220', $ical);
+    }
+
+    public function test_admin_can_get_calendar_feed_urls(): void
+    {
+        $admin = $this->makeUser('admin');
+        $property = $this->makeProperty();
+
+        $this->actingAs($admin)
+            ->getJson("/admin/ical/url?property_id={$property->id}")
+            ->assertOk()
+            ->assertJsonPath('url', route('admin.ical.property', $property->id))
+            ->assertJsonStructure(['url', 'instructions']);
     }
 }

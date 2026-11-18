@@ -1,16 +1,17 @@
 <?php
 
-use App\Http\Controllers\Staff\DashboardController;
-use App\Http\Controllers\Staff\TaskController;
+use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\Staff\AttendanceController;
 use App\Http\Controllers\Staff\CheckInController;
+use App\Http\Controllers\Staff\DashboardController;
 use App\Http\Controllers\Staff\MaintenanceController;
+use App\Http\Controllers\Staff\MessageController;
+use App\Http\Controllers\Staff\PatrolController;
+use App\Http\Controllers\Staff\PayslipController;
 use App\Http\Controllers\Staff\RoomServiceController;
 use App\Http\Controllers\Staff\ScheduleController;
-use App\Http\Controllers\Staff\MessageController;
-use App\Http\Controllers\Staff\AttendanceController;
+use App\Http\Controllers\Staff\TaskController;
 use App\Http\Controllers\Staff\TeamController;
-use App\Http\Controllers\NotificationController;
-use App\Http\Controllers\Staff\PayslipController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('staff')->middleware(['auth', 'role:staff'])->group(function () {
@@ -58,9 +59,9 @@ Route::prefix('staff')->middleware(['auth', 'role:staff'])->group(function () {
 
     // Security, inventory and QR patrol scans at the staff member's sites.
     $portal = 'staff';
-    require __DIR__ . '/site-operations.php';
-    Route::get('/patrol/{token}', [\App\Http\Controllers\Staff\PatrolController::class, 'show'])->name('staff.patrol.scan');
-    Route::post('/patrol/{token}', [\App\Http\Controllers\Staff\PatrolController::class, 'record'])->name('staff.patrol.record')->middleware('throttle:30,1');
+    require __DIR__.'/site-operations.php';
+    Route::get('/patrol/{token}', [PatrolController::class, 'show'])->name('staff.patrol.scan');
+    Route::post('/patrol/{token}', [PatrolController::class, 'record'])->name('staff.patrol.record')->middleware('throttle:30,1');
 
     // Supervisors and managers: their sites' team, work, roster and attendance.
     Route::prefix('team')->middleware('supervisor')->group(function () {

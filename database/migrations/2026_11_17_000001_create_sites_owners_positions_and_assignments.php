@@ -160,7 +160,7 @@ return new class extends Migration
         $base = Str::slug($name) ?: 'site';
         $slug = $base;
         for ($i = 2; DB::table('sites')->where('slug', $slug)->exists(); $i++) {
-            $slug = $base . '-' . $i;
+            $slug = $base.'-'.$i;
         }
 
         return $slug;

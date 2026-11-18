@@ -22,7 +22,7 @@ class PageSeeder extends Seeder
                 'title' => 'About Us',
                 'slug' => 'about-us',
                 'content' => "<h2>{$brand}: Stays, Travels, Better Living</h2>
-<p>" . e(config('brand.description')) . "</p>
+<p>".e(config('brand.description'))."</p>
 <p>{$brand} is a brand of {$owner}.</p>",
                 'meta_title' => "About Us - {$brand}",
                 'meta_description' => "{$brand} makes short-let stays simple to find, book and enjoy.",

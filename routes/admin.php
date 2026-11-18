@@ -1,41 +1,42 @@
 <?php
 
-use App\Http\Controllers\Admin\DashboardController;
-use App\Http\Controllers\Admin\PropertyController;
-use App\Http\Controllers\Admin\ReservationController;
-use App\Http\Controllers\Admin\CustomerController;
-use App\Http\Controllers\Admin\StaffController;
-use App\Http\Controllers\Admin\OwnerController;
-use App\Http\Controllers\Admin\SiteController;
-use App\Http\Controllers\Admin\PositionController;
 use App\Http\Controllers\Admin\AttendanceController as AdminAttendanceController;
-use App\Http\Controllers\NotificationController;
-use App\Http\Controllers\Admin\ExpenseController;
-use App\Http\Controllers\Admin\OwnerStatementController;
-use App\Http\Controllers\Admin\PayrollController;
-use App\Http\Controllers\Admin\RoomServiceController;
-use App\Http\Controllers\Admin\TaskController;
-use App\Http\Controllers\Admin\MaintenanceController;
-use App\Http\Controllers\Admin\PaymentController;
-use App\Http\Controllers\Admin\ReviewController;
-use App\Http\Controllers\Admin\PageController;
 use App\Http\Controllers\Admin\BlogController;
-use App\Http\Controllers\Admin\HomepageSectionController;
-use App\Http\Controllers\Admin\SettingsController;
-use App\Http\Controllers\Admin\RoomTypeController;
-use App\Http\Controllers\Admin\HotelAmenityController;
-use App\Http\Controllers\Admin\ReportController;
 use App\Http\Controllers\Admin\ChannelManagerController;
-use App\Http\Controllers\Admin\InvoiceController;
-use App\Http\Controllers\Admin\IcalController;
-use App\Http\Controllers\Admin\MessageController;
-use App\Http\Controllers\Admin\StaffScheduleController;
+use App\Http\Controllers\Admin\CustomerController;
+use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\EventBookingController;
+use App\Http\Controllers\Admin\ExpenseController;
+use App\Http\Controllers\Admin\HomepageSectionController;
+use App\Http\Controllers\Admin\HotelAmenityController;
+use App\Http\Controllers\Admin\IcalController;
+use App\Http\Controllers\Admin\InvoiceController;
+use App\Http\Controllers\Admin\MaintenanceController;
+use App\Http\Controllers\Admin\MessageController;
+use App\Http\Controllers\Admin\OwnerController;
+use App\Http\Controllers\Admin\OwnerStatementController;
+use App\Http\Controllers\Admin\PageController;
+use App\Http\Controllers\Admin\PaymentController;
+use App\Http\Controllers\Admin\PayrollController;
+use App\Http\Controllers\Admin\PositionController;
+use App\Http\Controllers\Admin\PropertyController;
+use App\Http\Controllers\Admin\ReportController;
+use App\Http\Controllers\Admin\ReservationController;
+use App\Http\Controllers\Admin\ReviewController;
+use App\Http\Controllers\Admin\RoomServiceController;
+use App\Http\Controllers\Admin\RoomTypeController;
+use App\Http\Controllers\Admin\SettingsController;
+use App\Http\Controllers\Admin\SiteController;
+use App\Http\Controllers\Admin\SiteReportController;
+use App\Http\Controllers\Admin\StaffController;
+use App\Http\Controllers\Admin\StaffScheduleController;
+use App\Http\Controllers\Admin\TaskController;
+use App\Http\Controllers\NotificationController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('admin')->middleware(['auth', 'role:super_admin|admin'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('admin.dashboard');
-    
+
     Route::resource('properties', PropertyController::class)->names('admin.properties')
         ->middlewareFor(['index', 'show'], 'can:property.view')
         ->middlewareFor(['create', 'store'], 'can:property.create')
@@ -69,6 +70,7 @@ Route::prefix('admin')->middleware(['auth', 'role:super_admin|admin'])->group(fu
     Route::patch('/reservations/{reservation}/cancel', [ReservationController::class, 'cancel'])->name('admin.reservations.cancel')->middleware('can:reservation.manage');
     Route::patch('/reservations/{reservation}/no-show', [ReservationController::class, 'noShow'])->name('admin.reservations.no-show')->middleware('can:reservation.manage');
     Route::patch('/reservations/{reservation}/refund', [ReservationController::class, 'updateRefund'])->name('admin.reservations.refund')->middleware('can:reservation.refund');
+    Route::patch('/reservations/{reservation}/caution-refund', [ReservationController::class, 'updateCautionRefund'])->name('admin.reservations.caution-refund')->middleware('can:reservation.refund');
 
     Route::get('/customers', [CustomerController::class, 'index'])->name('admin.customers.index')->middleware('can:customer.view');
     Route::get('/customers/{user}', [CustomerController::class, 'show'])->name('admin.customers.show')->middleware('can:customer.view');
@@ -95,10 +97,10 @@ Route::prefix('admin')->middleware(['auth', 'role:super_admin|admin'])->group(fu
     // Security and inventory across all sites.
     Route::middleware('can:site.manage')->group(function () {
         $portal = 'admin';
-        require __DIR__ . '/site-operations.php';
+        require __DIR__.'/site-operations.php';
     });
-    Route::get('/reports/sites', [\App\Http\Controllers\Admin\SiteReportController::class, 'index'])->name('admin.reports.sites')->middleware('can:report.view');
-    Route::get('/reports/sites/export', [\App\Http\Controllers\Admin\SiteReportController::class, 'export'])->name('admin.reports.sites.export')->middleware('can:report.export');
+    Route::get('/reports/sites', [SiteReportController::class, 'index'])->name('admin.reports.sites')->middleware('can:report.view');
+    Route::get('/reports/sites/export', [SiteReportController::class, 'export'])->name('admin.reports.sites.export')->middleware('can:report.export');
 
     // Finance: property expenses and owner statements.
     Route::middleware('can:finance.manage')->group(function () {

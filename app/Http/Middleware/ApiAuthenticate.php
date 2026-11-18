@@ -2,9 +2,9 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\User;
 use Closure;
 use Illuminate\Http\Request;
-use App\Models\User;
 
 class ApiAuthenticate
 {
@@ -12,7 +12,7 @@ class ApiAuthenticate
     {
         $token = $request->header('Authorization');
 
-        if (!$token) {
+        if (! $token) {
             return response()->json(['message' => 'Authorization token required'], 401);
         }
 
@@ -20,7 +20,7 @@ class ApiAuthenticate
 
         $user = User::where('api_token', $token)->first();
 
-        if (!$user) {
+        if (! $user) {
             return response()->json(['message' => 'Invalid token'], 401);
         }
 

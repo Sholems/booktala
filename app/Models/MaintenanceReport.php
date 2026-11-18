@@ -2,12 +2,14 @@
 
 namespace App\Models;
 
+use App\Services\WorkRouter;
+use App\Traits\VisibleByProperty;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class MaintenanceReport extends Model
 {
-    use \App\Traits\VisibleByProperty;
+    use VisibleByProperty;
 
     protected $fillable = [
         'property_id',
@@ -38,13 +40,14 @@ class MaintenanceReport extends Model
 
         // New reports go straight to a maintenance technician at that site, if one is on.
         static::created(function (MaintenanceReport $report) {
-            if (!$report->assigned_to) {
-                app(\App\Services\WorkRouter::class)->routeMaintenance($report);
+            if (! $report->assigned_to) {
+                app(WorkRouter::class)->routeMaintenance($report);
             }
         });
     }
 
     public const PRIORITIES = ['low' => 'Low', 'medium' => 'Medium', 'high' => 'High', 'urgent' => 'Urgent'];
+
     public const STATUSES = ['pending' => 'Reported', 'in_progress' => 'In progress', 'resolved' => 'Resolved'];
 
     /**

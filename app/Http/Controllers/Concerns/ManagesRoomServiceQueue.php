@@ -45,11 +45,11 @@ trait ManagesRoomServiceQueue
             'charge' => 'nullable|numeric|min:0|max:10000000',
         ]);
 
-        if (!$order->advance($request->user(), isset($validated['charge']) ? (float) $validated['charge'] : null)) {
-            return back()->with('error', 'This request is already ' . str_replace('_', ' ', $order->status) . '.');
+        if (! $order->advance($request->user(), isset($validated['charge']) ? (float) $validated['charge'] : null)) {
+            return back()->with('error', 'This request is already '.str_replace('_', ' ', $order->status).'.');
         }
 
-        return back()->with('success', 'Request ' . RoomServiceOrder::statuses()[$order->status] . '.');
+        return back()->with('success', 'Request '.RoomServiceOrder::statuses()[$order->status].'.');
     }
 
     public function decline(Request $request, RoomServiceOrder $order)
@@ -60,15 +60,15 @@ trait ManagesRoomServiceQueue
             'reason' => 'nullable|string|max:255',
         ]);
 
-        if (!in_array($order->status, RoomServiceOrder::OPEN_STATUSES, true)) {
+        if (! in_array($order->status, RoomServiceOrder::OPEN_STATUSES, true)) {
             return back()->with('error', 'Only open requests can be declined.');
         }
 
-        $note = trim('Declined by ' . $request->user()->name . ($validated['reason'] ?? null ? ': ' . $validated['reason'] : ''));
+        $note = trim('Declined by '.$request->user()->name.($validated['reason'] ?? null ? ': '.$validated['reason'] : ''));
         $order->update([
             'status' => 'cancelled',
             'handled_by' => $request->user()->id,
-            'special_instructions' => trim(($order->special_instructions ? $order->special_instructions . "\n" : '') . '[' . $note . ']'),
+            'special_instructions' => trim(($order->special_instructions ? $order->special_instructions."\n" : '').'['.$note.']'),
         ]);
 
         return back()->with('success', 'Request declined');

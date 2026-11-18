@@ -15,7 +15,7 @@ class ChannelManagerController extends Controller
         $isHotelMode = SystemSetting::get('hotel_mode', false);
         $channels = ChannelSetting::all();
         $properties = Property::active()->get();
-        
+
         return view('admin.channel-manager.index', compact('channels', 'properties', 'isHotelMode'));
     }
 
@@ -43,25 +43,26 @@ class ChannelManagerController extends Controller
 
     public function toggle(Request $request, ChannelSetting $channel)
     {
-        $channel->update(['is_enabled' => !$channel->is_enabled]);
-        
+        $channel->update(['is_enabled' => ! $channel->is_enabled]);
+
         if ($channel->is_enabled) {
             $channel->update(['last_sync' => now()]);
         }
 
-        return back()->with('success', 'Channel ' . ($channel->is_enabled ? 'enabled' : 'disabled'));
+        return back()->with('success', 'Channel '.($channel->is_enabled ? 'enabled' : 'disabled'));
     }
 
     public function sync(ChannelSetting $channel)
     {
         $channel->update(['last_sync' => now()]);
-        
-        return back()->with('success', 'Sync initiated for ' . $channel->channel_name);
+
+        return back()->with('success', 'Sync initiated for '.$channel->channel_name);
     }
 
     public function destroy(ChannelSetting $channel)
     {
         $channel->delete();
+
         return back()->with('success', 'Channel removed');
     }
 }

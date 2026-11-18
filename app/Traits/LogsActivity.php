@@ -25,8 +25,8 @@ trait LogsActivity
     protected static function logActivity($action, $model, $oldValues = [])
     {
         $user = auth()->user();
-        
-        if (!$user) {
+
+        if (! $user) {
             $userId = null;
         } else {
             $userId = $user->id;

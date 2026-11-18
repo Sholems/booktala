@@ -2,11 +2,11 @@
     "$schema": "https://getcomposer.org/schema.json",
     "name": "laravel/laravel",
     "type": "project",
-    "description": "The skeleton application for the Laravel framework.",
-    "keywords": ["laravel", "framework"],
+    "description": "Multi-property booking and hospitality operations platform.",
+    "keywords": ["laravel", "booking", "hospitality", "property-management"],
     "license": "MIT",
     "require": {
-        "php": "^8.2",
+        "php": "^8.3",
         "artesaos/seotools": "^1.4",
         "barryvdh/laravel-dompdf": "^3.1",
         "intervention/image": "^4.0",
@@ -58,6 +58,9 @@
         "test": [
             "@php artisan config:clear --ansi",
             "@php artisan test"
+        ],
+        "lint": [
+            "@php vendor/bin/pint --test"
         ],
         "post-autoload-dump": [
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",

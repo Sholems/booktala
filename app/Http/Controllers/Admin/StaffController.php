@@ -53,7 +53,7 @@ class StaffController extends Controller
         // The staff profile is what shifts are scheduled against.
         $profile = Staff::create([
             'user_id' => $user->id,
-            'employee_id' => 'WP-' . str_pad((string) $user->id, 4, '0', STR_PAD_LEFT),
+            'employee_id' => 'WP-'.str_pad((string) $user->id, 4, '0', STR_PAD_LEFT),
             'hire_date' => today(),
             'is_active' => true,
         ]);
@@ -92,7 +92,7 @@ class StaffController extends Controller
             ['user_id' => $user->id],
             [
                 'is_active' => $data['status'] === 'active',
-                'employee_id' => $user->staff->employee_id ?? 'WP-' . str_pad((string) $user->id, 4, '0', STR_PAD_LEFT),
+                'employee_id' => $user->staff->employee_id ?? 'WP-'.str_pad((string) $user->id, 4, '0', STR_PAD_LEFT),
                 'hire_date' => $user->staff->hire_date ?? today(),
             ]
         );
@@ -118,13 +118,14 @@ class StaffController extends Controller
         $this->signOutEverywhere($user);
 
         return redirect()->route('admin.staff.edit', $user)
-            ->with('success', 'Password reset. Share the new password with ' . $user->name . ' securely.');
+            ->with('success', 'Password reset. Share the new password with '.$user->name.' securely.');
     }
 
     public function destroy(User $user)
     {
         $this->ensureStaff($user);
         $user->delete();
+
         return redirect()->route('admin.staff.index')->with('success', 'Staff deleted');
     }
 
@@ -149,7 +150,7 @@ class StaffController extends Controller
             ->where('position_id', $data['position_id'])
             ->exists();
         if ($alreadyThere) {
-            return back()->with('error', $user->name . ' already holds that position at that site.');
+            return back()->with('error', $user->name.' already holds that position at that site.');
         }
 
         $assignment = $profile->assignTo(
@@ -159,7 +160,7 @@ class StaffController extends Controller
             $data['starts_on'] ?? null,
         );
 
-        return back()->with('success', $user->name . ' assigned as ' . $assignment->position->name . ' at ' . $assignment->site->name);
+        return back()->with('success', $user->name.' assigned as '.$assignment->position->name.' at '.$assignment->site->name);
     }
 
     /**
@@ -183,13 +184,13 @@ class StaffController extends Controller
 
         // Promote another current post to primary so the department stays meaningful.
         $profile = $user->staff;
-        if (!$profile->activeAssignments()->where('is_primary', true)->exists()
+        if (! $profile->activeAssignments()->where('is_primary', true)->exists()
             && ($next = $profile->activeAssignments()->with('position')->first())) {
             $next->update(['is_primary' => true]);
             $profile->update(['department' => $next->position->department]);
         }
 
-        return back()->with('success', 'Assignment ended. ' . $user->name . ' no longer sees ' . $assignment->site->name . '.');
+        return back()->with('success', 'Assignment ended. '.$user->name.' no longer sees '.$assignment->site->name.'.');
     }
 
     public function makePrimary(User $user, StaffAssignment $assignment)
@@ -208,7 +209,7 @@ class StaffController extends Controller
     {
         return $user->staff ?? Staff::create([
             'user_id' => $user->id,
-            'employee_id' => 'WP-' . str_pad((string) $user->id, 4, '0', STR_PAD_LEFT),
+            'employee_id' => 'WP-'.str_pad((string) $user->id, 4, '0', STR_PAD_LEFT),
             'hire_date' => today(),
             'is_active' => $user->status === 'active',
         ]);
@@ -219,7 +220,7 @@ class StaffController extends Controller
      */
     private function ensureStaff(User $user): void
     {
-        abort_unless($user->hasRole('staff') && !$user->hasAnyRole(['super_admin', 'admin']), 404);
+        abort_unless($user->hasRole('staff') && ! $user->hasAnyRole(['super_admin', 'admin']), 404);
     }
 
     /**

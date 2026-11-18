@@ -4,8 +4,8 @@ namespace App\Notifications;
 
 use App\Models\Reservation;
 use Illuminate\Bus\Queueable;
-use Illuminate\Notifications\Notification;
 use Illuminate\Notifications\Messages\MailMessage;
+use Illuminate\Notifications\Notification;
 
 class BookingPending extends Notification
 {
@@ -26,16 +26,16 @@ class BookingPending extends Notification
     public function toMail($notifiable)
     {
         $property = $this->reservation->property;
-        
+
         return (new MailMessage)
-            ->subject('Booking Pending - ' . $this->reservation->booking_ref)
-            ->greeting('Hello ' . $notifiable->name . '!')
+            ->subject('Booking Pending - '.$this->reservation->booking_ref)
+            ->greeting('Hello '.$notifiable->name.'!')
             ->line('Your booking is awaiting confirmation.')
-            ->line('Booking Reference: ' . $this->reservation->booking_ref)
-            ->line('Property: ' . $property->title)
-            ->line('Check-in: ' . $this->reservation->check_in->format('F j, Y'))
-            ->line('Check-out: ' . $this->reservation->check_out->format('F j, Y'))
-            ->line('Total Amount: ₦' . number_format($this->reservation->total_amount, 2))
+            ->line('Booking Reference: '.$this->reservation->booking_ref)
+            ->line('Property: '.$property->title)
+            ->line('Check-in: '.$this->reservation->check_in->format('F j, Y'))
+            ->line('Check-out: '.$this->reservation->check_out->format('F j, Y'))
+            ->line('Total Amount: ₦'.number_format($this->reservation->total_amount, 2))
             ->line('We will notify you once your booking is confirmed.')
             ->action('View Booking', route('customer.reservations.show', $this->reservation->id));
     }
@@ -44,7 +44,7 @@ class BookingPending extends Notification
     {
         return [
             'title' => 'Booking Pending',
-            'message' => 'Your booking ' . $this->reservation->booking_ref . ' is pending confirmation.',
+            'message' => 'Your booking '.$this->reservation->booking_ref.' is pending confirmation.',
             'booking_ref' => $this->reservation->booking_ref,
         ];
     }

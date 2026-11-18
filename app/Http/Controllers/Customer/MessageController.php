@@ -5,8 +5,11 @@ namespace App\Http\Controllers\Customer;
 use App\Http\Controllers\Controller;
 use App\Models\Conversation;
 use App\Models\Message;
+use App\Models\Property;
+use App\Models\Reservation;
+use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule;
 
 class MessageController extends Controller
 {
@@ -41,12 +44,12 @@ class MessageController extends Controller
         $validated = $request->validate([
             'message' => 'required|string|max:2000',
             'property_id' => 'nullable|exists:properties,id',
-            'reservation_id' => ['nullable', \Illuminate\Validation\Rule::exists('reservations', 'id')->where('user_id', auth()->id())],
+            'reservation_id' => ['nullable', Rule::exists('reservations', 'id')->where('user_id', auth()->id())],
         ]);
 
         // A message about a booking goes to that property's site team as well as head office.
-        if (empty($validated['property_id']) && !empty($validated['reservation_id'])) {
-            $validated['property_id'] = \App\Models\Reservation::whereKey($validated['reservation_id'])->value('property_id');
+        if (empty($validated['property_id']) && ! empty($validated['reservation_id'])) {
+            $validated['property_id'] = Reservation::whereKey($validated['reservation_id'])->value('property_id');
         }
 
         // Guests write to the team inbox (admin and front desk), not to one person.
@@ -94,8 +97,8 @@ class MessageController extends Controller
             'message' => 'required|string',
         ]);
 
-        $property = \App\Models\Property::find($request->property_id);
-        $admin = \App\Models\User::role('admin')->first();
+        $property = Property::find($request->property_id);
+        $admin = User::role('admin')->first();
 
         $existingConversation = Conversation::where('user_id', auth()->id())
             ->where('property_id', $request->property_id)

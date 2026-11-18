@@ -44,7 +44,7 @@ class HomepageSectionSeeder extends Seeder
                 'section_key' => 'welcome',
                 'title' => "Welcome to {$brand}",
                 'subtitle' => config('brand.tagline'),
-                'content' => config('brand.description') . "\n\nBook online in minutes, check in before you arrive, and reach our team any time during your stay.",
+                'content' => config('brand.description')."\n\nBook online in minutes, check in before you arrive, and reach our team any time during your stay.",
                 'image' => 'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&w=1200&q=80',
                 'button_text' => 'About BookTala',
                 'button_link' => '/about',

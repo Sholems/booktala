@@ -17,7 +17,7 @@ return new class extends Migration
             $table->enum('status', ['available', 'occupied', 'reserved', 'maintenance', 'cleaning'])->default('available');
             $table->text('notes')->nullable();
             $table->timestamps();
-            
+
             $table->unique(['room_type_id', 'room_number']);
         });
     }

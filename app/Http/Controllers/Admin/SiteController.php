@@ -69,11 +69,11 @@ class SiteController extends Controller
 
         // Tidy up the standalone site the property leaves behind, if nothing else uses it.
         if ($previous && $previous->id !== $site->id
-            && !$previous->properties()->exists() && !$previous->assignments()->exists()) {
+            && ! $previous->properties()->exists() && ! $previous->assignments()->exists()) {
             $previous->delete();
         }
 
-        return back()->with('success', $property->title . ' moved to ' . $site->name);
+        return back()->with('success', $property->title.' moved to '.$site->name);
     }
 
     public function destroy(Site $site)

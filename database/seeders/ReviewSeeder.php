@@ -2,10 +2,10 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
-use App\Models\Review;
 use App\Models\Property;
+use App\Models\Review;
 use App\Models\User;
+use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Role;
 
 class ReviewSeeder extends Seeder
@@ -13,7 +13,7 @@ class ReviewSeeder extends Seeder
     public function run()
     {
         $properties = Property::take(3)->get();
-        
+
         $reviews = [
             [
                 'overall_rating' => 5,
@@ -64,7 +64,7 @@ class ReviewSeeder extends Seeder
             'status' => 'active',
         ]);
 
-        if (Role::where('name', 'customer')->exists() && !$user->hasRole('customer')) {
+        if (Role::where('name', 'customer')->exists() && ! $user->hasRole('customer')) {
             $user->assignRole('customer');
         }
 

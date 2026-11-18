@@ -99,6 +99,14 @@
                     <span class="text-green-600">-₦{{ number_format($invoice->discount_amount, 2) }}</span>
                 </div>
                 @endif
+                <div class="flex justify-between py-2">
+                    <span>Processing fee</span>
+                    <span>₦{{ number_format($invoice->processing_fee, 2) }}</span>
+                </div>
+                <div class="flex justify-between py-2">
+                    <span>Refundable caution fee</span>
+                    <span>₦{{ number_format($invoice->caution_fee, 2) }}</span>
+                </div>
                 <div class="flex justify-between font-semibold text-lg mt-2 pt-2 border-t">
                     <span>Total</span>
                     <span>₦{{ number_format($invoice->total_amount, 2) }}</span>

@@ -15,9 +15,7 @@ use Illuminate\Validation\ValidationException;
  */
 class PayRunService
 {
-    public function __construct(private PayrollCalculator $calculator, private PayrollSettings $settings)
-    {
-    }
+    public function __construct(private PayrollCalculator $calculator, private PayrollSettings $settings) {}
 
     public function generate(CarbonImmutable $month, User $by): PayRun
     {
@@ -26,8 +24,8 @@ class PayRunService
 
         // Match on the date only: stored dates carry a time part on some databases.
         $run = PayRun::whereDate('period_start', $start)->first() ?? new PayRun(['period_start' => $start->toDateString()]);
-        if ($run->exists && !$run->isDraft()) {
-            throw ValidationException::withMessages(['month' => 'The ' . $run->periodLabel() . ' pay run is already ' . $run->status . ' and cannot be recalculated.']);
+        if ($run->exists && ! $run->isDraft()) {
+            throw ValidationException::withMessages(['month' => 'The '.$run->periodLabel().' pay run is already '.$run->status.' and cannot be recalculated.']);
         }
 
         return DB::transaction(function () use ($run, $start, $end, $by) {
@@ -56,10 +54,10 @@ class PayRunService
 
     public function approve(PayRun $run, User $by): void
     {
-        if (!$run->isDraft()) {
+        if (! $run->isDraft()) {
             throw ValidationException::withMessages(['status' => 'Only a draft pay run can be approved.']);
         }
-        if (!$run->payslips()->exists()) {
+        if (! $run->payslips()->exists()) {
             throw ValidationException::withMessages(['status' => 'This pay run has no payslips. Set salaries first.']);
         }
 

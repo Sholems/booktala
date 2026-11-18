@@ -21,7 +21,7 @@ class SettingsService
 
     public function set(string $key, $value): void
     {
-        if (!Schema::hasTable('system_settings')) {
+        if (! Schema::hasTable('system_settings')) {
             return;
         }
 
@@ -45,8 +45,9 @@ class SettingsService
 
     private function loadSettings(): void
     {
-        if (!Schema::hasTable('system_settings')) {
+        if (! Schema::hasTable('system_settings')) {
             $this->settings = [];
+
             return;
         }
 

@@ -6,6 +6,7 @@ use App\Models\Property;
 use App\Models\StaffAssignment;
 use App\Models\User;
 use Illuminate\Contracts\Database\Query\Builder as BuilderContract;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Query\Builder as QueryBuilder;
 
 /**
@@ -31,6 +32,7 @@ class PropertyAccess
      * Restrict a query to rows whose property the user may see.
      *
      * @template T of BuilderContract
+     *
      * @param  T  $query
      * @return T
      */
@@ -91,7 +93,7 @@ class PropertyAccess
     /**
      * Users who work at the property's site today (for assigning its tasks and reports).
      */
-    public static function staffAtProperty(Property|int $property): \Illuminate\Database\Eloquent\Builder
+    public static function staffAtProperty(Property|int $property): Builder
     {
         $siteId = $property instanceof Property ? $property->site_id : Property::whereKey($property)->value('site_id');
 

@@ -20,6 +20,7 @@ class SystemSetting extends Model
     public static function get($key, $default = null)
     {
         $setting = static::where('key', $key)->first();
+
         return $setting ? $setting->value : $default;
     }
 
@@ -38,6 +39,6 @@ class SystemSetting extends Model
 
     public static function isShortletMode()
     {
-        return !static::isHotelMode();
+        return ! static::isHotelMode();
     }
 }

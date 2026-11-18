@@ -4,10 +4,13 @@ namespace Tests\Feature;
 
 use App\Models\Property;
 use App\Models\Reservation;
+use App\Models\Room;
+use App\Models\RoomType;
 use App\Models\Task;
 use App\Models\User;
 use App\Notifications\BookingCancelled;
 use App\Notifications\GuestCancelledBooking;
+use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
 use Spatie\Permission\Models\Role;
@@ -25,14 +28,14 @@ class ReservationLifecycleTest extends TestCase
         foreach (['super_admin', 'admin', 'staff', 'customer'] as $role) {
             Role::firstOrCreate(['name' => $role, 'guard_name' => 'web']);
         }
-        $this->seed(\Database\Seeders\RolePermissionSeeder::class);
+        $this->seed(RolePermissionSeeder::class);
     }
 
     private function makeUser(string $role): User
     {
         $user = User::create([
-            'name' => ucfirst($role) . ' User',
-            'email' => $role . uniqid() . '@example.com',
+            'name' => ucfirst($role).' User',
+            'email' => $role.uniqid().'@example.com',
             'password' => 'password123',
             'status' => 'active',
         ]);
@@ -48,7 +51,7 @@ class ReservationLifecycleTest extends TestCase
     private function makeReservation(User $guest, array $attrs = []): Reservation
     {
         $property = Property::create([
-            'title' => 'Test Apartment ' . uniqid(),
+            'title' => 'Test Apartment '.uniqid(),
             'description' => 'Nice place',
             'address' => '1 Test Street',
             'city' => 'Lagos',
@@ -90,6 +93,42 @@ class ReservationLifecycleTest extends TestCase
         $this->assertSame('checked_in', $reservation->booking_status);
         $this->assertSame($staff->id, $reservation->checked_in_by);
         $this->assertNotNull($reservation->checked_in_at);
+    }
+
+    public function test_room_is_assigned_on_check_in_and_cleaning_starts_on_check_out(): void
+    {
+        $admin = $this->makeUser('admin');
+        $reservation = $this->makeReservation($this->makeUser('customer'), ['payment_status' => 'paid']);
+        $roomType = RoomType::create([
+            'name' => 'Standard',
+            'slug' => 'standard',
+            'base_price' => 10000,
+            'total_rooms' => 1,
+        ]);
+        $room = Room::create([
+            'room_type_id' => $roomType->id,
+            'room_number' => '101',
+            'status' => 'available',
+        ]);
+
+        $this->actingAs($admin)
+            ->patch(route('admin.reservations.checkin', $reservation), ['room_id' => $room->id])
+            ->assertSessionHas('success');
+
+        $reservation->refresh();
+        $this->assertSame($room->id, $reservation->room_id);
+        $this->assertSame('occupied', $room->fresh()->status);
+
+        $this->actingAs($admin)
+            ->patch(route('admin.reservations.checkout', $reservation))
+            ->assertSessionHas('success');
+
+        $this->assertSame('cleaning', $room->fresh()->status);
+        $this->assertDatabaseHas('housekeeping_tasks', [
+            'room_id' => $room->id,
+            'task_type' => 'turnover',
+            'status' => 'pending',
+        ]);
     }
 
     public function test_cancelled_booking_cannot_be_checked_in(): void
@@ -158,6 +197,17 @@ class ReservationLifecycleTest extends TestCase
         $this->assertSame('checked_in', $reservation->fresh()->booking_status);
     }
 
+    public function test_partially_paid_guest_must_clear_balance_before_check_in(): void
+    {
+        $staff = $this->makeUser('staff');
+        $reservation = $this->makeReservation($this->makeUser('customer'), ['payment_status' => 'partial']);
+
+        $this->actingAs($staff)->patch(route('staff.checkin.process', $reservation))
+            ->assertSessionHas('error');
+
+        $this->assertSame('confirmed', $reservation->fresh()->booking_status);
+    }
+
     public function test_admin_check_out_records_who_and_when(): void
     {
         $admin = $this->makeUser('admin');
@@ -223,6 +273,9 @@ class ReservationLifecycleTest extends TestCase
         $reservation = $this->makeReservation($this->makeUser('customer'), [
             'booking_status' => 'cancelled',
             'refund_status' => 'pending',
+            'processing_fee' => 2000,
+            'caution_fee' => 20000,
+            'total_amount' => 43500,
         ]);
 
         $this->actingAs($admin)->patch(route('admin.reservations.refund', $reservation), ['refund_status' => 'refunded'])
@@ -230,7 +283,8 @@ class ReservationLifecycleTest extends TestCase
 
         $reservation->refresh();
         $this->assertSame('refunded', $reservation->refund_status);
-        $this->assertSame('refunded', $reservation->payment_status);
+        $this->assertSame('paid', $reservation->payment_status);
+        $this->assertSame(21500.0, $reservation->booking_refundable_amount);
     }
 
     public function test_admin_reservation_page_shows_history_and_valid_actions_only(): void

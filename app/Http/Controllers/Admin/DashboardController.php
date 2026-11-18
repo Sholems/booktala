@@ -3,11 +3,13 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\MaintenanceReport;
+use App\Models\Message;
 use App\Models\Property;
 use App\Models\Reservation;
-use App\Models\User;
+use App\Models\Review;
 use App\Models\Task;
-use Carbon\Carbon;
+use App\Services\OperationsOverview;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
@@ -17,41 +19,41 @@ class DashboardController extends Controller
     {
         $totalProperties = Property::count();
         $activeProperties = Property::active()->count();
-        
+
         $totalBookings = Reservation::count();
         $confirmedBookings = Reservation::where('booking_status', 'confirmed')->count();
         $checkedInBookings = Reservation::where('booking_status', 'checked_in')->count();
-        
-        $totalRevenue = Reservation::where('payment_status', 'paid')->sum('total_amount');
-        $thisMonthRevenue = Reservation::where('payment_status', 'paid')
+
+        $totalRevenue = Reservation::paid()->sum(DB::raw('total_amount - caution_fee'));
+        $thisMonthRevenue = Reservation::paid()
             ->whereMonth('created_at', now()->month)
-            ->sum('total_amount');
-        $lastMonthRevenue = Reservation::where('payment_status', 'paid')
+            ->sum(DB::raw('total_amount - caution_fee'));
+        $lastMonthRevenue = Reservation::paid()
             ->whereMonth('created_at', now()->subMonth()->month)
-            ->sum('total_amount');
-        
+            ->sum(DB::raw('total_amount - caution_fee'));
+
         $occupancyRate = $totalProperties > 0 ? round(($checkedInBookings / $totalProperties) * 100) : 0;
-        
+
         $thisMonthBookings = Reservation::whereMonth('created_at', now()->month)->count();
         $lastMonthBookings = Reservation::whereMonth('created_at', now()->subMonth()->month)->count();
-        
+
         $monthExpression = $this->monthExpression('created_at');
 
-        $revenueByMonth = Reservation::selectRaw("{$monthExpression} as month, SUM(total_amount) as total")
-            ->where('payment_status', 'paid')
+        $revenueByMonth = Reservation::selectRaw("{$monthExpression} as month, SUM(total_amount - caution_fee) as total")
+            ->paid()
             ->whereYear('created_at', now()->year)
             ->groupByRaw($monthExpression)
             ->pluck('total', 'month')
             ->toArray();
-        
+
         $monthlyRevenue = [];
         for ($i = 1; $i <= 12; $i++) {
             $monthlyRevenue[$i] = (int) ($revenueByMonth[$i] ?? 0);
         }
-        
+
         $topProperties = Property::withCount(['reservations' => function ($q) {
-                $q->where('payment_status', 'paid');
-            }])
+            $q->where('payment_status', 'paid');
+        }])
             ->orderByDesc('reservations_count')
             ->take(5)
             ->get();
@@ -77,14 +79,14 @@ class DashboardController extends Controller
 
         $recentBookings = Reservation::with(['user', 'property'])->latest()->take(10)->get();
         $upcomingCheckins = Reservation::whereDate('check_in', '>=', today())->whereDate('check_in', '<=', now()->addDays(7))->where('booking_status', 'confirmed')->with(['user', 'property'])->get();
-        
+
         // Generate alerts
         $alerts = [];
         $pendingTasks = Task::where('status', 'pending')->count();
-        $pendingMaintenance = \App\Models\MaintenanceReport::where('status', 'pending')->count();
+        $pendingMaintenance = MaintenanceReport::where('status', 'pending')->count();
         $unreadMessages = $this->countUnreadMessages();
         $pendingReviews = $this->countPendingReviews();
-        
+
         if ($pendingTasks > 0) {
             $alerts[] = "You have {$pendingTasks} pending task(s) awaiting action";
         }
@@ -97,8 +99,8 @@ class DashboardController extends Controller
         if ($pendingReviews > 0) {
             $alerts[] = "{$pendingReviews} review(s) awaiting moderation";
         }
-        
-        $overview = app(\App\Services\OperationsOverview::class);
+
+        $overview = app(OperationsOverview::class);
         $queues = $overview->adminQueues();
         $activity = $overview->recentActivity();
 
@@ -122,11 +124,11 @@ class DashboardController extends Controller
     private function countUnreadMessages(): int
     {
         if (Schema::hasColumn('messages', 'is_read')) {
-            return \App\Models\Message::where('is_read', false)->count();
+            return Message::where('is_read', false)->count();
         }
 
         if (Schema::hasColumn('messages', 'read')) {
-            return \App\Models\Message::where('read', false)->count();
+            return Message::where('read', false)->count();
         }
 
         return 0;
@@ -135,11 +137,11 @@ class DashboardController extends Controller
     private function countPendingReviews(): int
     {
         if (Schema::hasColumn('reviews', 'status')) {
-            return \App\Models\Review::where('status', 'pending')->count();
+            return Review::where('status', 'pending')->count();
         }
 
         if (Schema::hasColumn('reviews', 'is_published')) {
-            return \App\Models\Review::where('is_published', false)->count();
+            return Review::where('is_published', false)->count();
         }
 
         return 0;

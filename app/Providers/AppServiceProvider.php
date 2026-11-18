@@ -2,18 +2,23 @@
 
 namespace App\Providers;
 
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\ServiceProvider;
-use Illuminate\Support\Facades\View;
+use App\Services\SettingsService;
+use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\View;
+use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
-        $this->app->singleton(\App\Services\SettingsService::class, function () {
-            return new \App\Services\SettingsService();
+        $this->app->singleton(SettingsService::class, function () {
+            return new SettingsService;
         });
     }
 
@@ -22,25 +27,29 @@ class AppServiceProvider extends ServiceProvider
         Schema::defaultStringLength(191);
 
         // Super admins may do everything; everyone else is checked against their role's permissions.
-        \Illuminate\Support\Facades\Gate::before(
+        Gate::before(
             fn ($user) => method_exists($user, 'hasRole') && $user->hasRole('super_admin') ? true : null
         );
 
         // Listeners in app/Listeners are auto-discovered; registering them here
         // as well would run each one twice.
-        $this->optimizeDashboardQueries();
+        $this->configureRateLimiters();
         $this->shareGlobalSettings();
     }
 
-    private function optimizeDashboardQueries(): void
+    private function configureRateLimiters(): void
     {
-        if (!request()->is('admin/dashboard')) {
-            return;
-        }
+        RateLimiter::for('auth-api', fn (Request $request) => Limit::perMinute(5)->by(
+            strtolower((string) $request->input('email')).'|'.$request->ip(),
+        ));
 
-        $cacheKey = 'admin_dashboard_stats_' . date('Y-m-d-H');
-        
-        View::share('dashboardCache', $cacheKey);
+        RateLimiter::for('booking', fn (Request $request) => Limit::perMinute(5)->by(
+            $request->user()?->id ?: $request->ip(),
+        ));
+
+        RateLimiter::for('payment', fn (Request $request) => Limit::perMinute(120)->by($request->ip()));
+        RateLimiter::for('contact', fn (Request $request) => Limit::perMinute(5)->by($request->ip()));
+        RateLimiter::for('availability', fn (Request $request) => Limit::perMinute(60)->by($request->ip()));
     }
 
     private function shareGlobalSettings(): void
@@ -55,7 +64,7 @@ class AppServiceProvider extends ServiceProvider
         }
 
         try {
-            if (!Schema::hasTable('system_settings')) {
+            if (! Schema::hasTable('system_settings')) {
                 return;
             }
 

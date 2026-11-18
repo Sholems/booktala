@@ -11,6 +11,7 @@ class CustomerController extends Controller
     public function index(Request $request)
     {
         $customers = User::role('customer')->paginate(20);
+
         return view('admin.customers.index', compact('customers'));
     }
 
@@ -22,12 +23,14 @@ class CustomerController extends Controller
     public function verify(User $user)
     {
         $user->update(['id_verified' => true]);
+
         return back()->with('success', 'Customer verified');
     }
 
     public function updateStatus(Request $request, User $user)
     {
         $user->update(['status' => $request->status]);
+
         return back()->with('success', 'Status updated');
     }
 }

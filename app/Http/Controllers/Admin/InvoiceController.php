@@ -6,8 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Models\Invoice;
 use App\Models\InvoiceItem;
 use App\Models\Reservation;
-use Illuminate\Http\Request;
+use App\Models\Setting;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 
 class InvoiceController extends Controller
@@ -17,14 +18,14 @@ class InvoiceController extends Controller
         $invoices = Invoice::with(['reservation.property', 'user'])
             ->orderBy('created_at', 'desc')
             ->paginate(20);
-        
+
         return view('admin.invoices.index', compact('invoices'));
     }
 
     public function show(Invoice $invoice)
     {
         $invoice->load(['reservation.property', 'user', 'items']);
-        
+
         return view('admin.invoices.show', compact('invoice'));
     }
 
@@ -34,12 +35,12 @@ class InvoiceController extends Controller
         if ($request->has('reservation_id')) {
             $reservation = Reservation::with(['property', 'user', 'payments'])->find($request->reservation_id);
         }
-        
+
         $reservations = Reservation::whereDoesntHave('invoice')
             ->whereIn('status', ['confirmed', 'checked_in'])
             ->with(['property', 'user'])
             ->get();
-        
+
         return view('admin.invoices.create', compact('reservation', 'reservations'));
     }
 
@@ -57,6 +58,8 @@ class InvoiceController extends Controller
         $subtotal = (float) $reservation->subtotal;
         $vatAmount = (float) $reservation->tax_amount;
         $discountAmount = (float) ($reservation->discount_amount ?? 0);
+        $processingFee = (float) ($reservation->processing_fee ?? 0);
+        $cautionFee = (float) ($reservation->caution_fee ?? 0);
         $totalAmount = (float) $reservation->total_amount;
         $paidAmount = $reservation->payments()
             ->where('type', 'payment')
@@ -71,6 +74,8 @@ class InvoiceController extends Controller
             'subtotal' => $subtotal,
             'vat_amount' => $vatAmount,
             'discount_amount' => $discountAmount,
+            'processing_fee' => $processingFee,
+            'caution_fee' => $cautionFee,
             'total_amount' => $totalAmount,
             'paid_amount' => $paidAmount,
             'balance' => $balance,
@@ -81,7 +86,7 @@ class InvoiceController extends Controller
 
         InvoiceItem::create([
             'invoice_id' => $invoice->id,
-            'description' => 'Accommodation - ' . $reservation->property->title,
+            'description' => 'Accommodation - '.$reservation->property->title,
             'quantity' => $reservation->nights,
             'unit_price' => $reservation->property->price_per_night,
             'total' => $subtotal,
@@ -94,19 +99,19 @@ class InvoiceController extends Controller
     public function generatePdf(Invoice $invoice)
     {
         $invoice->load(['reservation.property', 'user', 'items']);
-        
-        $siteName = \App\Models\Setting::get('site_name', config('brand.name'));
-        $siteEmail = \App\Models\Setting::get('email', config('brand.email'));
-        $sitePhone = \App\Models\Setting::get('phone', config('brand.phone'));
-        
+
+        $siteName = Setting::get('site_name', config('brand.name'));
+        $siteEmail = Setting::get('email', config('brand.email'));
+        $sitePhone = Setting::get('phone', config('brand.phone'));
+
         $pdf = Pdf::loadView('admin.invoices.pdf', [
             'invoice' => $invoice,
             'siteName' => $siteName,
             'siteEmail' => $siteEmail,
             'sitePhone' => $sitePhone,
         ]);
-        
-        return $pdf->download('invoice-' . $invoice->invoice_number . '.pdf');
+
+        return $pdf->download('invoice-'.$invoice->invoice_number.'.pdf');
     }
 
     public function sendEmail(Request $request, Invoice $invoice)
@@ -116,15 +121,15 @@ class InvoiceController extends Controller
         ]);
 
         $invoice->load(['reservation.property', 'user', 'items']);
-        
-        $siteName = \App\Models\Setting::get('site_name', config('brand.name'));
-        $siteEmail = \App\Models\Setting::get('email', config('brand.email'));
-        
+
+        $siteName = Setting::get('site_name', config('brand.name'));
+        $siteEmail = Setting::get('email', config('brand.email'));
+
         $pdf = Pdf::loadView('admin.invoices.pdf', [
             'invoice' => $invoice,
             'siteName' => $siteName,
             'siteEmail' => $siteEmail,
-            'sitePhone' => \App\Models\Setting::get('phone', config('brand.phone')),
+            'sitePhone' => Setting::get('phone', config('brand.phone')),
         ]);
 
         $content = view('admin.invoices.email-template', [
@@ -134,11 +139,11 @@ class InvoiceController extends Controller
 
         Mail::html($content, function ($message) use ($request, $invoice, $pdf, $siteName) {
             $message->to($request->email)
-                ->subject('Invoice #' . $invoice->invoice_number . ' from ' . $siteName)
-                ->attachData($pdf->output(), 'invoice-' . $invoice->invoice_number . '.pdf');
+                ->subject('Invoice #'.$invoice->invoice_number.' from '.$siteName)
+                ->attachData($pdf->output(), 'invoice-'.$invoice->invoice_number.'.pdf');
         });
 
-        return back()->with('success', 'Invoice sent to ' . $request->email);
+        return back()->with('success', 'Invoice sent to '.$request->email);
     }
 
     public function markAsPaid(Request $request, Invoice $invoice)

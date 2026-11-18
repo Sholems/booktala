@@ -7,6 +7,7 @@ use App\Models\PatrolCheckpoint;
 use App\Models\Site;
 use App\Models\User;
 use App\Notifications\OperationsAlert;
+use App\Support\PropertyAccess;
 use App\Support\Supervision;
 use Carbon\CarbonImmutable;
 
@@ -20,7 +21,7 @@ class SecurityService
      */
     public function alertIncident(Incident $incident): void
     {
-        if (!$incident->isSerious()) {
+        if (! $incident->isSerious()) {
             return;
         }
 
@@ -33,9 +34,9 @@ class SecurityService
         foreach ($recipients->where('id', '!=', $incident->reported_by) as $user) {
             $isHeadOffice = $user->hasAnyRole(['super_admin', 'admin']);
             $user->notify(new OperationsAlert(
-                ucfirst($incident->severity) . ' incident at ' . $site->name . ': ' . $incident->title,
-                (Incident::CATEGORIES[$incident->category] ?? $incident->category) . ' · reported by ' . ($incident->reportedBy->name ?? 'staff') . ' · ' . $incident->occurred_at->format('D j M, g:i A'),
-                route(($isHeadOffice ? 'admin' : 'staff') . '.security.incidents.show', $incident),
+                ucfirst($incident->severity).' incident at '.$site->name.': '.$incident->title,
+                (Incident::CATEGORIES[$incident->category] ?? $incident->category).' · reported by '.($incident->reportedBy->name ?? 'staff').' · '.$incident->occurred_at->format('D j M, g:i A'),
+                route(($isHeadOffice ? 'admin' : 'staff').'.security.incidents.show', $incident),
                 'escalated',
             ));
         }
@@ -57,7 +58,7 @@ class SecurityService
 
         foreach ($checkpoints as $checkpoint) {
             $site = $checkpoint->site;
-            if (!$site->patrolsAt($now)) {
+            if (! $site->patrolsAt($now)) {
                 continue;
             }
 
@@ -77,9 +78,9 @@ class SecurityService
             foreach (Supervision::alertRecipients($site->id, 1) as $user) {
                 $isHeadOffice = $user->hasAnyRole(['super_admin', 'admin']);
                 $user->notify(new OperationsAlert(
-                    'Patrol missed: ' . $checkpoint->name . ' at ' . $site->name,
-                    'Not visited since ' . CarbonImmutable::parse($since)->format('g:i A') . ' (patrols are due every ' . $site->patrol_interval_minutes . ' minutes).',
-                    route(($isHeadOffice ? 'admin' : 'staff') . '.security.index', ['site' => $site->id]),
+                    'Patrol missed: '.$checkpoint->name.' at '.$site->name,
+                    'Not visited since '.CarbonImmutable::parse($since)->format('g:i A').' (patrols are due every '.$site->patrol_interval_minutes.' minutes).',
+                    route(($isHeadOffice ? 'admin' : 'staff').'.security.index', ['site' => $site->id]),
                     'escalated',
                 ));
             }
@@ -95,7 +96,7 @@ class SecurityService
      */
     private function windowStart(Site $site, CarbonImmutable $now): ?CarbonImmutable
     {
-        if (!$site->patrol_from || !$site->patrol_until) {
+        if (! $site->patrol_from || ! $site->patrol_until) {
             return null;
         }
 
@@ -109,6 +110,6 @@ class SecurityService
      */
     public static function canManage(?User $user, ?int $siteId): bool
     {
-        return \App\Support\PropertyAccess::seesAll($user) || Supervision::supervises($user, $siteId);
+        return PropertyAccess::seesAll($user) || Supervision::supervises($user, $siteId);
     }
 }

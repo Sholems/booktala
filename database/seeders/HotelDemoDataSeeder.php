@@ -3,8 +3,10 @@
 namespace Database\Seeders;
 
 use App\Models\HotelAmenity;
+use App\Models\Room;
 use App\Models\RoomType;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Str;
 
 class HotelDemoDataSeeder extends Seeder
 {
@@ -20,7 +22,7 @@ class HotelDemoDataSeeder extends Seeder
         foreach ($roomTypes as $type) {
             $roomType = RoomType::create([
                 'name' => $type['name'],
-                'slug' => \Illuminate\Support\Str::slug($type['name']),
+                'slug' => Str::slug($type['name']),
                 'base_price' => $type['base_price'],
                 'total_rooms' => $type['total_rooms'],
                 'max_adults' => $type['max_adults'],
@@ -31,7 +33,7 @@ class HotelDemoDataSeeder extends Seeder
             ]);
 
             for ($i = 1; $i <= $type['total_rooms']; $i++) {
-                \App\Models\Room::create([
+                Room::create([
                     'room_type_id' => $roomType->id,
                     'room_number' => (string) $i,
                     'floor' => rand(1, 5),
@@ -52,7 +54,7 @@ class HotelDemoDataSeeder extends Seeder
         foreach ($amenities as $amenity) {
             HotelAmenity::create([
                 'name' => $amenity['name'],
-                'slug' => \Illuminate\Support\Str::slug($amenity['name']),
+                'slug' => Str::slug($amenity['name']),
                 'icon' => $amenity['icon'],
                 'category' => $amenity['category'],
                 'opening_time' => $amenity['opening_time'],

@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\User;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
@@ -15,15 +16,15 @@ return new class extends Migration
         if ($staffRoleId) {
             $staffUserIds = DB::table('model_has_roles')
                 ->where('role_id', $staffRoleId)
-                ->where('model_type', \App\Models\User::class)
+                ->where('model_type', User::class)
                 ->pluck('model_id');
 
             foreach ($staffUserIds as $userId) {
-                if (!DB::table('staff')->where('user_id', $userId)->exists()) {
+                if (! DB::table('staff')->where('user_id', $userId)->exists()) {
                     DB::table('staff')->insert([
                         'user_id' => $userId,
                         'department' => 'frontdesk',
-                        'employee_id' => 'WP-' . str_pad((string) $userId, 4, '0', STR_PAD_LEFT),
+                        'employee_id' => 'WP-'.str_pad((string) $userId, 4, '0', STR_PAD_LEFT),
                         'hire_date' => now()->toDateString(),
                         'is_active' => true,
                         'created_at' => now(),

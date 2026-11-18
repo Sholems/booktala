@@ -1,22 +1,22 @@
 <?php
 
+use App\Http\Controllers\Api\AdminController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\PropertyController;
-use App\Http\Controllers\Api\AdminController;
 use Illuminate\Support\Facades\Route;
 
-Route::post('/auth/register', [AuthController::class, 'register']);
-Route::post('/auth/login', [AuthController::class, 'login']);
+Route::post('/auth/register', [AuthController::class, 'register'])->middleware('throttle:auth-api');
+Route::post('/auth/login', [AuthController::class, 'login'])->middleware('throttle:auth-api');
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/auth/me', [AuthController::class, 'me']);
     Route::post('/auth/logout', [AuthController::class, 'logout']);
-    
+
     Route::get('/properties', [PropertyController::class, 'index']);
     Route::get('/properties/{id}', [PropertyController::class, 'show']);
     Route::get('/properties/{id}/availability', [PropertyController::class, 'availability']);
-    Route::post('/properties/{id}/book', [PropertyController::class, 'book']);
-    
+    Route::post('/properties/{id}/book', [PropertyController::class, 'book'])->middleware('throttle:booking');
+
     Route::get('/my-reservations', [PropertyController::class, 'myReservations']);
 
     Route::middleware('role:super_admin|admin')->group(function () {

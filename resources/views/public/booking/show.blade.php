@@ -109,10 +109,36 @@
                             <span>VAT (7.5%)</span>
                             <span>₦{{ number_format($pricing['tax_amount'] ?? 0) }}</span>
                         </div>
+                        <div class="flex justify-between py-2">
+                            <span>Processing fee <span class="text-xs text-gray-500">(non-refundable)</span></span>
+                            <span>₦{{ number_format($pricing['processing_fee'] ?? config('booking.processing_fee')) }}</span>
+                        </div>
+                        <div class="flex justify-between py-2">
+                            <span>Refundable caution fee</span>
+                            <span>₦{{ number_format($pricing['caution_fee'] ?? config('booking.caution_fee')) }}</span>
+                        </div>
                         <div class="flex justify-between py-2 border-t font-bold text-lg">
                             <span>Total</span>
                             <span class="text-primary">₦{{ number_format($pricing['total_amount'] ?? $property->price_per_night) }}</span>
                         </div>
+                    </div>
+
+                    <div class="mt-4 pt-4 border-t">
+                        <p class="font-semibold mb-3">Payment option</p>
+                        <label class="flex items-start gap-3 mb-3 cursor-pointer">
+                            <input type="radio" name="payment_mode" value="full" checked class="mt-1">
+                            <span>
+                                <span class="font-medium">Pay full amount</span>
+                                <span class="block text-sm text-gray-500">₦{{ number_format($pricing['total_amount'] ?? $property->price_per_night) }}</span>
+                            </span>
+                        </label>
+                        <label class="flex items-start gap-3 cursor-pointer">
+                            <input type="radio" name="payment_mode" value="partial" class="mt-1">
+                            <span>
+                                <span class="font-medium">Pay 50% now</span>
+                                <span class="block text-sm text-green-700">₦{{ number_format(($pricing['total_amount'] ?? $property->price_per_night) * 0.5) }} now · balance due before check-in</span>
+                            </span>
+                        </label>
                     </div>
                 </div>
             </div>
@@ -130,6 +156,7 @@ document.getElementById('proceed-to-payment').addEventListener('click', function
     form.append('guests', document.querySelector('select[name="guests"]').value);
     form.append('discount_code', document.querySelector('input[name="discount_code"]').value || '');
     form.append('special_requests', document.querySelector('textarea[name="special_requests"]').value || '');
+    form.append('payment_mode', document.querySelector('input[name="payment_mode"]:checked').value);
     
     @if(!auth()->check())
     form.append('guest_name', document.querySelector('input[name="guest_name"]').value);

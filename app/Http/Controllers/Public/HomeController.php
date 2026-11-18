@@ -3,12 +3,11 @@
 namespace App\Http\Controllers\Public;
 
 use App\Http\Controllers\Controller;
-use App\Models\Property;
-use App\Models\Review;
 use App\Models\Amenity;
 use App\Models\Blog;
 use App\Models\HomepageSection;
-use Illuminate\Http\Request;
+use App\Models\Property;
+use App\Models\Review;
 
 class HomeController extends Controller
 {

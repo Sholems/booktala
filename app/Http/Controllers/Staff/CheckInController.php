@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Staff;
 
 use App\Http\Controllers\Controller;
 use App\Models\Reservation;
+use App\Models\Room;
 use App\Services\ReservationLifecycle;
 use App\Support\PropertyAccess;
 use Illuminate\Http\Request;
@@ -18,15 +19,17 @@ class CheckInController extends Controller
             ->where('booking_status', 'confirmed')
             ->with('property', 'user', 'guestCheckin')
             ->get();
-        
-        return view('staff.checkin.index', compact('todayCheckIns'));
+
+        $availableRooms = Room::whereIn('status', ['available', 'reserved'])->orderBy('room_number')->get();
+
+        return view('staff.checkin.index', compact('todayCheckIns', 'availableRooms'));
     }
 
     public function search(Request $request)
     {
         $request->validate(['search' => 'required|string|max:100']);
         $search = $request->search;
-        
+
         $reservations = Reservation::visibleTo(Auth::user())->where(function ($q) use ($request) {
             $q->where('booking_ref', 'like', "%{$request->search}%")
                 ->orWhereHas('user', function ($q) use ($request) {
@@ -34,19 +37,25 @@ class CheckInController extends Controller
                         ->orWhere('email', 'like', "%{$request->search}%");
                 });
         })
-        ->whereIn('booking_status', ['confirmed', 'checked_in'])
-        ->with('property', 'user', 'guestCheckin')
-        ->take(10)
-        ->get();
-        
-        return view('staff.checkin.search', compact('reservations', 'search'));
+            ->whereIn('booking_status', ['confirmed', 'checked_in'])
+            ->with('property', 'user', 'guestCheckin')
+            ->take(10)
+            ->get();
+
+        $availableRooms = Room::whereIn('status', ['available', 'reserved'])->orderBy('room_number')->get();
+
+        return view('staff.checkin.search', compact('reservations', 'search', 'availableRooms'));
     }
 
     public function processCheckIn(Reservation $reservation, ReservationLifecycle $lifecycle)
     {
         PropertyAccess::authorize(Auth::user(), $reservation->property_id);
 
-        $lifecycle->checkIn($reservation, Auth::user());
+        request()->validate([
+            'room_id' => ['nullable', 'integer', 'exists:rooms,id'],
+        ]);
+
+        $lifecycle->checkIn($reservation, Auth::user(), false, (int) request('room_id') ?: null);
 
         return redirect()->back()->with('success', 'Guest checked in successfully');
     }
@@ -59,7 +68,7 @@ class CheckInController extends Controller
             ->where('booking_status', 'checked_in')
             ->with('property', 'user')
             ->get();
-        
+
         return view('staff.checkout.index', compact('todayCheckOuts'));
     }
 
@@ -81,7 +90,9 @@ class CheckInController extends Controller
 
         $reservation->load('property', 'user', 'guestCheckin.verifiedBy');
 
-        return view('staff.checkin.details', compact('reservation'));
+        $availableRooms = Room::whereIn('status', ['available', 'reserved'])->orderBy('room_number')->get();
+
+        return view('staff.checkin.details', compact('reservation', 'availableRooms'));
     }
 
     public function verifyId(Reservation $reservation)
@@ -90,7 +101,7 @@ class CheckInController extends Controller
 
         $online = $reservation->guestCheckin;
 
-        if (!$online) {
+        if (! $online) {
             return back()->with('error', 'This guest has not completed online check-in.');
         }
         if ($online->isVerified()) {

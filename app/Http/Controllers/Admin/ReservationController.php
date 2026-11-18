@@ -3,7 +3,11 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\CancelReservationRequest;
+use App\Http\Requests\UpdateCautionRefundRequest;
+use App\Http\Requests\UpdateReservationRefundRequest;
 use App\Models\Reservation;
+use App\Models\Room;
 use App\Services\ReservationLifecycle;
 use Illuminate\Http\Request;
 
@@ -54,9 +58,10 @@ class ReservationController extends Controller
 
     public function show(Reservation $reservation)
     {
-        $reservation->load(['user', 'property', 'confirmedBy', 'cancelledBy']);
+        $reservation->load(['user', 'property', 'room', 'confirmedBy', 'cancelledBy']);
+        $availableRooms = Room::whereIn('status', ['available', 'reserved'])->orderBy('room_number')->get();
 
-        return view('admin.reservations.show', compact('reservation'));
+        return view('admin.reservations.show', compact('reservation', 'availableRooms'));
     }
 
     public function confirm(Reservation $reservation, ReservationLifecycle $lifecycle)
@@ -68,7 +73,17 @@ class ReservationController extends Controller
 
     public function checkIn(Request $request, Reservation $reservation, ReservationLifecycle $lifecycle)
     {
-        $lifecycle->checkIn($reservation, auth()->user(), $request->boolean('allow_unpaid'));
+        $validated = $request->validate([
+            'room_id' => ['nullable', 'integer', 'exists:rooms,id'],
+            'allow_unpaid' => ['nullable', 'boolean'],
+        ]);
+
+        $lifecycle->checkIn(
+            $reservation,
+            auth()->user(),
+            $request->boolean('allow_unpaid'),
+            isset($validated['room_id']) ? (int) $validated['room_id'] : null,
+        );
 
         return back()->with('success', 'Guest checked in');
     }
@@ -87,22 +102,18 @@ class ReservationController extends Controller
         return back()->with('success', 'Reservation marked as a no-show');
     }
 
-    public function cancel(Request $request, Reservation $reservation, ReservationLifecycle $lifecycle)
+    public function cancel(CancelReservationRequest $request, Reservation $reservation, ReservationLifecycle $lifecycle)
     {
-        $validated = $request->validate([
-            'reason' => ['nullable', 'string', 'max:500'],
-        ]);
+        $validated = $request->validated();
 
         $lifecycle->cancel($reservation, auth()->user(), $validated['reason'] ?? null);
 
         return back()->with('success', 'Reservation cancelled');
     }
 
-    public function updateRefund(Request $request, Reservation $reservation)
+    public function updateRefund(UpdateReservationRefundRequest $request, Reservation $reservation)
     {
-        $validated = $request->validate([
-            'refund_status' => ['required', 'in:refunded,declined'],
-        ]);
+        $validated = $request->validated();
 
         if ($reservation->refund_status !== 'pending') {
             return back()->with('error', 'There is no refund waiting for review on this booking.');
@@ -110,9 +121,29 @@ class ReservationController extends Controller
 
         $reservation->update([
             'refund_status' => $validated['refund_status'],
-            'payment_status' => $validated['refund_status'] === 'refunded' ? 'refunded' : $reservation->payment_status,
         ]);
 
         return back()->with('success', $validated['refund_status'] === 'refunded' ? 'Refund marked as paid' : 'Refund declined');
+    }
+
+    public function updateCautionRefund(UpdateCautionRefundRequest $request, Reservation $reservation)
+    {
+        $validated = $request->validated();
+
+        if ($reservation->caution_fee_status !== 'refund_pending') {
+            return back()->with('error', 'This caution fee is not waiting for a refund decision.');
+        }
+
+        $reservation->update([
+            'caution_fee_status' => $validated['caution_fee_status'],
+            'caution_refunded_at' => $validated['caution_fee_status'] === 'refunded' ? now() : null,
+        ]);
+
+        return back()->with(
+            'success',
+            $validated['caution_fee_status'] === 'refunded'
+                ? 'Caution fee marked as refunded'
+                : 'Caution fee marked as forfeited',
+        );
     }
 }

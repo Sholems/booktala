@@ -3,12 +3,14 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Expense;
 use App\Models\Owner;
 use App\Models\OwnerStatement;
 use App\Services\OwnerStatementService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 /**
  * Monthly owner statements: generate drafts, review, approve (owner can then
@@ -16,14 +18,12 @@ use Illuminate\Http\Request;
  */
 class OwnerStatementController extends Controller
 {
-    public function __construct(private OwnerStatementService $statements)
-    {
-    }
+    public function __construct(private OwnerStatementService $statements) {}
 
     public function index(Request $request)
     {
         // Default to last month: statements are usually prepared after the month closes.
-        $month = CarbonImmutable::parse($request->query('month', now()->subMonthNoOverflow()->format('Y-m')) . '-01');
+        $month = CarbonImmutable::parse($request->query('month', now()->subMonthNoOverflow()->format('Y-m')).'-01');
 
         $statements = OwnerStatement::with('owner')
             ->whereDate('period_start', $month)
@@ -45,10 +45,10 @@ class OwnerStatementController extends Controller
             'month' => 'required|date_format:Y-m',
             'owner_id' => 'nullable|exists:owners,id',
         ]);
-        $month = CarbonImmutable::parse($data['month'] . '-01');
+        $month = CarbonImmutable::parse($data['month'].'-01');
         abort_if($month->isAfter(now()->startOfMonth()), 422, 'Statements cannot be prepared for future months.');
 
-        if (!empty($data['owner_id'])) {
+        if (! empty($data['owner_id'])) {
             $statement = $this->statements->generate(Owner::findOrFail($data['owner_id']), $month);
 
             return redirect()->route('admin.statements.show', $statement)->with('success', 'Statement prepared');
@@ -57,7 +57,7 @@ class OwnerStatementController extends Controller
         $count = $this->statements->generateForAll($month);
 
         return redirect()->route('admin.statements.index', ['month' => $data['month']])
-            ->with('success', $count . ' draft statement(s) prepared for ' . $month->format('F Y'));
+            ->with('success', $count.' draft statement(s) prepared for '.$month->format('F Y'));
     }
 
     public function show(OwnerStatement $statement)
@@ -71,7 +71,7 @@ class OwnerStatementController extends Controller
     {
         $this->statements->approve($statement, $request->user());
 
-        return back()->with('success', 'Statement approved' . ($statement->owner->user_id ? ' and visible in the owner portal' : ''));
+        return back()->with('success', 'Statement approved'.($statement->owner->user_id ? ' and visible in the owner portal' : ''));
     }
 
     public function markPaid(Request $request, OwnerStatement $statement)
@@ -84,11 +84,11 @@ class OwnerStatementController extends Controller
 
     public function destroy(OwnerStatement $statement)
     {
-        if (!$statement->isDraft()) {
+        if (! $statement->isDraft()) {
             return back()->with('error', 'Only draft statements can be deleted.');
         }
         $month = $statement->period_start->format('Y-m');
-        \App\Models\Expense::where('owner_statement_id', $statement->id)->update(['owner_statement_id' => null]);
+        Expense::where('owner_statement_id', $statement->id)->update(['owner_statement_id' => null]);
         $statement->delete();
 
         return redirect()->route('admin.statements.index', ['month' => $month])->with('success', 'Draft statement deleted');
@@ -103,7 +103,7 @@ class OwnerStatementController extends Controller
     public static function download(OwnerStatement $statement)
     {
         $statement->load(['owner', 'lines.property']);
-        $filename = 'statement-' . \Illuminate\Support\Str::slug($statement->owner->name) . '-' . $statement->period_start->format('Y-m') . '.pdf';
+        $filename = 'statement-'.Str::slug($statement->owner->name).'-'.$statement->period_start->format('Y-m').'.pdf';
 
         return Pdf::loadView('statements.pdf', compact('statement'))->download($filename);
     }

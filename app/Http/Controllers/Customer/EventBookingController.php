@@ -41,7 +41,7 @@ class EventBookingController extends Controller
         ]);
 
         $space = EventSpace::findOrFail($request->event_space_id);
-        
+
         $hours = (strtotime($request->end_time) - strtotime($request->start_time)) / 3600;
         $totalPrice = $hours * $space->hourly_rate;
 
@@ -70,6 +70,7 @@ class EventBookingController extends Controller
         }
 
         $booking->load('eventSpace');
+
         return view('customer.event-bookings.show', compact('booking'));
     }
 
@@ -79,7 +80,7 @@ class EventBookingController extends Controller
             abort(403);
         }
 
-        if (!in_array($booking->status, ['pending', 'confirmed'])) {
+        if (! in_array($booking->status, ['pending', 'confirmed'])) {
             return back()->with('error', 'Cannot cancel this booking');
         }
 

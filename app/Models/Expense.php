@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Traits\VisibleByProperty;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -11,7 +12,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class Expense extends Model
 {
-    use \App\Traits\VisibleByProperty;
+    use VisibleByProperty;
 
     public const CATEGORIES = [
         'repairs' => 'Repairs & maintenance',

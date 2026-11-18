@@ -65,25 +65,32 @@ class GuestJourney
                 'text' => 'Payment received. Our team is confirming your booking and will email you shortly.',
                 'action' => null, 'url' => null, 'tone' => 'blue',
             ],
-            $r->booking_status === 'confirmed' && !$r->guestCheckin && $r->check_out->isAfter(today()) => [
+            $r->booking_status === 'confirmed' && $r->payment_status === 'partial' => [
+                'title' => 'Balance due',
+                'text' => 'Your 50% deposit is recorded. Pay the remaining balance before check-in.',
+                'action' => 'Pay balance',
+                'url' => route('customer.reservations.show', $r).'#payment',
+                'tone' => 'amber',
+            ],
+            $r->booking_status === 'confirmed' && ! $r->guestCheckin && $r->check_out->isAfter(today()) => [
                 'title' => 'Check in online',
                 'text' => 'Send your ID and arrival details now so check-in at the front desk is quick.',
                 'action' => 'Check in online', 'url' => route('customer.checkin.create', $r), 'tone' => 'gold',
             ],
             $r->booking_status === 'confirmed' => [
                 'title' => "You're all set",
-                'text' => 'Check-in from ' . date('g:i A', strtotime($checkInTime)) . ' on ' . $r->check_in->format('l, j F') . '. Bring the ID you entered online.',
+                'text' => 'Check-in from '.date('g:i A', strtotime($checkInTime)).' on '.$r->check_in->format('l, j F').'. Bring the ID you entered online.',
                 'action' => null, 'url' => null, 'tone' => 'green',
             ],
             $r->booking_status === 'checked_in' => [
                 'title' => 'Enjoy your stay',
-                'text' => 'Check-out is on ' . $r->check_out->format('l, j F') . '. Need towels, food or anything else?',
+                'text' => 'Check-out is on '.$r->check_out->format('l, j F').'. Need towels, food or anything else?',
                 'action' => 'Request room service', 'url' => route('customer.room-service.create'), 'tone' => 'blue',
             ],
-            $r->booking_status === 'checked_out' && !$r->review => [
+            $r->booking_status === 'checked_out' && ! $r->review => [
                 'title' => 'How was your stay?',
                 'text' => 'A quick review helps other guests and helps us improve.',
-                'action' => 'Leave a review', 'url' => route('customer.reservations.show', $r) . '#review', 'tone' => 'gold',
+                'action' => 'Leave a review', 'url' => route('customer.reservations.show', $r).'#review', 'tone' => 'gold',
             ],
             $r->booking_status === 'cancelled' && $r->refund_status === 'pending' => [
                 'title' => 'Refund under review',

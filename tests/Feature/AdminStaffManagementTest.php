@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\User;
+use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 use Spatie\Permission\Models\Role;
@@ -19,14 +20,14 @@ class AdminStaffManagementTest extends TestCase
         foreach (['super_admin', 'admin', 'staff', 'customer'] as $role) {
             Role::firstOrCreate(['name' => $role, 'guard_name' => 'web']);
         }
-        $this->seed(\Database\Seeders\RolePermissionSeeder::class);
+        $this->seed(RolePermissionSeeder::class);
     }
 
     private function makeUser(string $role, array $attrs = []): User
     {
         $user = User::create(array_merge([
-            'name' => ucfirst($role) . ' User',
-            'email' => $role . uniqid() . '@example.com',
+            'name' => ucfirst($role).' User',
+            'email' => $role.uniqid().'@example.com',
             'password' => 'password123',
             'status' => 'active',
         ], $attrs));

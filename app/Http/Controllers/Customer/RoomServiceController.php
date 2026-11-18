@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Customer;
 
 use App\Http\Controllers\Controller;
-use App\Models\RoomServiceOrder;
 use App\Models\Reservation;
+use App\Models\RoomServiceOrder;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
@@ -85,7 +85,7 @@ class RoomServiceController extends Controller
         abort_unless($order->user_id === auth()->id(), 403);
 
         // Once staff are on their way it is too late to cancel online.
-        if (!in_array($order->status, ['pending', 'preparing'], true)) {
+        if (! in_array($order->status, ['pending', 'preparing'], true)) {
             return back()->with('error', 'This request can no longer be cancelled.');
         }
 

@@ -21,7 +21,7 @@ class Supervision
      */
     public static function siteIds(?User $user): Collection
     {
-        if (!$user) {
+        if (! $user) {
             return collect();
         }
 

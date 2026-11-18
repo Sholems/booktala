@@ -23,7 +23,7 @@ class WorkRouter
     public function pick(Property|int $property, array $departments, bool $onShiftOnly = true, bool $strict = true): ?User
     {
         $property = $property instanceof Property ? $property : Property::find($property);
-        if (!$property) {
+        if (! $property) {
             return null;
         }
 
@@ -46,7 +46,7 @@ class WorkRouter
             ->contains(fn ($a) => in_array($a->position->department, $departments, true));
 
         $pool = $candidates->filter($inDepartment);
-        if ($pool->isEmpty() && !$strict) {
+        if ($pool->isEmpty() && ! $strict) {
             $pool = $candidates;
         }
 
@@ -64,13 +64,13 @@ class WorkRouter
     public function routeMaintenance(MaintenanceReport $report): ?User
     {
         $technician = $this->pick($report->property_id, ['maintenance']);
-        if (!$technician) {
+        if (! $technician) {
             return null;
         }
 
         $report->update(['assigned_to' => $technician->id]);
-        $this->notifyAssigned($technician, 'Maintenance job: ' . $report->title,
-            ($report->property->title ?? 'A property') . ' · ' . ucfirst($report->priority) . ' priority',
+        $this->notifyAssigned($technician, 'Maintenance job: '.$report->title,
+            ($report->property->title ?? 'A property').' · '.ucfirst($report->priority).' priority',
             route('staff.maintenance.index'));
 
         return $technician;
