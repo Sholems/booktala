@@ -15,6 +15,7 @@ use Spatie\Permission\PermissionRegistrar;
 class RolePermissionSeeder extends Seeder
 {
     public const PERMISSIONS = [
+        'portfolio.view_all',
         'property.view',
         'property.create',
         'property.edit',
@@ -42,6 +43,7 @@ class RolePermissionSeeder extends Seeder
 
     public const ROLE_PERMISSIONS = [
         'admin' => [
+            'portfolio.view_all',
             'property.view', 'property.create', 'property.edit',
             'reservation.view', 'reservation.manage', 'reservation.create',
             'reservation.refund', 'reservation.checkin-unpaid',

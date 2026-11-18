@@ -4,6 +4,7 @@ namespace App\Policies;
 
 use App\Models\Property;
 use App\Models\User;
+use App\Support\PropertyAccess;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
 class PropertyPolicy
@@ -17,21 +18,21 @@ class PropertyPolicy
 
     public function view(User $user, Property $property): bool
     {
-        return true;
+        return PropertyAccess::canAccess($user, $property);
     }
 
     public function create(User $user): bool
     {
-        return $user->hasRole('admin');
+        return $user->can('property.create');
     }
 
     public function update(User $user, Property $property): bool
     {
-        return $user->hasRole('admin');
+        return PropertyAccess::canAccess($user, $property) && $user->can('property.edit');
     }
 
     public function delete(User $user, Property $property): bool
     {
-        return $user->hasRole('admin');
+        return PropertyAccess::canAccess($user, $property) && $user->can('property.delete');
     }
 }

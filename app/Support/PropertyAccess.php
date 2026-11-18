@@ -4,6 +4,7 @@ namespace App\Support;
 
 use App\Models\Property;
 use App\Models\StaffAssignment;
+use App\Models\Unit;
 use App\Models\User;
 use Illuminate\Contracts\Database\Query\Builder as BuilderContract;
 use Illuminate\Database\Eloquent\Builder;
@@ -13,7 +14,7 @@ use Illuminate\Database\Query\Builder as QueryBuilder;
  * The single rule for which properties a person may see and act on in the
  * staff and admin portals:
  *
- *  - super admins and admins (head office): every property;
+ *  - super admins and users with explicit portfolio access: every property;
  *  - staff, supervisors and managers: properties at the sites they are
  *    currently assigned to;
  *  - anyone else: none.
@@ -25,7 +26,7 @@ class PropertyAccess
 {
     public static function seesAll(?User $user): bool
     {
-        return $user !== null && $user->hasAnyRole(['super_admin', 'admin']);
+        return $user !== null && ($user->hasRole('super_admin') || $user->can('portfolio.view_all'));
     }
 
     /**
@@ -45,7 +46,7 @@ class PropertyAccess
         return $query->whereIn($column, self::visiblePropertyIds($user));
     }
 
-    public static function canAccess(?User $user, Property|int|null $property): bool
+    public static function canAccess(?User $user, Unit|int|null $property): bool
     {
         if ($user === null || $property === null) {
             return self::seesAll($user);
@@ -55,7 +56,7 @@ class PropertyAccess
             return true;
         }
 
-        $id = $property instanceof Property ? $property->id : $property;
+        $id = $property instanceof Unit ? $property->id : $property;
 
         return self::visiblePropertyIds($user)->where('properties.id', $id)->exists();
     }
@@ -63,7 +64,7 @@ class PropertyAccess
     /**
      * Abort with 404 (not 403, so other sites' records are not even confirmed to exist).
      */
-    public static function authorize(?User $user, Property|int|null $property): void
+    public static function authorize(?User $user, Unit|int|null $property): void
     {
         abort_unless(self::canAccess($user, $property), 404);
     }
