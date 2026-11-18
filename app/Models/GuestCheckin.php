@@ -37,6 +37,8 @@ class GuestCheckin extends Model
             'check_in_date' => 'date',
             'check_in_time' => 'datetime:H:i',
             'verified_at' => 'datetime',
+            'id_number' => 'encrypted',
+            'id_document_path' => 'encrypted',
         ];
     }
 

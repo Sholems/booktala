@@ -15,6 +15,7 @@ class Invoice extends Model
         'invoice_number',
         'reservation_id',
         'user_id',
+        'guest_id',
         'subtotal',
         'vat_amount',
         'processing_fee',
@@ -53,6 +54,18 @@ class Invoice extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function guest(): BelongsTo
+    {
+        return $this->belongsTo(Guest::class);
+    }
+
+    protected static function booted(): void
+    {
+        static::creating(function (Invoice $invoice) {
+            $invoice->guest_id ??= $invoice->reservation?->guest_id;
+        });
     }
 
     public function items(): HasMany

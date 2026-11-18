@@ -10,6 +10,7 @@ class Payment extends Model
     protected $fillable = [
         'reservation_id',
         'user_id',
+        'guest_id',
         'amount',
         'currency',
         'paystack_reference',
@@ -35,5 +36,17 @@ class Payment extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function guest(): BelongsTo
+    {
+        return $this->belongsTo(Guest::class);
+    }
+
+    protected static function booted(): void
+    {
+        static::creating(function (Payment $payment) {
+            $payment->guest_id ??= $payment->reservation?->guest_id;
+        });
     }
 }

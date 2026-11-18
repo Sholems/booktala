@@ -13,6 +13,7 @@ class GuestProfile extends Model
 
     protected $fillable = [
         'user_id',
+        'guest_id',
         'total_stays',
         'total_nights',
         'total_spent',
@@ -41,9 +42,14 @@ class GuestProfile extends Model
         return $this->belongsTo(User::class);
     }
 
+    public function guest(): BelongsTo
+    {
+        return $this->belongsTo(Guest::class);
+    }
+
     public function reservations(): HasMany
     {
-        return $this->hasMany(Reservation::class, 'user_id', 'user_id');
+        return $this->hasMany(Reservation::class, 'guest_id', 'guest_id');
     }
 
     public static function tiers()

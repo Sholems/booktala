@@ -17,6 +17,7 @@ class Reservation extends Model
     protected $fillable = [
         'booking_ref',
         'user_id',
+        'guest_id',
         'property_id',
         'room_id',
         'check_in',
@@ -150,6 +151,20 @@ class Reservation extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function guest(): BelongsTo
+    {
+        return $this->belongsTo(Guest::class);
+    }
+
+    protected static function booted(): void
+    {
+        static::creating(function (Reservation $reservation) {
+            if (! $reservation->guest_id && $reservation->user_id) {
+                $reservation->guest_id = Guest::forUser(User::findOrFail($reservation->user_id))->id;
+            }
+        });
     }
 
     public function property(): BelongsTo
