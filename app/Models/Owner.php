@@ -42,6 +42,16 @@ class Owner extends Model
         return $this->hasMany(Unit::class);
     }
 
+    public function managementAgreements(): HasMany
+    {
+        return $this->hasMany(ManagementAgreement::class);
+    }
+
+    public function financeEntries(): HasMany
+    {
+        return $this->hasMany(FinanceEntry::class);
+    }
+
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);

@@ -133,6 +133,16 @@ class Unit extends Model implements HasMedia
         return $this->hasMany(Reservation::class, 'property_id');
     }
 
+    public function managementAgreements(): HasMany
+    {
+        return $this->hasMany(ManagementAgreement::class, 'unit_id');
+    }
+
+    public function financeEntries(): HasMany
+    {
+        return $this->hasMany(FinanceEntry::class, 'unit_id');
+    }
+
     public function reviews(): HasMany
     {
         return $this->hasMany(Review::class, 'property_id');
