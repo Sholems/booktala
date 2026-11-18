@@ -3,7 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\Amenity;
-use App\Models\Property;
+use App\Models\Unit;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 
@@ -67,7 +67,7 @@ class PropertySeeder extends Seeder
         ];
 
         foreach ($properties as $data) {
-            $property = Property::updateOrCreate(
+            $unit = Unit::updateOrCreate(
                 ['slug' => $data['slug']],
                 [
                     'created_by' => $admin?->id,
@@ -94,7 +94,7 @@ class PropertySeeder extends Seeder
                 ]
             );
 
-            $property->amenities()->sync(
+            $unit->amenities()->sync(
                 Amenity::whereIn('name', array_merge(self::COMMON_AMENITIES, $data['amenities']))->pluck('id')
             );
         }

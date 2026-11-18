@@ -91,6 +91,11 @@ class Site extends Model
         return $this->hasMany(Property::class);
     }
 
+    public function units(): HasMany
+    {
+        return $this->hasMany(Unit::class);
+    }
+
     public function assignments(): HasMany
     {
         return $this->hasMany(StaffAssignment::class);

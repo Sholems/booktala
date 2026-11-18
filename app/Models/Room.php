@@ -14,6 +14,9 @@ class Room extends Model
 
     protected $fillable = [
         'room_type_id',
+        'unit_id',
+        'unit_mapping_status',
+        'unit_mapping_notes',
         'room_number',
         'floor',
         'building',
@@ -31,6 +34,11 @@ class Room extends Model
     public function roomType(): BelongsTo
     {
         return $this->belongsTo(RoomType::class);
+    }
+
+    public function unit(): BelongsTo
+    {
+        return $this->belongsTo(Unit::class);
     }
 
     public function reservations(): HasMany

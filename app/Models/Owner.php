@@ -37,6 +37,11 @@ class Owner extends Model
         return $this->hasMany(Property::class);
     }
 
+    public function units(): HasMany
+    {
+        return $this->hasMany(Unit::class);
+    }
+
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
