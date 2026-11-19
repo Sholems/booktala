@@ -3,26 +3,28 @@
 namespace App\Services;
 
 use App\Models\Expense;
+use App\Models\ManagementAgreement;
 use App\Models\Owner;
 use App\Models\OwnerStatement;
 use App\Models\Reservation;
+use App\Models\Unit;
 use App\Models\User;
+use App\Services\Finance\LedgerPostingService;
+use App\Services\Finance\StatementQueryService;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 /**
- * Monthly owner statements.
- *
- *  Revenue: paid stays at the owner's properties that checked out in the month,
- *  at the room price after discounts (VAT is excluded: it is not the owner's).
- *  Commission: the owner's agreed % of that revenue.
- *  Expenses: owner-chargeable expenses up to the month end that are not yet on
- *  a statement (so a late receipt lands on the next one), if their agreement
- *  deducts expenses.
+ * Monthly owner statements backed by the operational subledger.
  */
 class OwnerStatementService
 {
+    public function __construct(
+        private StatementQueryService $queryService,
+        private LedgerPostingService $postingService,
+    ) {}
+
     public function generate(Owner $owner, CarbonImmutable $month): OwnerStatement
     {
         $start = $month->startOfMonth();
@@ -42,69 +44,27 @@ class OwnerStatementService
                 'status' => 'draft',
             ])->save();
 
-            // Start again: release expenses and lines from a previous draft.
+            // Release expenses and lines from a previous draft
             Expense::where('owner_statement_id', $statement->id)->update(['owner_statement_id' => null]);
             $statement->lines()->delete();
 
-            $propertyIds = $owner->properties()->pluck('id');
+            $data = $this->queryService->queryForStatement($owner, $start, $end);
 
-            $stays = Reservation::whereIn('property_id', $propertyIds)
-                ->where('booking_status', 'checked_out')
-                ->where('payment_status', 'paid')
-                ->whereDate('check_out', '>=', $start)
-                ->whereDate('check_out', '<=', $end)
-                ->with('property')
-                ->orderBy('check_out')
-                ->get();
-
-            $gross = 0.0;
-            $nights = 0;
-            foreach ($stays as $stay) {
-                $amount = round((float) $stay->subtotal - (float) $stay->discount_amount, 2);
-                $gross += $amount;
-                $nights += (int) $stay->nights;
-                $statement->lines()->create([
-                    'property_id' => $stay->property_id,
-                    'type' => 'booking',
-                    'source_id' => $stay->id,
-                    'date' => $stay->check_out,
-                    'description' => 'Stay '.$stay->booking_ref.' · '.$stay->check_in->format('j M').'–'.$stay->check_out->format('j M'),
-                    'nights' => $stay->nights,
-                    'amount' => $amount,
-                ]);
-            }
-
-            $expensesTotal = 0.0;
-            if ($owner->deduct_expenses) {
-                $expenses = Expense::whereIn('property_id', $propertyIds)
-                    ->where('charge_to', 'owner')
-                    ->whereNull('owner_statement_id')
-                    ->whereDate('spent_on', '<=', $end)
-                    ->orderBy('spent_on')
-                    ->get();
-
-                foreach ($expenses as $expense) {
-                    $expensesTotal += (float) $expense->amount;
-                    $expense->update(['owner_statement_id' => $statement->id]);
-                    $statement->lines()->create([
-                        'property_id' => $expense->property_id,
-                        'type' => 'expense',
-                        'source_id' => $expense->id,
-                        'date' => $expense->spent_on,
-                        'description' => $expense->categoryLabel().': '.$expense->description,
-                        'amount' => -1 * (float) $expense->amount,
-                    ]);
+            foreach ($data['lines'] as $lineData) {
+                if (isset($lineData['expense_model'])) {
+                    $lineData['expense_model']->update(['owner_statement_id' => $statement->id]);
+                    unset($lineData['expense_model']);
                 }
-            }
 
-            $commission = round($gross * (float) $owner->commission_rate / 100, 2);
+                $statement->lines()->create($lineData);
+            }
 
             $statement->update([
-                'gross_revenue' => round($gross, 2),
-                'nights_booked' => $nights,
-                'commission_amount' => $commission,
-                'expenses_total' => round($expensesTotal, 2),
-                'net_payout' => round($gross - $commission - $expensesTotal, 2),
+                'gross_revenue' => $data['gross_revenue'],
+                'nights_booked' => $data['nights_booked'],
+                'commission_amount' => $data['commission_amount'],
+                'expenses_total' => $data['expenses_total'],
+                'net_payout' => $data['net_payout'],
             ]);
 
             return $statement->fresh('lines');
@@ -135,15 +95,45 @@ class OwnerStatementService
             throw ValidationException::withMessages(['status' => 'Only a draft statement can be approved.']);
         }
 
+        $owner = $statement->owner;
+        if (! $owner->is_company_owned) {
+            // Check agreement coverage for every stay in the statement (AE6)
+            foreach ($statement->lines()->where('type', 'booking')->get() as $line) {
+                $reservation = Reservation::find($line->source_id);
+                if ($reservation) {
+                    $unit = $reservation->unit ?? Unit::find($reservation->property_id);
+                    $checkInDate = $reservation->check_in->toDateString();
+                    $covered = ManagementAgreement::query()
+                        ->where('unit_id', $unit->id)
+                        ->where('status', ManagementAgreement::STATUS_REVIEWED)
+                        ->whereDate('effective_from', '<=', $checkInDate)
+                        ->where(function ($q) use ($checkInDate) {
+                            $q->whereNull('effective_to')->orWhereDate('effective_to', '>=', $checkInDate);
+                        })
+                        ->exists();
+
+                    if (! $covered) {
+                        throw ValidationException::withMessages([
+                            'status' => "Cannot approve statement: unit {$unit->unit_code} on {$checkInDate} is not covered by a reviewed management agreement.",
+                        ]);
+                    }
+                }
+            }
+        }
+
         $statement->update(['status' => 'approved', 'approved_by' => $by->id, 'approved_at' => now()]);
     }
 
-    public function markPaid(OwnerStatement $statement, ?string $reference): void
+    public function markPaid(OwnerStatement $statement, ?string $reference, ?User $by = null): void
     {
         if ($statement->status !== 'approved') {
             throw ValidationException::withMessages(['status' => 'Approve the statement before recording the payout.']);
         }
 
-        $statement->update(['status' => 'paid', 'paid_at' => now(), 'payment_reference' => $reference]);
+        DB::transaction(function () use ($statement, $reference, $by) {
+            $statement->update(['status' => 'paid', 'paid_at' => now(), 'payment_reference' => $reference]);
+
+            $this->postingService->postPayout($statement, $reference, $by?->id ?? auth()->id());
+        });
     }
 }

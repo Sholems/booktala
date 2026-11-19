@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Owner;
 use App\Models\OwnerStatement;
 use App\Models\Reservation;
+use App\Services\Finance\OwnerFinanceQueryService;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\Request;
 
@@ -16,12 +17,29 @@ use Illuminate\Http\Request;
  */
 class PortalController extends Controller
 {
+    public function __construct(
+        private OwnerFinanceQueryService $financeService,
+    ) {}
+
     public function dashboard(Request $request)
     {
         $owner = $this->owner($request);
-        $properties = $owner->properties()->with(['site', 'primaryImage'])->orderBy('title')->get();
+        $period = $request->query('month');
+        $selectedPropertyId = $request->filled('property_id') ? $request->integer('property_id') : null;
 
-        $monthStart = CarbonImmutable::now()->startOfMonth();
+        // If property_id is specified, ensure it belongs to owner to prevent cross-owner snooping (AE5)
+        if ($selectedPropertyId !== null && ! $owner->units()->where('id', $selectedPropertyId)->exists()) {
+            abort(404);
+        }
+
+        $finance = $this->financeService->queryDashboard($owner, $period, $selectedPropertyId);
+
+        $properties = $owner->properties()->with(['site', 'primaryImage'])->orderBy('title')->get();
+        if ($selectedPropertyId !== null) {
+            $properties = $properties->where('id', $selectedPropertyId);
+        }
+
+        $monthStart = $period ? CarbonImmutable::parse($period.'-01')->startOfMonth() : CarbonImmutable::now()->startOfMonth();
         $monthEnd = $monthStart->endOfMonth();
         $daysInMonth = $monthStart->daysInMonth;
 
@@ -49,7 +67,10 @@ class PortalController extends Controller
 
         $latest = $owner->statements()->visibleToOwner()->first();
 
-        return view('owner.dashboard', compact('owner', 'properties', 'nights', 'daysInMonth', 'upcoming', 'latest', 'monthStart'));
+        return view('owner.dashboard', compact(
+            'owner', 'properties', 'nights', 'daysInMonth', 'upcoming', 'latest',
+            'monthStart', 'finance', 'selectedPropertyId'
+        ));
     }
 
     public function statements(Request $request)

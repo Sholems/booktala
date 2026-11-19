@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Attendance;
 use App\Models\Expense;
+use App\Models\ManagementAgreement;
 use App\Models\Owner;
 use App\Models\OwnerStatement;
 use App\Models\PayRun;
@@ -70,11 +71,25 @@ class FinanceAndPayrollTest extends TestCase
 
     private function makeProperty(string $title, Owner $owner): Property
     {
-        return Property::create([
+        $property = Property::create([
             'title' => $title, 'description' => 'Nice', 'address' => '1 Street', 'city' => 'Lagos', 'state' => 'Lagos',
             'price_per_night' => 10000, 'max_guests' => 2, 'bedrooms' => 1, 'bathrooms' => 1, 'toilets' => 1, 'status' => 'active',
             'owner_id' => $owner->id, 'site_id' => $this->site->id,
         ]);
+
+        ManagementAgreement::create([
+            'unit_id' => $property->id,
+            'owner_id' => $owner->id,
+            'status' => ManagementAgreement::STATUS_REVIEWED,
+            'commission_rate' => $owner->commission_rate ?? 20,
+            'deduct_expenses' => $owner->deduct_expenses ?? true,
+            'caution_forfeiture_recipient' => 'company',
+            'effective_from' => '2026-01-01',
+            'effective_to' => null,
+            'reviewed_at' => now(),
+        ]);
+
+        return $property;
     }
 
     private function stay(Property $property, string $out, array $attrs = []): Reservation
