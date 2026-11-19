@@ -128,33 +128,38 @@ $socialLinks = array_filter([
                     <p class="text-accent text-sm font-semibold mt-3 tracking-wide">{{ config('brand.tagline') }}</p>
                 </div>
                 <div class="lg:col-span-2">
-                    <h4 class="font-bold mb-3 md:mb-4 text-sm md:text-base">Useful Links</h4>
+                    <h4 class="font-bold mb-3 md:mb-4 text-sm md:text-base text-white">Explore</h4>
                     <ul class="space-y-2 text-sm">
                         <li><a href="{{ route('pages.about') }}" class="text-gray-300 hover:text-accent">About Us</a></li>
-                        <li><a href="{{ route('pages.contact') }}" class="text-gray-300 hover:text-accent">Contact Us</a></li>
-                        <li><a href="{{ route('pages.terms') }}" class="text-gray-300 hover:text-accent">Term &amp; Condition</a></li>
                         <li><a href="{{ route('properties.index') }}" class="text-gray-300 hover:text-accent">Apartments</a></li>
-                        <li><a href="{{ route('blog.index') }}" class="text-gray-300 hover:text-accent">Blog</a></li>
-                        <li><a href="{{ route('pages.faq') }}" class="text-gray-300 hover:text-accent">FAQ</a></li>
-                        <li><a href="{{ route('pages.privacy') }}" class="text-gray-300 hover:text-accent">Privacy Policy</a></li>
-                        <li><a href="{{ route('pages.cancellation') }}" class="text-gray-300 hover:text-accent">Cancellation Policy</a></li>
+                        <li><a href="{{ route('blog.index') }}" class="text-gray-300 hover:text-accent">Blog &amp; News</a></li>
+                        <li><a href="{{ route('pages.faq') }}" class="text-gray-300 hover:text-accent">FAQs</a></li>
+                        <li><a href="{{ url('/owner-partnership-terms') }}" class="text-gray-300 hover:text-accent">List Your Property</a></li>
+                        <li><a href="{{ route('pages.contact') }}" class="text-gray-300 hover:text-accent">Contact Us</a></li>
                     </ul>
                 </div>
                 <div class="lg:col-span-3">
-                    <h4 class="font-bold mb-3 md:mb-4 text-sm md:text-base">Address</h4>
-                    <p class="flex text-sm text-gray-300"><i class="fas fa-map-marker-alt mr-2 mt-1 text-accent"></i> <span>{{ $siteAddress }}</span></p>
+                    <h4 class="font-bold mb-3 md:mb-4 text-sm md:text-base text-white">Policies &amp; Legal</h4>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="{{ route('pages.terms') }}" class="text-gray-300 hover:text-accent">Terms &amp; Conditions</a></li>
+                        <li><a href="{{ route('pages.privacy') }}" class="text-gray-300 hover:text-accent">Privacy Policy</a></li>
+                        <li><a href="{{ route('pages.cancellation') }}" class="text-gray-300 hover:text-accent">Cancellation &amp; Refunds</a></li>
+                        <li><a href="{{ url('/house-rules') }}" class="text-gray-300 hover:text-accent">House Rules &amp; Guidelines</a></li>
+                        <li><a href="{{ url('/security-deposit-policy') }}" class="text-gray-300 hover:text-accent">Caution Deposit Policy</a></li>
+                    </ul>
+                </div>
+                <div class="lg:col-span-3">
+                    <h4 class="font-bold mb-3 md:mb-4 text-sm md:text-base text-white">Contact &amp; Concierge</h4>
+                    <ul class="space-y-2 text-sm text-gray-300">
+                        <li><i class="fas fa-map-marker-alt mr-2 text-accent"></i> <span>{{ $siteAddress }}</span></li>
+                        <li class="pt-1"><i class="fas fa-phone mr-2 text-accent"></i> <a href="tel:{{ preg_replace('/[^0-9+]/', '', $sitePhone) }}" class="hover:text-accent">{{ $sitePhone }}</a></li>
+                        <li><i class="fas fa-envelope mr-2 text-accent"></i> <a href="mailto:{{ $siteEmail }}" class="hover:text-accent break-all">{{ $siteEmail }}</a></li>
+                    </ul>
                     @if($googleProfile)
                     <a href="{{ $googleProfile }}" target="_blank" rel="noopener" class="inline-flex items-center gap-2 mt-3 text-sm text-gray-300 hover:text-accent">
                         <i class="fab fa-google"></i> Google Profile
                     </a>
                     @endif
-                </div>
-                <div class="lg:col-span-3">
-                    <h4 class="font-bold mb-3 md:mb-4 text-sm md:text-base">Contact Us</h4>
-                    <ul class="space-y-2 text-sm text-gray-300">
-                        <li><i class="fas fa-phone mr-2 text-accent"></i> <a href="tel:{{ preg_replace('/[^0-9+]/', '', $sitePhone) }}" class="hover:text-accent">{{ $sitePhone }}</a></li>
-                        <li><i class="fas fa-envelope mr-2 text-accent"></i> <a href="mailto:{{ $siteEmail }}" class="hover:text-accent break-all">{{ $siteEmail }}</a></li>
-                    </ul>
                     <div class="mt-4 flex gap-3">
                         @foreach($socialLinks as [$icon, $label, $href])
                         <a href="{{ $href }}" target="_blank" rel="noopener" aria-label="{{ $label }}" class="w-9 h-9 rounded-full bg-white/10 flex items-center justify-center text-gray-200 hover:bg-accent hover:text-white transition"><i class="fab {{ $icon }}"></i></a>
