@@ -12,6 +12,7 @@ use App\Models\Site;
 use App\Models\Staff;
 use App\Models\Unit;
 use App\Models\User;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -194,5 +195,48 @@ class ReceiptAndInvoiceStandardTest extends TestCase
         $response->assertOk();
         $this->assertStringContainsString('application/pdf', $response->headers->get('Content-Type'));
         $this->assertStringContainsString('invoice-INV-2026-998877.pdf', $response->headers->get('Content-Disposition'));
+    }
+
+    public function test_receipt_and_invoice_pdfs_are_strictly_one_page(): void
+    {
+        $siteName = 'BookTala';
+        $siteEmail = 'concierge@booktala.com';
+        $sitePhone = '+234 814 000 8252';
+        $siteAddress = 'Plot 14, Admiralty Way, Lekki Phase 1, Lagos, Nigeria';
+        $companyName = 'G-Briel Property Ltd';
+        $bankName = 'First Bank of Nigeria / Providus Bank';
+        $accountNumber = '0123456789';
+        $accountName = 'BookTala (G-Briel Property Ltd)';
+        $logoBase64 = null;
+
+        // Invoice PDF 1-page assertion
+        $invoicePdf = Pdf::loadView('admin.invoices.pdf', [
+            'invoice' => $this->invoice,
+            'siteName' => $siteName,
+            'siteEmail' => $siteEmail,
+            'sitePhone' => $sitePhone,
+            'siteAddress' => $siteAddress,
+            'companyName' => $companyName,
+            'logoBase64' => $logoBase64,
+        ]);
+        $invoicePdf->render();
+        $this->assertSame(1, $invoicePdf->getDomPDF()->getCanvas()->get_page_count(), 'Invoice PDF must not exceed 1 page.');
+
+        // Receipt PDF 1-page assertion
+        $receiptPdf = Pdf::loadView('frontdesk.receipt-pdf', [
+            'reservation' => $this->reservation,
+            'invoice' => $this->invoice,
+            'siteName' => $siteName,
+            'siteEmail' => $siteEmail,
+            'sitePhone' => $sitePhone,
+            'siteAddress' => $siteAddress,
+            'companyName' => $companyName,
+            'bankName' => $bankName,
+            'accountNumber' => $accountNumber,
+            'accountName' => $accountName,
+            'logoBase64' => $logoBase64,
+        ]);
+        $receiptPdf->render();
+        $this->assertSame(1, $receiptPdf->getDomPDF()->getCanvas()->get_page_count(), 'Receipt PDF must not exceed 1 page.');
     }
 }

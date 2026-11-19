@@ -6,7 +6,7 @@
     <style>
         @page {
             size: A4 portrait;
-            margin: 10mm 12mm;
+            margin: 7mm 10mm 6mm 10mm;
         }
         * {
             margin: 0;
@@ -15,108 +15,111 @@
         }
         body {
             font-family: Arial, "Helvetica Neue", Helvetica, sans-serif;
-            font-size: 11px;
+            font-size: 10px;
             color: #1e293b;
-            line-height: 1.4;
+            line-height: 1.3;
             background: #ffffff;
+            height: 100%;
         }
         table {
             width: 100%;
             border-collapse: collapse;
+            page-break-inside: avoid;
         }
         .header-table td {
-            vertical-align: top;
+            vertical-align: middle;
         }
         .logo-img {
-            max-height: 52px;
+            max-height: 44px;
             width: auto;
         }
         .company-title {
-            font-size: 16px;
+            font-size: 14px;
             font-weight: bold;
             color: #0B2D5B;
             text-transform: uppercase;
             letter-spacing: 0.5px;
+            line-height: 1.1;
         }
         .company-sub {
-            font-size: 9px;
+            font-size: 8px;
             color: #64748b;
             text-transform: uppercase;
             font-weight: bold;
             margin-top: 2px;
         }
         .company-contact {
-            font-size: 9.5px;
+            font-size: 8.5px;
             color: #475569;
-            margin-top: 4px;
-            line-height: 1.35;
+            margin-top: 2px;
+            line-height: 1.25;
         }
         .invoice-badge {
             background-color: #0B2D5B;
             color: #ffffff;
-            padding: 10px 14px;
-            border-radius: 8px;
+            padding: 8px 12px;
+            border-radius: 6px;
             text-align: right;
         }
         .invoice-badge .title {
-            font-size: 10px;
+            font-size: 9px;
             font-weight: bold;
             letter-spacing: 1.5px;
             color: #cbd5e1;
             text-transform: uppercase;
         }
         .invoice-badge .ref {
-            font-size: 14px;
+            font-size: 13px;
             font-weight: bold;
             color: #F59E0B;
-            margin-top: 2px;
+            margin-top: 1px;
         }
         .invoice-badge .booking-no {
-            font-size: 8.5px;
+            font-size: 8px;
             color: #94a3b8;
-            margin-top: 2px;
+            margin-top: 1px;
         }
 
         /* 2-Column Info Cards */
         .info-table {
-            margin-top: 14px;
-            margin-bottom: 14px;
+            margin-top: 8px;
+            margin-bottom: 8px;
         }
         .info-card {
             border: 1px solid #e2e8f0;
-            border-radius: 8px;
-            padding: 10px 12px;
+            border-radius: 6px;
+            padding: 7px 10px;
             vertical-align: top;
         }
         .bill-to-card {
             background-color: #f8fafc;
-            border-left: 4px solid #0B2D5B;
+            border-left: 3.5px solid #0B2D5B;
         }
         .card-header {
-            font-size: 9px;
+            font-size: 8.5px;
             font-weight: bold;
             color: #0B2D5B;
             text-transform: uppercase;
             letter-spacing: 0.5px;
-            margin-bottom: 5px;
+            margin-bottom: 3px;
         }
         .guest-name {
-            font-size: 13px;
+            font-size: 11.5px;
             font-weight: bold;
             color: #0f172a;
-            margin-bottom: 4px;
+            margin-bottom: 2px;
         }
         .card-meta-line {
-            font-size: 9.5px;
+            font-size: 8.5px;
             color: #475569;
-            margin-bottom: 2px;
+            margin-bottom: 1px;
         }
         .card-meta-line strong {
             color: #1e293b;
         }
         .meta-table td {
-            padding: 2.5px 0;
-            font-size: 9.5px;
+            padding: 2px 0;
+            font-size: 8.5px;
             border-bottom: 1px solid #f1f5f9;
         }
         .meta-table tr:last-child td {
@@ -125,64 +128,64 @@
 
         /* Line Items Table */
         .items-table {
-            margin-top: 10px;
+            margin-top: 6px;
             border: 1px solid #cbd5e1;
-            border-radius: 6px;
+            border-radius: 5px;
             overflow: hidden;
         }
         .items-table th {
             background-color: #0B2D5B;
             color: #ffffff;
-            font-size: 9.5px;
+            font-size: 8.5px;
             font-weight: bold;
-            padding: 7px 8px;
+            padding: 5px 6px;
             text-align: left;
         }
         .items-table td {
-            padding: 7px 8px;
-            font-size: 9.5px;
+            padding: 4.5px 6px;
+            font-size: 8.5px;
             border-bottom: 1px solid #e2e8f0;
             color: #1e293b;
         }
         .section-row td {
             background-color: #f1f5f9;
             font-weight: bold;
-            font-size: 8.5px;
+            font-size: 8px;
             letter-spacing: 0.5px;
             color: #334155;
-            padding: 5px 8px;
+            padding: 4px 6px;
         }
         .text-center { text-align: center; }
         .text-right { text-align: right; }
 
         /* Summary Block */
         .summary-wrapper {
-            margin-top: 10px;
-            margin-bottom: 12px;
+            margin-top: 5px;
+            margin-bottom: 6px;
         }
         .summary-table {
-            width: 320px;
+            width: 290px;
             float: right;
         }
         .summary-table td {
-            padding: 3px 6px;
-            font-size: 9.5px;
+            padding: 2px 5px;
+            font-size: 8.5px;
             border-bottom: 1px solid #f1f5f9;
         }
         .balance-banner {
             background-color: #0B2D5B;
             color: #ffffff;
             font-weight: bold;
-            border-radius: 5px;
+            border-radius: 4px;
         }
         .balance-banner td {
-            padding: 6px 10px;
-            font-size: 11px;
+            padding: 4.5px 8px;
+            font-size: 9.5px;
             border-bottom: none;
         }
         .balance-amount {
             color: #F59E0B;
-            font-size: 13px;
+            font-size: 11.5px;
             font-weight: bold;
             text-align: right;
         }
@@ -194,28 +197,28 @@
         .bank-box {
             border: 1.5px solid #D97706;
             background-color: #FFFBEB;
-            border-radius: 6px;
-            padding: 8px 10px;
-            margin-top: 8px;
-            margin-bottom: 10px;
-            font-size: 9.5px;
+            border-radius: 5px;
+            padding: 5px 8px;
+            margin-top: 4px;
+            margin-bottom: 5px;
+            font-size: 8.5px;
         }
         .bank-header {
-            font-size: 9.5px;
+            font-size: 8.5px;
             font-weight: bold;
             color: #B45309;
             text-transform: uppercase;
             letter-spacing: 0.5px;
-            margin-bottom: 4px;
+            margin-bottom: 2px;
         }
         .bank-table td {
-            padding: 2px 4px;
-            font-size: 9.5px;
+            padding: 1px 3px;
+            font-size: 8.5px;
         }
         .ref-pill {
             background-color: #0B2D5B;
             color: #ffffff;
-            padding: 2px 6px;
+            padding: 1.5px 5px;
             border-radius: 3px;
             font-weight: bold;
         }
@@ -228,43 +231,43 @@
             border-right: 1px solid #e2e8f0;
             border-bottom: 1px solid #e2e8f0;
             border-radius: 4px;
-            padding: 7px 10px;
-            margin-bottom: 14px;
-            font-size: 8.5px;
+            padding: 4px 8px;
+            margin-bottom: 6px;
+            font-size: 7.5px;
             color: #475569;
-            line-height: 1.35;
+            line-height: 1.25;
         }
         .note-box strong { color: #0f172a; }
 
         /* Signatures & Stamp */
         .signatures-table {
-            margin-top: 8px;
+            margin-top: 4px;
             border-top: 1px solid #cbd5e1;
-            padding-top: 10px;
+            padding-top: 6px;
         }
         .signatures-table td {
             vertical-align: top;
             text-align: center;
-            font-size: 9px;
+            font-size: 8px;
         }
         .sig-line {
             display: inline-block;
             border-bottom: 1px solid #64748b;
-            width: 140px;
-            height: 18px;
+            width: 120px;
+            height: 14px;
             font-style: italic;
-            font-size: 10px;
+            font-size: 8.5px;
             color: #334155;
         }
         .stamp-badge {
             display: inline-block;
-            border: 2px dashed #059669;
+            border: 1.5px dashed #059669;
             background-color: #f0fdf4;
             color: #065f46;
-            padding: 5px 12px;
-            border-radius: 6px;
+            padding: 3px 8px;
+            border-radius: 5px;
             font-weight: bold;
-            font-size: 10px;
+            font-size: 8.5px;
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
@@ -276,12 +279,16 @@
 
         /* Footer */
         .doc-footer {
-            margin-top: 12px;
+            margin-top: 4px;
             border-top: 1px solid #f1f5f9;
-            padding-top: 6px;
+            padding-top: 3px;
             text-align: center;
-            font-size: 8px;
+            font-size: 7px;
             color: #94a3b8;
+        }
+
+        div, p, table, tr, td, th {
+            page-break-inside: avoid;
         }
     </style>
 </head>
@@ -304,11 +311,11 @@
                 <table>
                     <tr>
                         @if(!empty($logoBase64))
-                            <td style="width: 65px; vertical-align: top;">
+                            <td style="width: 55px; vertical-align: middle;">
                                 <img src="{{ $logoBase64 }}" class="logo-img" alt="Logo">
                             </td>
                         @endif
-                        <td style="vertical-align: top; padding-left: 6px;">
+                        <td style="vertical-align: middle; padding-left: 5px;">
                             <div class="company-title">{{ $siteName ?? 'BookTala' }} Luxury Stays</div>
                             <div class="company-sub">Operated by {{ $companyName ?? 'G-Briel Property Ltd' }}</div>
                             <div class="company-contact">
@@ -319,7 +326,7 @@
                     </tr>
                 </table>
             </td>
-            <td style="width: 35%; text-align: right;">
+            <td style="width: 35%; text-align: right; vertical-align: middle;">
                 <div class="invoice-badge">
                     <div class="title">OFFICIAL INVOICE</div>
                     <div class="ref">#{{ $invoice->invoice_number }}</div>
@@ -335,7 +342,7 @@
     <table class="info-table">
         <tr>
             <!-- Left: BILL TO -->
-            <td style="width: 55%; padding-right: 8px;">
+            <td style="width: 55%; padding-right: 6px;">
                 <div class="info-card bill-to-card">
                     <div class="card-header">BILL TO / CLIENT DETAILS</div>
                     <div class="guest-name">{{ $guestName }}</div>
@@ -348,7 +355,7 @@
             </td>
 
             <!-- Right: INVOICE METADATA -->
-            <td style="width: 45%; padding-left: 8px;">
+            <td style="width: 45%; padding-left: 6px;">
                 <div class="info-card" style="background-color: #ffffff;">
                     <div class="card-header" style="color: #475569;">INVOICE & BILLING SCHEDULE</div>
                     <table class="meta-table">
@@ -417,7 +424,7 @@
                     </tr>
                 @else
                     <tr>
-                        <td colspan="5" class="text-center" style="padding: 12px; color: #64748b;">No line items recorded on this invoice.</td>
+                        <td colspan="5" class="text-center" style="padding: 8px; color: #64748b;">No line items recorded on this invoice.</td>
                     </tr>
                 @endif
             @endforelse
@@ -456,8 +463,8 @@
                 </tr>
             @endif
             <tr style="font-weight: bold; border-top: 1.5px solid #cbd5e1;">
-                <td style="font-size: 10px;">Net Total Payable:</td>
-                <td class="text-right" style="font-size: 10px;">₦{{ number_format((float) $invoice->total_amount, 2) }}</td>
+                <td style="font-size: 9px;">Net Total Payable:</td>
+                <td class="text-right" style="font-size: 9px;">₦{{ number_format((float) $invoice->total_amount, 2) }}</td>
             </tr>
             <tr style="color: #059669; font-weight: bold;">
                 <td>Amount Settled / Paid:</td>
@@ -481,7 +488,7 @@
                 <td style="width: 34%;"><strong>Account Name:</strong> {{ $accountName ?? 'BookTala (G-Briel Property Ltd)' }}</td>
             </tr>
         </table>
-        <div style="margin-top: 4px; padding-top: 4px; border-top: 1px solid #fde68a; font-size: 9px; color: #78350f;">
+        <div style="margin-top: 3px; padding-top: 3px; border-top: 1px solid #fde68a; font-size: 8px; color: #78350f;">
             Payment Reference: <span class="ref-pill">{{ $bookingRef }}</span> (Please state this reference on all payments)
         </div>
     </div>
@@ -490,7 +497,7 @@
     <div class="note-box">
         <strong>Important Payment Information:</strong> Payment is strictly due by the stated due date. Payments can be settled online via card, bank transfer, or at our front desk. For questions regarding this invoice, please reach out to <a href="mailto:{{ $siteEmail ?? 'concierge@booktala.com' }}">{{ $siteEmail ?? 'concierge@booktala.com' }}</a> quoting invoice #{{ $invoice->invoice_number }}.
         @if($invoice->notes)
-            <div style="margin-top: 4px; font-style: italic;"><strong>Additional Notes:</strong> {{ $invoice->notes }}</div>
+            <div style="margin-top: 2px; font-style: italic;"><strong>Additional Notes:</strong> {{ $invoice->notes }}</div>
         @endif
     </div>
 
@@ -499,26 +506,31 @@
         <tr>
             <td style="width: 33%;">
                 <div class="sig-line">Finance Desk</div>
-                <div style="font-weight: bold; margin-top: 3px; color: #0f172a;">Billing &amp; Revenue Officer</div>
-                <div style="color: #64748b; font-size: 8px;">G-Briel Property Operations Desk</div>
+                <div style="font-weight: bold; margin-top: 2px; color: #0f172a; font-size: 8px;">Billing &amp; Revenue Officer</div>
+                <div style="color: #64748b; font-size: 7.5px;">G-Briel Property Operations Desk</div>
             </td>
             <td style="width: 34%;">
                 @if($isPaidFull)
                     <div class="stamp-badge">
                         <div>✔ PAID IN FULL</div>
-                        <div style="font-size: 7.5px; font-weight: normal; margin-top: 1px;">Confirmed: {{ now()->format('d M Y') }}</div>
+                        <div style="font-size: 7px; font-weight: normal; margin-top: 1px;">Confirmed: {{ now()->format('d M Y') }}</div>
+                    </div>
+                @elseif($invoice->status === 'overdue')
+                    <div class="stamp-badge stamp-due">
+                        <div>⚠ OVERDUE</div>
+                        <div style="font-size: 7px; font-weight: normal; margin-top: 1px;">Past Due Date</div>
                     </div>
                 @else
                     <div class="stamp-badge stamp-due">
-                        <div>⚠ PAYMENT DUE</div>
-                        <div style="font-size: 7.5px; font-weight: normal; margin-top: 1px;">Due: {{ $invoice->due_date ? \Carbon\Carbon::parse($invoice->due_date)->format('d M Y') : now()->addDays(7)->format('d M Y') }}</div>
+                        <div>⏳ PAYMENT DUE</div>
+                        <div style="font-size: 7px; font-weight: normal; margin-top: 1px;">Due: {{ $invoice->due_date ? \Carbon\Carbon::parse($invoice->due_date)->format('d M Y') : now()->addDays(7)->format('d M Y') }}</div>
                     </div>
                 @endif
             </td>
             <td style="width: 33%;">
                 <div class="sig-line">G-Briel Property Executive</div>
-                <div style="font-weight: bold; margin-top: 3px; color: #0f172a;">Managing Director</div>
-                <div style="color: #64748b; font-size: 8px;">BookTala Residential Portfolio</div>
+                <div style="font-weight: bold; margin-top: 2px; color: #0f172a; font-size: 8px;">Managing Director</div>
+                <div style="color: #64748b; font-size: 7.5px;">BookTala Residential Portfolio</div>
             </td>
         </tr>
     </table>
