@@ -4,6 +4,7 @@ use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Auth\PasswordController;
 use App\Http\Controllers\AvailabilityController;
 use App\Http\Controllers\FrontDeskReservationController;
+use App\Http\Controllers\OtaFeedController;
 use App\Http\Controllers\Public\BlogController;
 use App\Http\Controllers\Public\BookingController;
 use App\Http\Controllers\Public\HomeController;
@@ -22,6 +23,7 @@ Route::get('/storage/{path}', [StorageController::class, 'show'])
 
 Route::get('/availability/check', [AvailabilityController::class, 'check'])->name('availability.check')->middleware('throttle:availability');
 Route::get('/availability/calendar/{propertyId}', [AvailabilityController::class, 'getCalendar'])->name('availability.calendar')->middleware('throttle:availability');
+Route::get('/ota/feed/{token}.ics', [OtaFeedController::class, 'export'])->name('ota.feed');
 
 Route::prefix('front-desk')->middleware(['auth', 'role:super_admin|admin|staff', 'can:reservation.create'])->group(function () {
     Route::get('/reservations/create', [FrontDeskReservationController::class, 'create'])->name('frontdesk.reservations.create');

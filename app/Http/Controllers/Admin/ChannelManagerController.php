@@ -3,66 +3,128 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\ChannelSetting;
-use App\Models\Property;
+use App\Models\OtaChannelMapping;
 use App\Models\SystemSetting;
+use App\Models\Unit;
+use App\Services\Ota\OtaSyncService;
+use App\Support\PropertyAccess;
 use Illuminate\Http\Request;
 
 class ChannelManagerController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
+        $user = $request->user();
         $isHotelMode = SystemSetting::get('hotel_mode', false);
-        $channels = ChannelSetting::all();
-        $properties = Property::active()->get();
 
-        return view('admin.channel-manager.index', compact('channels', 'properties', 'isHotelMode'));
+        $unitQuery = PropertyAccess::seesAll($user)
+            ? Unit::query()->active()->orderBy('title')
+            : Unit::query()->active()->whereIn('id', PropertyAccess::visiblePropertyIds($user))->orderBy('title');
+
+        $units = $unitQuery->with('site')->get();
+        $unitIds = $units->pluck('id')->all();
+
+        $mappings = OtaChannelMapping::with(['unit.site'])
+            ->whereIn('property_id', $unitIds)
+            ->when($request->filled('channel'), fn ($q) => $q->where('channel', $request->string('channel')))
+            ->when($request->filled('unit_id'), fn ($q) => $q->where('property_id', $request->integer('unit_id')))
+            ->orderBy('property_id')
+            ->get();
+
+        $conflictsCount = $mappings->where('sync_status', 'conflict')->count();
+        $activeChannelsCount = $mappings->where('is_active', true)->pluck('channel')->unique()->count();
+
+        $channelsMeta = OtaChannelMapping::CHANNELS;
+
+        return view('admin.channel-manager.index', compact(
+            'units',
+            'mappings',
+            'channelsMeta',
+            'conflictsCount',
+            'activeChannelsCount',
+            'isHotelMode'
+        ));
     }
 
-    public function store(Request $request)
+    public function storeMapping(Request $request)
     {
-        $request->validate([
-            'channel_name' => 'required|string',
-            'api_key' => 'nullable|string',
-            'api_secret' => 'nullable|string',
-            'sync_frequency' => 'nullable|string',
+        $data = $request->validate([
+            'property_id' => 'required|exists:properties,id',
+            'channel' => 'required|string|in:airbnb,bookingcom,vrbo,expedia,other',
+            'import_ical_url' => 'nullable|url|max:2000',
+            'rate_multiplier' => 'nullable|numeric|min:0.5|max:3.0',
+            'min_stay_override' => 'nullable|integer|min:1|max:365',
         ]);
 
-        ChannelSetting::updateOrCreate(
-            ['channel_name' => $request->channel_name],
+        PropertyAccess::authorize($request->user(), $data['property_id']);
+
+        $mapping = OtaChannelMapping::updateOrCreate(
             [
-                'api_key' => $request->api_key,
-                'api_secret' => $request->api_secret,
-                'sync_frequency' => $request->sync_frequency ?? 'hourly',
-                'property_id' => $request->property_id,
+                'property_id' => $data['property_id'],
+                'channel' => $data['channel'],
+            ],
+            [
+                'import_ical_url' => $data['import_ical_url'] ?? null,
+                'rate_multiplier' => $data['rate_multiplier'] ?? 1.00,
+                'min_stay_override' => $data['min_stay_override'] ?? null,
+                'is_active' => true,
             ]
         );
 
-        return back()->with('success', 'Channel settings updated');
+        return back()->with('success', "Channel connection configured for {$mapping->channel_meta['name']}.");
     }
 
-    public function toggle(Request $request, ChannelSetting $channel)
+    public function toggleMapping(OtaChannelMapping $mapping, Request $request)
     {
-        $channel->update(['is_enabled' => ! $channel->is_enabled]);
+        PropertyAccess::authorize($request->user(), $mapping->property_id);
 
-        if ($channel->is_enabled) {
-            $channel->update(['last_sync' => now()]);
+        $mapping->update(['is_active' => ! $mapping->is_active]);
+
+        return back()->with('success', "{$mapping->channel_meta['name']} connection ".($mapping->is_active ? 'activated' : 'deactivated').'.');
+    }
+
+    public function syncMapping(OtaChannelMapping $mapping, Request $request, OtaSyncService $syncService)
+    {
+        PropertyAccess::authorize($request->user(), $mapping->property_id);
+
+        if (empty($mapping->import_ical_url)) {
+            return back()->with('error', 'Cannot sync: no import iCal URL configured.');
         }
 
-        return back()->with('success', 'Channel '.($channel->is_enabled ? 'enabled' : 'disabled'));
+        try {
+            $res = $syncService->syncMapping($mapping);
+            $msg = "Synced {$mapping->channel_meta['name']}: {$res['imported']} new bookings imported, {$res['updated']} updated, {$res['existing']} unchanged.";
+            if ($res['conflicts'] > 0) {
+                $msg .= " Warning: {$res['conflicts']} booking conflicts prevented.";
+            }
+
+            return back()->with('success', $msg);
+        } catch (\Throwable $e) {
+            return back()->with('error', 'Sync failed: '.$e->getMessage());
+        }
     }
 
-    public function sync(ChannelSetting $channel)
+    public function syncAll(Request $request, OtaSyncService $syncService)
     {
-        $channel->update(['last_sync' => now()]);
+        $res = $syncService->syncAll();
 
-        return back()->with('success', 'Sync initiated for '.$channel->channel_name);
+        $msg = "OTA Sync All complete: {$res['imported']} imported, {$res['updated']} updated, {$res['existing']} unchanged across {$res['total_channels']} channel feeds.";
+        if ($res['conflicts'] > 0) {
+            $msg .= " ({$res['conflicts']} conflicts blocked)";
+        }
+        if ($res['errors'] > 0) {
+            $msg .= " ({$res['errors']} feeds had network/HTTP errors)";
+        }
+
+        return back()->with('success', $msg);
     }
 
-    public function destroy(ChannelSetting $channel)
+    public function destroyMapping(OtaChannelMapping $mapping, Request $request)
     {
-        $channel->delete();
+        PropertyAccess::authorize($request->user(), $mapping->property_id);
 
-        return back()->with('success', 'Channel removed');
+        $mapping->delete();
+
+        return back()->with('success', 'Channel connection removed.');
     }
 }

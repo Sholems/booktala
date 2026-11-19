@@ -1,138 +1,276 @@
 @extends('layouts.admin')
-@php
-$isHotelMode = \App\Models\SystemSetting::get('hotel_mode', false);
-$channelsList = [
-    'bookingcom' => ['name' => 'Booking.com', 'desc' => 'Connect to the world\'s largest online accommodation network'],
-    'expedia' => ['desc' => 'Access millions of travelers through Expedia'],
-    'airbnb' => ['desc' => 'Sync with Airbnb for short-term rental bookings'],
-];
-@endphp
-@section('page_title', 'Channel Manager')
+@section('page_title', 'Channel Manager & OTA Sync')
 @section('content')
-<div class="mb-6">
-    <p class="text-gray-600">Connect your properties to online travel agencies (OTAs) to increase your reach and bookings.</p>
+<div class="mb-6 flex flex-col md:flex-row md:items-end md:justify-between gap-4">
+    <div>
+        <h2 class="text-2xl font-bold">Channel Manager & OTA Sync</h2>
+        <p class="text-sm text-gray-500">Two-way real-time calendar synchronization with Airbnb, Booking.com, VRBO & Expedia.</p>
+    </div>
+    <div class="flex flex-wrap items-center gap-3">
+        <form method="POST" action="{{ route('admin.channel-manager.sync-all') }}" onsubmit="return confirm('Initiate synchronization across all configured OTA channels?')">
+            @csrf
+            <button type="submit" class="inline-flex items-center gap-2 bg-primary hover:bg-primary-dark text-white px-4 py-2 rounded-lg text-sm font-medium shadow-sm transition">
+                <i class="fas fa-sync"></i>
+                <span>Sync All Feeds</span>
+            </button>
+        </form>
+    </div>
 </div>
 
-<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-    @foreach($channelsList as $key => $channel)
-    @php $channelData = $channels[$key] ?? null; @endphp
-    <div class="bg-white rounded-lg shadow p-6 {{ $channelData && $channelData->is_enabled ? 'ring-2 ring-green-500' : '' }}">
-        <div class="flex items-center justify-between mb-4">
-            <div class="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
-                <i class="fas fa-{{ $key === 'bookingcom' ? 'bed' : ($key === 'expedia' ? 'plane' : 'home') }} text-primary text-xl"></i>
+@if(session('success'))
+<div class="mb-6 bg-emerald-50 border border-emerald-200 rounded-lg p-4 text-sm text-emerald-800 flex items-center justify-between">
+    <div class="flex items-center gap-2">
+        <i class="fas fa-check-circle text-emerald-600"></i>
+        <span>{{ session('success') }}</span>
+    </div>
+</div>
+@endif
+
+@if(session('error'))
+<div class="mb-6 bg-rose-50 border border-rose-200 rounded-lg p-4 text-sm text-rose-800 flex items-center justify-between">
+    <div class="flex items-center gap-2">
+        <i class="fas fa-exclamation-circle text-rose-600"></i>
+        <span>{{ session('error') }}</span>
+    </div>
+</div>
+@endif
+
+@if($conflictsCount > 0)
+<div class="mb-6 bg-amber-50 border-l-4 border-amber-500 rounded-r-lg p-4 text-sm text-amber-900 shadow-sm">
+    <div class="flex items-start gap-3">
+        <i class="fas fa-shield-alt text-amber-600 text-lg mt-0.5"></i>
+        <div>
+            <h4 class="font-bold text-amber-900">Double-Booking Collision Prevention Active</h4>
+            <p class="text-amber-800 text-xs mt-0.5">
+                {{ $conflictsCount }} channel feed(s) have detected conflicting external bookings that collided with existing reservations or maintenance holds. BookTala safely blocked the double-bookings. Inspect the affected channels below.
+            </p>
+        </div>
+    </div>
+</div>
+@endif
+
+<!-- Channel Status Cards -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+    @foreach($channelsMeta as $channelKey => $meta)
+    @php
+        $channelMappings = $mappings->where('channel', $channelKey);
+        $activeCount = $channelMappings->where('is_active', true)->count();
+        $conflictsInChannel = $channelMappings->where('sync_status', 'conflict')->count();
+    @endphp
+    <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm relative overflow-hidden">
+        <div class="flex items-center justify-between mb-3">
+            <div class="w-10 h-10 rounded-xl flex items-center justify-center text-white" style="background-color: {{ $meta['color'] }};">
+                <i class="{{ $meta['icon'] }} text-lg"></i>
             </div>
-            @if($channelData)
-            <span class="px-3 py-1 text-xs rounded-full {{ $channelData->is_enabled ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800' }}">
-                {{ $channelData->is_enabled ? 'Connected' : 'Disconnected' }}
+            <span class="text-xs px-2.5 py-0.5 rounded-full font-semibold {{ $activeCount > 0 ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-slate-100 text-slate-500' }}">
+                {{ $activeCount }} Connected
             </span>
-            @endif
         </div>
-        <h3 class="text-lg font-bold mb-2">{{ ucfirst($key) }}</h3>
-        <p class="text-sm text-gray-600 mb-4">{{ $channel['desc'] }}</p>
-        
-        @if($channelData && $channelData->last_sync)
-        <p class="text-xs text-gray-500 mb-4">Last sync: {{ $channelData->last_sync->diffForHumans() }}</p>
+        <h3 class="font-bold text-slate-800">{{ $meta['name'] }}</h3>
+        <p class="text-xs text-slate-500 mt-1">Default markup buffer: {{ number_format(($meta['default_markup'] - 1) * 100) }}%</p>
+        @if($conflictsInChannel > 0)
+        <span class="inline-flex items-center gap-1 text-[11px] font-semibold text-amber-600 mt-2">
+            <i class="fas fa-exclamation-triangle"></i> {{ $conflictsInChannel }} conflict(s) blocked
+        </span>
         @endif
-
-        @if($channelData)
-        <div class="flex gap-2">
-            <form method="POST" action="{{ route('admin.channel-manager.toggle', $channelData) }}" class="flex-1">
-                @csrf
-                @method('PATCH')
-                <button type="submit" class="w-full px-4 py-2 text-sm border rounded hover:bg-gray-50">
-                    {{ $channelData->is_enabled ? 'Disable' : 'Enable' }}
-                </button>
-            </form>
-            @if($channelData->is_enabled)
-            <form method="POST" action="{{ route('admin.channel-manager.sync', $channelData) }}">
-                @csrf
-                <button type="submit" class="px-4 py-2 text-sm bg-primary text-white rounded hover:bg-primary/90">
-                    <i class="fas fa-sync"></i>
-                </button>
-            </form>
-            @endif
-        </div>
-        @endif
-
-        <button onclick="document.getElementById('modal-{{ $key }}').showModal()" class="mt-3 w-full px-4 py-2 text-sm bg-accent text-white rounded hover:bg-accent/90">
-            {{ $channelData ? 'Configure' : 'Connect' }}
-        </button>
-
-        <dialog id="modal-{{ $key }}" class="modal p-6 rounded-lg shadow-lg w-full max-w-md">
-            <h3 class="text-lg font-bold mb-4">Configure {{ ucfirst($key) }}</h3>
-            <form method="POST" action="{{ route('admin.channel-manager.store') }}">
-                @csrf
-                <input type="hidden" name="channel_name" value="{{ $key }}">
-                <div class="mb-4">
-                    <label class="block text-sm font-medium mb-2">API Key</label>
-                    <input type="text" name="api_key" value="{{ $channelData->api_key ?? '' }}" class="w-full border rounded px-3 py-2" placeholder="Enter API key">
-                </div>
-                <div class="mb-4">
-                    <label class="block text-sm font-medium mb-2">API Secret</label>
-                    <input type="password" name="api_secret" value="{{ $channelData->api_secret ?? '' }}" class="w-full border rounded px-3 py-2" placeholder="Enter API secret">
-                </div>
-                @if(!$isHotelMode)
-                <div class="mb-4">
-                    <label class="block text-sm font-medium mb-2">Property</label>
-                    <select name="property_id" class="w-full border rounded px-3 py-2">
-                        <option value="">Select property</option>
-                        @foreach($properties as $property)
-                        <option value="{{ $property->id }}" {{ $channelData && $channelData->property_id == $property->id ? 'selected' : '' }}>
-                            {{ $property->title }}
-                        </option>
-                        @endforeach
-                    </select>
-                </div>
-                @endif
-                <div class="mb-4">
-                    <label class="block text-sm font-medium mb-2">Sync Frequency</label>
-                    <select name="sync_frequency" class="w-full border rounded px-3 py-2">
-                        <option value="realtime" {{ $channelData && $channelData->sync_frequency == 'realtime' ? 'selected' : '' }}>Real-time</option>
-                        <option value="hourly" {{ $channelData && $channelData->sync_frequency == 'hourly' ? 'selected' : '' }}>Hourly</option>
-                        <option value="daily" {{ $channelData && $channelData->sync_frequency == 'daily' ? 'selected' : '' }}>Daily</option>
-                    </select>
-                </div>
-                <div class="flex justify-end gap-2">
-                    <button type="button" onclick="document.getElementById('modal-{{ $key }}').close()" class="px-4 py-2 border rounded">Cancel</button>
-                    <button type="submit" class="px-4 py-2 bg-primary text-white rounded">Save</button>
-                </div>
-            </form>
-        </dialog>
     </div>
     @endforeach
 </div>
 
-<div class="bg-white rounded-lg shadow p-6">
-    <h3 class="text-lg font-bold mb-4">Sync Status</h3>
-    <table class="min-w-full">
-        <thead class="bg-gray-50">
-            <tr>
-                <th class="px-4 py-2 text-left text-sm font-medium text-gray-500">Channel</th>
-                <th class="px-4 py-2 text-left text-sm font-medium text-gray-500">Status</th>
-                <th class="px-4 py-2 text-left text-sm font-medium text-gray-500">Last Sync</th>
-                <th class="px-4 py-2 text-left text-sm font-medium text-gray-500">Frequency</th>
-            </tr>
-        </thead>
-        <tbody>
-            @forelse($channels as $channel)
-            <tr class="border-t">
-                <td class="px-4 py-3 capitalize">{{ $channel->channel_name }}</td>
-                <td class="px-4 py-3">
-                    <span class="px-2 py-1 text-xs rounded-full {{ $channel->is_enabled ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800' }}">
-                        {{ $channel->is_enabled ? 'Active' : 'Inactive' }}
-                    </span>
-                </td>
-                <td class="px-4 py-3 text-sm text-gray-600">
-                    {{ $channel->last_sync ? $channel->last_sync->format('M d, Y H:i') : 'Never' }}
-                </td>
-                <td class="px-4 py-3 text-sm text-gray-600 capitalize">{{ $channel->sync_frequency }}</td>
-            </tr>
-            @empty
-            <tr>
-                <td colspan="4" class="px-4 py-3 text-center text-gray-500">No channels configured</td>
-            </tr>
-            @endforelse
-        </tbody>
-    </table>
+<!-- Property Mappings & 2-Way Sync Table -->
+<div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden mb-6" x-data="{ addModalOpen: false, selectedUnit: '', selectedChannel: 'airbnb', selectedMarkup: '1.15' }">
+    <div class="p-4 border-b border-slate-200 bg-slate-50/50 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div>
+            <h3 class="font-bold text-slate-800 text-base">Unit Channel Connections</h3>
+            <p class="text-xs text-slate-500">Inbound iCal import feeds & outbound export links per unit.</p>
+        </div>
+        <button @click="addModalOpen = true" type="button" class="inline-flex items-center gap-2 bg-primary hover:bg-primary-dark text-white px-3.5 py-1.5 rounded-lg text-xs font-medium shadow-sm transition">
+            <i class="fas fa-plus"></i>
+            <span>Add Connection</span>
+        </button>
+    </div>
+
+    <div class="overflow-x-auto">
+        <table class="w-full text-left text-sm text-slate-600">
+            <thead class="bg-slate-50 text-slate-700 font-semibold border-b border-slate-200 text-xs uppercase tracking-wider">
+                <tr>
+                    <th class="py-3 px-4">Unit / Property</th>
+                    <th class="py-3 px-4">OTA Channel</th>
+                    <th class="py-3 px-4">Export Feed (To OTA)</th>
+                    <th class="py-3 px-4">Import iCal URL</th>
+                    <th class="py-3 px-4 text-center">Markup</th>
+                    <th class="py-3 px-4 text-center">Status</th>
+                    <th class="py-3 px-4 text-right">Actions</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+                @forelse($mappings as $mapping)
+                <tr class="hover:bg-slate-50/70 transition">
+                    <td class="py-3 px-4">
+                        <div class="font-medium text-slate-800">{{ $mapping->unit?->title }}</div>
+                        <div class="text-xs text-slate-400">{{ $mapping->unit?->site?->name ?? 'General' }} ({{ $mapping->unit?->unit_code }})</div>
+                    </td>
+                    <td class="py-3 px-4">
+                        <div class="flex items-center gap-2">
+                            <span class="w-6 h-6 rounded-lg flex items-center justify-center text-white text-xs" style="background-color: {{ $mapping->channel_meta['color'] }};">
+                                <i class="{{ $mapping->channel_meta['icon'] }}"></i>
+                            </span>
+                            <span class="font-medium text-slate-700">{{ $mapping->channel_meta['name'] }}</span>
+                        </div>
+                    </td>
+                    <td class="py-3 px-4">
+                        <div class="flex items-center gap-1.5" x-data="{ copied: false }">
+                            <input type="text" readonly value="{{ $mapping->export_url }}" class="text-xs bg-slate-50 border border-slate-200 rounded px-2 py-1 font-mono w-48 text-slate-600 truncate select-all">
+                            <button type="button" @click="navigator.clipboard.writeText('{{ $mapping->export_url }}'); copied = true; setTimeout(() => copied = false, 2000)" class="p-1 text-slate-400 hover:text-primary transition" title="Copy export URL to paste into OTA">
+                                <i class="fas" :class="copied ? 'fa-check text-emerald-600' : 'fa-copy'"></i>
+                            </button>
+                        </div>
+                        <span class="text-[10px] text-slate-400">Paste into {{ $mapping->channel_meta['name'] }} Calendar Export</span>
+                    </td>
+                    <td class="py-3 px-4 max-w-xs truncate" title="{{ $mapping->import_ical_url }}">
+                        @if($mapping->import_ical_url)
+                        <span class="text-xs font-mono text-slate-700 truncate block max-w-[200px]">{{ $mapping->import_ical_url }}</span>
+                        @if($mapping->last_synced_at)
+                        <span class="text-[10px] text-slate-400">Synced: {{ $mapping->last_synced_at->diffForHumans() }}</span>
+                        @endif
+                        @else
+                        <span class="text-xs text-amber-600 italic">No import URL configured</span>
+                        @endif
+                    </td>
+                    <td class="py-3 px-4 text-center">
+                        <span class="font-mono text-xs font-semibold text-slate-700">{{ number_format($mapping->rate_multiplier, 2) }}x</span>
+                        <div class="text-[10px] text-slate-400">+{{ number_format(($mapping->rate_multiplier - 1) * 100) }}%</div>
+                    </td>
+                    <td class="py-3 px-4 text-center">
+                        @switch($mapping->sync_status)
+                            @case('success')
+                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">
+                                    <i class="fas fa-check-circle mr-1"></i> Active
+                                </span>
+                                @break
+                            @case('conflict')
+                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800" title="Double booking collision blocked">
+                                    <i class="fas fa-shield-alt mr-1"></i> Conflict Blocked
+                                </span>
+                                @break
+                            @case('error')
+                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-rose-100 text-rose-800" title="{{ $mapping->last_error }}">
+                                    <i class="fas fa-times-circle mr-1"></i> Error
+                                </span>
+                                @break
+                            @case('syncing')
+                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                    <i class="fas fa-spinner fa-spin mr-1"></i> Syncing
+                                </span>
+                                @break
+                            @default
+                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-600">
+                                    Idle
+                                </span>
+                        @endswitch
+                    </td>
+                    <td class="py-3 px-4 text-right">
+                        <div class="flex items-center justify-end gap-1.5">
+                            @if($mapping->import_ical_url)
+                            <form method="POST" action="{{ route('admin.channel-manager.mapping.sync', $mapping) }}">
+                                @csrf
+                                <button type="submit" class="p-1.5 text-slate-500 hover:text-primary hover:bg-slate-100 rounded transition" title="Sync now">
+                                    <i class="fas fa-sync text-xs"></i>
+                                </button>
+                            </form>
+                            @endif
+
+                            <form method="POST" action="{{ route('admin.channel-manager.mapping.toggle', $mapping) }}">
+                                @csrf
+                                @method('PATCH')
+                                <button type="submit" class="p-1.5 text-slate-500 hover:text-amber-600 hover:bg-slate-100 rounded transition" title="{{ $mapping->is_active ? 'Pause connection' : 'Resume connection' }}">
+                                    <i class="fas {{ $mapping->is_active ? 'fa-pause' : 'fa-play' }} text-xs"></i>
+                                </button>
+                            </form>
+
+                            <form method="POST" action="{{ route('admin.channel-manager.mapping.destroy', $mapping) }}" onsubmit="return confirm('Remove this OTA channel mapping?')">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded transition" title="Delete connection">
+                                    <i class="fas fa-trash-alt text-xs"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                @empty
+                <tr>
+                    <td colspan="7" class="py-8 text-center text-slate-400">
+                        <i class="fas fa-network-wired text-3xl mb-2 text-slate-300"></i>
+                        <p>No OTA channel connections configured yet. Click "Add Connection" to connect Airbnb, Booking.com or VRBO.</p>
+                    </td>
+                </tr>
+                @endforelse
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Add Channel Mapping Modal -->
+    <div x-show="addModalOpen" x-transition class="fixed inset-0 z-50 overflow-y-auto bg-slate-900/50 flex items-center justify-center p-4" style="display: none;">
+        <div class="bg-white rounded-xl shadow-xl border border-slate-200 max-w-lg w-full p-6" @click.outside="addModalOpen = false">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
+                <h3 class="font-bold text-slate-800 text-lg">Connect OTA Channel Feed</h3>
+                <button @click="addModalOpen = false" type="button" class="text-slate-400 hover:text-slate-600">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <form method="POST" action="{{ route('admin.channel-manager.mapping.store') }}" class="space-y-4">
+                @csrf
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Select Property / Unit</label>
+                    <select name="property_id" required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white focus:ring-2 focus:ring-primary focus:border-transparent">
+                        <option value="">-- Choose Unit --</option>
+                        @foreach($units as $unit)
+                        <option value="{{ $unit->id }}">{{ $unit->title }} ({{ $unit->unit_code }}) - ₦{{ number_format($unit->price_per_night) }}/night</option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">OTA Platform</label>
+                        <select name="channel" x-model="selectedChannel" required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white focus:ring-2 focus:ring-primary focus:border-transparent">
+                            <option value="airbnb">Airbnb</option>
+                            <option value="bookingcom">Booking.com</option>
+                            <option value="vrbo">VRBO / HomeAway</option>
+                            <option value="expedia">Expedia</option>
+                            <option value="other">Other OTA Feed</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Rate Markup Multiplier</label>
+                        <input type="number" step="0.01" min="0.5" max="3.0" name="rate_multiplier" value="1.15" placeholder="1.15 (= +15%)" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary focus:border-transparent">
+                        <span class="text-[10px] text-slate-400">Compensates for OTA channel fees</span>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Import iCal URL (From Airbnb/Booking.com/VRBO)</label>
+                    <input type="url" name="import_ical_url" placeholder="https://www.airbnb.com/calendar/ical/..." class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary focus:border-transparent">
+                    <span class="text-[10px] text-slate-400">Copy the calendar export link from your listing on Airbnb / Booking.com</span>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Minimum Stay Override (Nights)</label>
+                    <input type="number" min="1" max="365" name="min_stay_override" placeholder="Optional (e.g. 2)" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary focus:border-transparent">
+                </div>
+
+                <div class="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
+                    <button type="button" @click="addModalOpen = false" class="px-4 py-2 border border-slate-300 rounded-lg text-xs font-medium text-slate-700 hover:bg-slate-50 transition">
+                        Cancel
+                    </button>
+                    <button type="submit" class="px-5 py-2 bg-primary hover:bg-primary-dark text-white rounded-lg text-xs font-medium shadow-sm transition">
+                        Save Connection
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
 </div>
 @endsection
