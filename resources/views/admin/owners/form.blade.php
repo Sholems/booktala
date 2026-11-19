@@ -21,12 +21,18 @@
                 <label class="block text-sm font-medium text-gray-700 mb-1">Name</label>
                 <input type="text" name="name" value="{{ old('name', $owner->name) }}" required class="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-primary focus:border-transparent">
             </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Type</label>
-                <select name="type" class="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-primary focus:border-transparent">
-                    <option value="individual" @selected(old('type', $owner->type) === 'individual')>Individual landlord</option>
-                    <option value="company" @selected(old('type', $owner->type) === 'company')>Company</option>
-                </select>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Type</label>
+                    <select name="type" class="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-primary focus:border-transparent">
+                        <option value="individual" @selected(old('type', $owner->type) === 'individual')>Individual landlord</option>
+                        <option value="company" @selected(old('type', $owner->type) === 'company')>Company</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Tax ID / TIN <span class="text-xs text-gray-400 font-normal">(FIRS / State IRS)</span></label>
+                    <input type="text" name="tax_id" value="{{ old('tax_id', $owner->tax_id) }}" placeholder="e.g. 12345678-0001" class="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-primary focus:border-transparent">
+                </div>
             </div>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>

@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\CustomerController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\EventBookingController;
 use App\Http\Controllers\Admin\ExpenseController;
+use App\Http\Controllers\Admin\FinanceLedgerController;
 use App\Http\Controllers\Admin\HomepageSectionController;
 use App\Http\Controllers\Admin\HotelAmenityController;
 use App\Http\Controllers\Admin\IcalController;
@@ -32,6 +33,7 @@ use App\Http\Controllers\Admin\SiteReportController;
 use App\Http\Controllers\Admin\StaffController;
 use App\Http\Controllers\Admin\StaffScheduleController;
 use App\Http\Controllers\Admin\TaskController;
+use App\Http\Controllers\Admin\TaxComplianceController;
 use App\Http\Controllers\NotificationController;
 use Illuminate\Support\Facades\Route;
 
@@ -126,6 +128,15 @@ Route::prefix('admin')->middleware(['auth', 'role:super_admin|admin'])->group(fu
         Route::patch('/statements/{statement}/approve', [OwnerStatementController::class, 'approve'])->name('admin.statements.approve');
         Route::patch('/statements/{statement}/paid', [OwnerStatementController::class, 'markPaid'])->name('admin.statements.paid');
         Route::delete('/statements/{statement}', [OwnerStatementController::class, 'destroy'])->name('admin.statements.destroy');
+
+        // Statutory General Ledger & Accounting Export
+        Route::get('/ledger', [FinanceLedgerController::class, 'index'])->name('admin.finance.ledger.index');
+        Route::get('/ledger/export', [FinanceLedgerController::class, 'export'])->name('admin.finance.ledger.export');
+        Route::get('/ledger/{transaction}', [FinanceLedgerController::class, 'show'])->name('admin.finance.ledger.show');
+
+        // Tax & Withholding Tax (WHT) Compliance Reports (LIRS / FIRS)
+        Route::get('/tax-compliance', [TaxComplianceController::class, 'index'])->name('admin.finance.tax.index');
+        Route::get('/tax-compliance/export', [TaxComplianceController::class, 'export'])->name('admin.finance.tax.export');
     });
 
     // Payroll: super admin by default (payroll.manage).

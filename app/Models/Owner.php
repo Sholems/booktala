@@ -13,7 +13,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Owner extends Model
 {
     protected $fillable = [
-        'name', 'type', 'is_company_owned', 'email', 'phone', 'address', 'user_id', 'notes', 'is_active',
+        'name', 'type', 'tax_id', 'is_company_owned', 'email', 'phone', 'address', 'user_id', 'notes', 'is_active',
         'commission_rate', 'deduct_expenses', 'bank_name', 'bank_account_name', 'bank_account_number',
     ];
 

@@ -110,6 +110,7 @@ class OwnerController extends Controller
         $data = $request->validate([
             'name' => 'required|string|max:255',
             'type' => 'required|in:company,individual',
+            'tax_id' => 'nullable|string|max:50',
             'email' => 'nullable|email|max:255',
             'phone' => 'nullable|string|max:30',
             'address' => 'nullable|string|max:255',

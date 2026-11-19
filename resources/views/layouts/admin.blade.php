@@ -167,6 +167,14 @@ $logo = \App\Models\Setting::get('logo');
                             <i class="fas fa-file-invoice-dollar w-5 text-sm"></i>
                             <span class="text-sm">Owner Statements</span>
                         </a>
+                        <a href="{{ route('admin.finance.ledger.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group {{ request()->routeIs('admin.finance.ledger.*') ? 'bg-accent/10 text-accent font-semibold' : 'hover:bg-slate-800/50 hover:text-white' }}">
+                            <i class="fas fa-book-open w-5 text-sm"></i>
+                            <span class="text-sm">General Ledger</span>
+                        </a>
+                        <a href="{{ route('admin.finance.tax.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group {{ request()->routeIs('admin.finance.tax.*') ? 'bg-accent/10 text-accent font-semibold' : 'hover:bg-slate-800/50 hover:text-white' }}">
+                            <i class="fas fa-landmark w-5 text-sm"></i>
+                            <span class="text-sm">Tax & WHT Reports</span>
+                        </a>
                         @endcan
                         @can('payroll.manage')
                         <a href="{{ route('admin.payroll.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group {{ request()->routeIs('admin.payroll.*') ? 'bg-accent/10 text-accent font-semibold' : 'hover:bg-slate-800/50 hover:text-white' }}">
