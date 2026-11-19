@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Jobs\SendInvoiceEmailJob;
 use App\Models\Invoice;
 use App\Models\InvoiceItem;
 use App\Models\Owner;
@@ -15,6 +16,7 @@ use App\Models\User;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Queue;
 use Tests\TestCase;
 
 class ReceiptAndInvoiceStandardTest extends TestCase
@@ -242,7 +244,7 @@ class ReceiptAndInvoiceStandardTest extends TestCase
 
     public function test_send_invoice_email_dispatches_queued_job_asynchronously(): void
     {
-        \Illuminate\Support\Facades\Queue::fake();
+        Queue::fake();
 
         $response = $this->actingAs($this->admin)->post(route('admin.invoices.send', $this->invoice), [
             'email' => 'guest@example.com',
@@ -251,7 +253,7 @@ class ReceiptAndInvoiceStandardTest extends TestCase
         $response->assertRedirect();
         $response->assertSessionHas('success');
 
-        \Illuminate\Support\Facades\Queue::assertPushed(\App\Jobs\SendInvoiceEmailJob::class, function ($job) {
+        Queue::assertPushed(SendInvoiceEmailJob::class, function ($job) {
             return $job->invoice->id === $this->invoice->id && $job->recipientEmail === 'guest@example.com';
         });
     }

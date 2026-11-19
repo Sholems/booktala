@@ -79,7 +79,7 @@ Inspect failed jobs with `php artisan queue:failed` and retry them with `php art
 
 ## Production deployment
 
-Set `APP_ENV=production` and `APP_DEBUG=false`, then run:
+Start from `.env.production.example` (production mode, debug off, Telescope off, MySQL, secure cookies), fill in the blanks, then run:
 
 ```bash
 composer install --no-dev --optimize-autoloader
@@ -89,9 +89,12 @@ php artisan migrate --force
 php artisan storage:link
 php artisan optimize
 php artisan queue:restart
+php artisan app:production-check
 ```
 
-Monitor `/up`, back up the database and uploaded files, and verify restoration regularly. Telescope is installed for diagnostics; set `TELESCOPE_ENABLED=false` in production unless it is deliberately enabled and access-controlled.
+`app:production-check` fails if debug is on, Telescope is recording, the database is SQLite (it ignores the row locks used for bookings, payments and stock), or the app key is missing, and warns about mail, queue, https and cookie settings.
+
+Monitor `/up`, back up the database and uploaded files (including `storage/app/private`, which holds guest ID documents, receipts and incident photos), and verify restoration regularly. Telescope never records in production, whatever `TELESCOPE_ENABLED` says.
 
 ## Local accounts
 

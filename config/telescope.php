@@ -16,7 +16,8 @@ return [
     |
     */
 
-    'enabled' => env('TELESCOPE_ENABLED', true),
+    // Off unless switched on, and never in production: it records every request.
+    'enabled' => env('TELESCOPE_ENABLED', false) && env('APP_ENV', 'production') !== 'production',
 
     /*
     |--------------------------------------------------------------------------
