@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\CustomerUpdateStatusRequest;
 use App\Models\User;
 use App\Support\IdDocuments;
 use Illuminate\Http\Request;
@@ -47,10 +48,10 @@ class CustomerController extends Controller
         return back()->with('success', 'Customer verified');
     }
 
-    public function updateStatus(Request $request, User $user)
+    public function updateStatus(CustomerUpdateStatusRequest $request, User $user)
     {
         $this->ensureCustomer($user);
-        $data = $request->validate(['status' => 'required|in:active,suspended']);
+        $data = $request->validated();
 
         $user->update(['status' => $data['status']]);
 

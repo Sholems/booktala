@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\WhatsAppSendRequest;
 use App\Models\Reservation;
 use App\Models\WhatsAppMessageLog;
 use App\Services\WhatsApp\WhatsAppNotificationService;
@@ -36,16 +37,9 @@ class WhatsAppController extends Controller
         return view('admin.whatsapp.index', compact('logs', 'stats'));
     }
 
-    public function send(Request $request, WhatsAppNotificationService $service)
+    public function send(WhatsAppSendRequest $request, WhatsAppNotificationService $service)
     {
-        $data = $request->validate([
-            'recipient_phone' => 'nullable|string|max:30',
-            'phone' => 'nullable|string|max:30',
-            'recipient_name' => 'nullable|string|max:100',
-            'name' => 'nullable|string|max:100',
-            'message' => 'required|string|max:2000',
-            'reservation_id' => 'nullable|exists:reservations,id',
-        ]);
+        $data = $request->validated();
 
         $phone = $data['recipient_phone'] ?? $data['phone'] ?? null;
         if (! $phone) {

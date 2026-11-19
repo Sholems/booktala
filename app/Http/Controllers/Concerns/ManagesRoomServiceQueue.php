@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\Concerns;
 
+use App\Http\Requests\Shared\RoomServiceQueueAdvanceRequest;
+use App\Http\Requests\Shared\RoomServiceQueueDeclineRequest;
 use App\Models\RoomServiceOrder;
 use App\Support\PropertyAccess;
 use Illuminate\Http\Request;
@@ -37,13 +39,11 @@ trait ManagesRoomServiceQueue
         ]);
     }
 
-    public function advance(Request $request, RoomServiceOrder $order)
+    public function advance(RoomServiceQueueAdvanceRequest $request, RoomServiceOrder $order)
     {
         PropertyAccess::authorize($request->user(), $order->reservation?->property_id);
 
-        $validated = $request->validate([
-            'charge' => 'nullable|numeric|min:0|max:10000000',
-        ]);
+        $validated = $request->validated();
 
         if (! $order->advance($request->user(), isset($validated['charge']) ? (float) $validated['charge'] : null)) {
             return back()->with('error', 'This request is already '.str_replace('_', ' ', $order->status).'.');
@@ -52,13 +52,11 @@ trait ManagesRoomServiceQueue
         return back()->with('success', 'Request '.RoomServiceOrder::statuses()[$order->status].'.');
     }
 
-    public function decline(Request $request, RoomServiceOrder $order)
+    public function decline(RoomServiceQueueDeclineRequest $request, RoomServiceOrder $order)
     {
         PropertyAccess::authorize($request->user(), $order->reservation?->property_id);
 
-        $validated = $request->validate([
-            'reason' => 'nullable|string|max:255',
-        ]);
+        $validated = $request->validated();
 
         if (! in_array($order->status, RoomServiceOrder::OPEN_STATUSES, true)) {
             return back()->with('error', 'Only open requests can be declined.');

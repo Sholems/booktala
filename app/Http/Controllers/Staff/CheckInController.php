@@ -3,10 +3,10 @@
 namespace App\Http\Controllers\Staff;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Staff\CheckInSearchRequest;
 use App\Models\Reservation;
 use App\Services\ReservationLifecycle;
 use App\Support\PropertyAccess;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class CheckInController extends Controller
@@ -22,9 +22,9 @@ class CheckInController extends Controller
         return view('staff.checkin.index', compact('todayCheckIns'));
     }
 
-    public function search(Request $request)
+    public function search(CheckInSearchRequest $request)
     {
-        $request->validate(['search' => 'required|string|max:100']);
+        $request->validated();
         $search = $request->search;
 
         $reservations = Reservation::visibleTo(Auth::user())->where(function ($q) use ($request) {

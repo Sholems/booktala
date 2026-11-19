@@ -3,11 +3,11 @@
 namespace App\Http\Controllers\Customer;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Customer\RoomServiceStoreRequest;
 use App\Models\Reservation;
 use App\Models\RoomServiceOrder;
 use App\Services\WhatsApp\WhatsAppNotificationService;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 
 /**
  * Guests request room service and concierge during a stay (food, laundry, extra housekeeping, airport transfer).
@@ -40,23 +40,9 @@ class RoomServiceController extends Controller
         return view('customer.room-service.create', compact('reservations', 'orderTypes', 'presetCatalog'));
     }
 
-    public function store(Request $request, WhatsAppNotificationService $whatsAppService)
+    public function store(RoomServiceStoreRequest $request, WhatsAppNotificationService $whatsAppService)
     {
-        $validated = $request->validate([
-            'reservation_id' => ['required', Rule::in($this->currentStays()->pluck('id')->all())],
-            'order_type' => ['required', Rule::in(array_keys(RoomServiceOrder::orderTypes()))],
-            'items' => 'required|array|min:1|max:20',
-            'items.*.name' => 'required|string|max:100',
-            'items.*.quantity' => 'required|integer|min:1|max:50',
-            'items.*.price' => 'nullable|numeric|min:0',
-            'payment_method' => 'nullable|in:folio,paystack,cash',
-            'special_instructions' => 'nullable|string|max:1000',
-            'pickup_location' => 'nullable|string|max:255',
-            'pickup_time' => 'nullable|date',
-            'flight_number' => 'nullable|string|max:50',
-        ], [
-            'reservation_id.in' => 'Concierge service is only available for a stay you are checked in to.',
-        ]);
+        $validated = $request->validated();
 
         $paymentMethod = $validated['payment_method'] ?? 'folio';
 

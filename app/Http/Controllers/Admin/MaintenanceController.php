@@ -3,10 +3,11 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\MaintenanceStoreRequest;
+use App\Http\Requests\Admin\MaintenanceUpdateRequest;
 use App\Models\MaintenanceReport;
 use App\Models\Property;
 use App\Models\User;
-use App\Rules\WorksAtProperty;
 use Illuminate\Http\Request;
 
 /**
@@ -34,15 +35,9 @@ class MaintenanceController extends Controller
         return view('admin.maintenance.index', compact('reports', 'properties', 'staff', 'filter'));
     }
 
-    public function store(Request $request)
+    public function store(MaintenanceStoreRequest $request)
     {
-        $validated = $request->validate([
-            'title' => 'required|string|max:255',
-            'property_id' => 'required|exists:properties,id',
-            'description' => 'required|string|max:2000',
-            'priority' => 'nullable|in:low,medium,high,urgent,emergency',
-            'assigned_to' => ['nullable', new WorksAtProperty($request->integer('property_id') ?: null)],
-        ]);
+        $validated = $request->validated();
 
         MaintenanceReport::create($validated + [
             'reported_by' => auth()->id(),
@@ -53,15 +48,9 @@ class MaintenanceController extends Controller
         return back()->with('success', 'Maintenance report created');
     }
 
-    public function update(Request $request, MaintenanceReport $maintenanceReport)
+    public function update(MaintenanceUpdateRequest $request, MaintenanceReport $maintenanceReport)
     {
-        $validated = $request->validate([
-            'status' => 'required|in:pending,in_progress,resolved',
-            'assigned_to' => ['nullable', new WorksAtProperty($maintenanceReport->property_id)],
-            'resolution_notes' => 'nullable|string|max:2000|required_if:status,resolved',
-        ], [
-            'resolution_notes.required_if' => 'Add a note describing the fix before marking it resolved.',
-        ]);
+        $validated = $request->validated();
 
         $maintenanceReport->update([
             'status' => $validated['status'],

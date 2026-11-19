@@ -27,7 +27,7 @@
         <!-- Guest Info -->
         <div class="bg-white rounded-xl border border-gray-100 p-6">
             <h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
-                <i class="fas fa-user text-[#E11D2E]"></i> Guest Information
+                <i class="fas fa-user text-accent"></i> Guest Information
             </h3>
             <div class="grid grid-cols-2 gap-4 text-sm">
                 <div><span class="text-gray-500">Name:</span> <span class="font-medium">{{ $checkin->guest_first_name }} {{ $checkin->guest_last_name }}</span></div>
@@ -39,7 +39,7 @@
         <!-- Identity Info -->
         <div class="bg-white rounded-xl border border-gray-100 p-6">
             <h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
-                <i class="fas fa-id-card text-[#E11D2E]"></i> Identity Information
+                <i class="fas fa-id-card text-accent"></i> Identity Information
             </h3>
             <div class="grid grid-cols-2 gap-4 text-sm">
                 <div><span class="text-gray-500">ID Type:</span> <span class="font-medium capitalize">{{ str_replace('_', ' ', $checkin->id_type) }}</span></div>
@@ -50,7 +50,7 @@
         <!-- Arrival -->
         <div class="bg-white rounded-xl border border-gray-100 p-6">
             <h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
-                <i class="fas fa-plane-arrival text-[#E11D2E]"></i> Arrival Details
+                <i class="fas fa-plane-arrival text-accent"></i> Arrival Details
             </h3>
             <div class="grid grid-cols-2 gap-4 text-sm">
                 <div><span class="text-gray-500">Flight:</span> <span class="font-medium">{{ $checkin->arrival_flight ?? 'Not provided' }}</span></div>
@@ -61,7 +61,7 @@
         <!-- Guests & Vehicle -->
         <div class="bg-white rounded-xl border border-gray-100 p-6">
             <h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
-                <i class="fas fa-users text-[#E11D2E]"></i> Guests & Vehicle
+                <i class="fas fa-users text-accent"></i> Guests & Vehicle
             </h3>
             <div class="grid grid-cols-2 gap-4 text-sm">
                 <div><span class="text-gray-500">Adults:</span> <span class="font-medium">{{ $checkin->num_adults }}</span></div>
@@ -74,7 +74,7 @@
         <!-- Emergency Contact -->
         <div class="bg-white rounded-xl border border-gray-100 p-6">
             <h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
-                <i class="fas fa-phone-alt text-[#E11D2E]"></i> Emergency Contact
+                <i class="fas fa-phone-alt text-accent"></i> Emergency Contact
             </h3>
             <div class="grid grid-cols-2 gap-4 text-sm">
                 <div><span class="text-gray-500">Name:</span> <span class="font-medium">{{ $checkin->emergency_contact_name }}</span></div>
@@ -87,7 +87,7 @@
         <a href="{{ route('customer.checkin.index') }}" class="px-6 py-3 border border-gray-200 text-gray-700 font-bold rounded-lg hover:bg-gray-50 transition">
             <i class="fas fa-arrow-left mr-2"></i> Back
         </a>
-        <a href="{{ route('customer.checkin.create', $checkin->reservation) }}" class="px-6 py-3 bg-[#0B2D5B] text-white font-bold rounded-lg hover:bg-[#123E7A] transition">
+        <a href="{{ route('customer.checkin.create', $checkin->reservation) }}" class="px-6 py-3 bg-primary text-white font-bold rounded-lg hover:bg-primary-light transition">
             <i class="fas fa-edit mr-2"></i> Edit
         </a>
     </div>

@@ -3,10 +3,11 @@
 namespace App\Http\Controllers\Customer;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Customer\LoyaltyApplyDiscountRequest;
+use App\Http\Requests\Customer\LoyaltyRedeemRequest;
 use App\Models\GuestProfile;
 use App\Models\LoyaltyTransaction;
 use App\Models\Reservation;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class LoyaltyController extends Controller
@@ -39,11 +40,9 @@ class LoyaltyController extends Controller
         return view('customer.loyalty.index', compact('profile', 'transactions', 'tiers', 'currentTier', 'nextTier'));
     }
 
-    public function redeem(Request $request)
+    public function redeem(LoyaltyRedeemRequest $request)
     {
-        $request->validate([
-            'points' => 'required|integer|min:100',
-        ]);
+        $request->validated();
 
         $profile = GuestProfile::where('user_id', auth()->id())->firstOrFail();
 
@@ -65,11 +64,9 @@ class LoyaltyController extends Controller
         return back()->with('success', 'Points redeemed! You got ₦'.number_format($discount, 2).' discount voucher');
     }
 
-    public function applyDiscount(Request $request, $reservationId)
+    public function applyDiscount(LoyaltyApplyDiscountRequest $request, $reservationId)
     {
-        $request->validate([
-            'points' => 'required|integer|min:100',
-        ]);
+        $request->validated();
 
         $profile = GuestProfile::where('user_id', auth()->id())->firstOrFail();
 

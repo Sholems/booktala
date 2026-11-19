@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\HomepageSectionUpdateRequest;
 use App\Models\HomepageSection;
 use Illuminate\Http\Request;
 
@@ -20,18 +21,9 @@ class HomepageSectionController extends Controller
         return view('admin.homepage-sections.edit', compact('homepageSection'));
     }
 
-    public function update(Request $request, HomepageSection $homepageSection)
+    public function update(HomepageSectionUpdateRequest $request, HomepageSection $homepageSection)
     {
-        $validated = $request->validate([
-            'title' => 'required|string|max:255',
-            'subtitle' => 'nullable|string',
-            'content' => 'nullable|string',
-            'image' => 'nullable|string',
-            'button_text' => 'nullable|string|max:255',
-            'button_link' => 'nullable|string|max:255',
-            'order' => 'nullable|integer',
-            'is_visible' => 'nullable',
-        ]);
+        $validated = $request->validated();
 
         $validated['is_visible'] = $request->has('is_visible');
 

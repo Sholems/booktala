@@ -3,8 +3,11 @@
 namespace App\Http\Controllers\Customer;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Customer\ProfileConnectGoogleRequest;
+use App\Http\Requests\Customer\ProfileUpdatePasswordRequest;
+use App\Http\Requests\Customer\ProfileUpdateRequest;
+use App\Http\Requests\Customer\ProfileUploadIdRequest;
 use App\Support\IdDocuments;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 
 class ProfileController extends Controller
@@ -16,18 +19,11 @@ class ProfileController extends Controller
         return view('customer.profile.edit', compact('user'));
     }
 
-    public function update(Request $request)
+    public function update(ProfileUpdateRequest $request)
     {
         $user = auth()->user();
 
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'phone' => 'nullable|string|max:20',
-            'address' => 'nullable|string|max:500',
-            'city' => 'nullable|string|max:100',
-            'state' => 'nullable|string|max:100',
-            'country' => 'nullable|string|max:100',
-        ]);
+        $request->validated();
 
         $user->update($request->only([
             'name', 'phone', 'address', 'city', 'state', 'country',
@@ -36,11 +32,9 @@ class ProfileController extends Controller
         return back()->with('success', 'Profile updated successfully');
     }
 
-    public function uploadId(Request $request)
+    public function uploadId(ProfileUploadIdRequest $request)
     {
-        $request->validate([
-            'id_document' => 'required|file|mimes:jpg,jpeg,png,pdf|max:5120',
-        ]);
+        $request->validated();
 
         $user = auth()->user();
 
@@ -56,9 +50,9 @@ class ProfileController extends Controller
         return back()->with('success', 'ID document uploaded. Pending verification.');
     }
 
-    public function connectGoogle(Request $request)
+    public function connectGoogle(ProfileConnectGoogleRequest $request)
     {
-        $request->validate(['google_id' => 'required']);
+        $request->validated();
 
         $user = auth()->user();
         $user->update(['google_id' => $request->google_id]);
@@ -66,12 +60,9 @@ class ProfileController extends Controller
         return back()->with('success', 'Google account connected');
     }
 
-    public function updatePassword(Request $request)
+    public function updatePassword(ProfileUpdatePasswordRequest $request)
     {
-        $request->validate([
-            'current_password' => 'required',
-            'password' => 'required|string|min:8|confirmed',
-        ]);
+        $request->validated();
 
         $user = auth()->user();
 

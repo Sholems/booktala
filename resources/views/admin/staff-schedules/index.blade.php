@@ -10,7 +10,7 @@
             <h2 class="text-xl font-bold text-gray-800">Staff Schedules</h2>
             <p class="text-gray-500 text-sm">Manage staff working schedules</p>
         </div>
-        <a href="{{ route('admin.staff-schedules.calendar') }}" class="px-5 py-2.5 bg-[#0B2D5B] text-white font-bold rounded-lg hover:bg-[#123E7A] transition">
+        <a href="{{ route('admin.staff-schedules.calendar') }}" class="px-5 py-2.5 bg-primary text-white font-bold rounded-lg hover:bg-primary-light transition">
             <i class="fas fa-calendar-alt mr-2"></i>Calendar View
         </a>
     </div>
@@ -20,14 +20,14 @@
         <form method="GET" class="flex flex-wrap items-center gap-4">
             <label class="text-sm font-medium text-gray-700">Select Date:</label>
             <input type="date" name="date" value="{{ $date }}"
-                class="px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#E11D2E]">
-            <select name="site_id" class="px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#E11D2E]">
+                class="px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-accent">
+            <select name="site_id" class="px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-accent">
                 <option value="">All sites</option>
                 @foreach($sites as $site)
                 <option value="{{ $site->id }}" @selected($siteId === $site->id)>{{ $site->name }}</option>
                 @endforeach
             </select>
-            <button type="submit" class="px-5 py-2 bg-[#E11D2E] text-white font-bold rounded-lg hover:bg-[#C21627]">
+            <button type="submit" class="px-5 py-2 bg-accent text-white font-bold rounded-lg hover:bg-accent-dark">
                 View
             </button>
         </form>
@@ -45,7 +45,7 @@
             @csrf
             <div class="flex-1 min-w-[200px]">
                 <label class="block text-sm font-medium text-gray-700 mb-1">Staff</label>
-                <select name="staff_id" required class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#E11D2E]">
+                <select name="staff_id" required class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-accent">
                     <option value="">Select Staff</option>
                     @foreach($staff as $s)
                     <option value="{{ $s->id }}">{{ $s->user->name ?? 'Unknown' }} — {{ $s->activeAssignments->pluck('site.name')->unique()->join(', ') ?: 'no site' }}</option>
@@ -54,7 +54,7 @@
             </div>
             <div class="flex-1 min-w-[180px]">
                 <label class="block text-sm font-medium text-gray-700 mb-1">Site</label>
-                <select name="site_id" class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#E11D2E]">
+                <select name="site_id" class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-accent">
                     <option value="">Their primary site</option>
                     @foreach($sites as $site)
                     <option value="{{ $site->id }}" @selected($siteId === $site->id)>{{ $site->name }}</option>
@@ -63,11 +63,11 @@
             </div>
             <div class="w-40">
                 <label class="block text-sm font-medium text-gray-700 mb-1">Date</label>
-                <input type="date" name="date" value="{{ $date }}" required class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#E11D2E]">
+                <input type="date" name="date" value="{{ $date }}" required class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-accent">
             </div>
             <div class="w-40">
                 <label class="block text-sm font-medium text-gray-700 mb-1">Shift</label>
-                <select name="shift_type" required class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#E11D2E]">
+                <select name="shift_type" required class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-accent">
                     <option value="morning">Morning (6-2)</option>
                     <option value="afternoon">Afternoon (2-10)</option>
                     <option value="night">Night (10-6)</option>
@@ -77,9 +77,9 @@
             </div>
             <div class="flex-1 min-w-[200px]">
                 <label class="block text-sm font-medium text-gray-700 mb-1">Notes</label>
-                <input type="text" name="notes" placeholder="Optional notes" class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#E11D2E]">
+                <input type="text" name="notes" placeholder="Optional notes" class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-accent">
             </div>
-            <button type="submit" class="px-5 py-2 bg-[#0B2D5B] text-white font-bold rounded-lg hover:bg-[#123E7A]">
+            <button type="submit" class="px-5 py-2 bg-primary text-white font-bold rounded-lg hover:bg-primary-light">
                 <i class="fas fa-plus mr-2"></i>Add
             </button>
         </form>
@@ -104,7 +104,7 @@
                 <tr class="hover:bg-gray-50">
                     <td class="px-6 py-4">
                         <div class="flex items-center gap-3">
-                            <div class="w-8 h-8 bg-[#E11D2E] rounded-full flex items-center justify-center text-white text-sm font-bold">
+                            <div class="w-8 h-8 bg-accent rounded-full flex items-center justify-center text-white text-sm font-bold">
                                 {{ substr($schedule->staff->user->name ?? 'U', 0, 1) }}
                             </div>
                             <span class="font-medium text-gray-800">{{ $schedule->staff->user->name ?? 'Unknown' }}</span>

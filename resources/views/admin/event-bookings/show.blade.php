@@ -26,7 +26,7 @@
         <div class="bg-white rounded-xl border border-gray-100 p-6">
             <h3 class="text-lg font-bold text-gray-800 mb-4">Customer</h3>
             <div class="flex items-center gap-4">
-                <div class="w-12 h-12 bg-[#E11D2E] rounded-full flex items-center justify-center text-white font-bold">
+                <div class="w-12 h-12 bg-accent rounded-full flex items-center justify-center text-white font-bold">
                     {{ substr($booking->user->name ?? 'U', 0, 1) }}
                 </div>
                 <div>
@@ -58,7 +58,7 @@
             <h3 class="text-lg font-bold text-gray-800 mb-4">Payment</h3>
             <div class="flex justify-between items-center">
                 <span class="text-gray-600">Total Amount</span>
-                <span class="text-2xl font-black text-[#0B2D5B]">₦{{ number_format($booking->total_price, 2) }}</span>
+                <span class="text-2xl font-black text-primary">₦{{ number_format($booking->total_price, 2) }}</span>
             </div>
         </div>
 
@@ -68,12 +68,12 @@
             <form method="POST" action="{{ route('admin.event-bookings.update', $booking) }}" class="flex gap-4">
                 @csrf
                 @method('PATCH')
-                <select name="status" class="flex-1 px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#E11D2E]">
+                <select name="status" class="flex-1 px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-accent">
                     @foreach(EventBooking::statuses() as $key => $label)
                     <option value="{{ $key }}" {{ $booking->status === $key ? 'selected' : '' }}>{{ $label }}</option>
                     @endforeach
                 </select>
-                <button type="submit" class="px-5 py-2 bg-[#E11D2E] text-white font-bold rounded-lg hover:bg-[#C21627]">
+                <button type="submit" class="px-5 py-2 bg-accent text-white font-bold rounded-lg hover:bg-accent-dark">
                     Update
                 </button>
             </form>

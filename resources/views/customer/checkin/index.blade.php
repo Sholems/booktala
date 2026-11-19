@@ -24,7 +24,7 @@
         </div>
         <h3 class="text-lg font-bold text-gray-800 mb-2">No Upcoming Check-ins</h3>
         <p class="text-gray-500">You don't have any upcoming reservations that require check-in.</p>
-        <a href="{{ route('properties.index') }}" class="inline-block mt-4 px-6 py-3 bg-[#0B2D5B] text-white font-bold rounded-lg hover:bg-[#123E7A] transition">
+        <a href="{{ route('properties.index') }}" class="inline-block mt-4 px-6 py-3 bg-primary text-white font-bold rounded-lg hover:bg-primary-light transition">
             Browse Properties
         </a>
     </div>
@@ -44,7 +44,7 @@
                 </p>
             </div>
             <div class="flex flex-col sm:flex-row gap-3">
-                <a href="{{ route('customer.checkin.create', $reservation) }}" class="px-6 py-3 bg-[#E11D2E] text-white font-bold rounded-lg hover:bg-[#C21627] transition text-center">
+                <a href="{{ route('customer.checkin.create', $reservation) }}" class="px-6 py-3 bg-accent text-white font-bold rounded-lg hover:bg-accent-dark transition text-center">
                     <i class="fas fa-clipboard-list mr-2"></i>
                     Complete Check-in
                 </a>

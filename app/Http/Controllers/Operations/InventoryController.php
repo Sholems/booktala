@@ -4,13 +4,15 @@ namespace App\Http\Controllers\Operations;
 
 use App\Http\Controllers\Concerns\SiteScopedPortal;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Operations\InventoryStoreItemRequest;
+use App\Http\Requests\Operations\InventoryStoreMovementRequest;
+use App\Http\Requests\Operations\InventoryUpdateItemRequest;
 use App\Models\InventoryItem;
 use App\Models\Property;
 use App\Models\StockMovement;
 use App\Services\InventoryService;
 use App\Services\SecurityService;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 
 /**
  * Site stock: anyone at the site records use and laundry; supervisors and head
@@ -46,16 +48,9 @@ class InventoryController extends Controller
         ]));
     }
 
-    public function storeItem(Request $request)
+    public function storeItem(InventoryStoreItemRequest $request)
     {
-        $data = $request->validate([
-            'site_id' => 'required|exists:sites,id',
-            'name' => ['required', 'string', 'max:100', Rule::unique('inventory_items')->where('site_id', $request->integer('site_id'))],
-            'category' => ['required', Rule::in(array_keys(InventoryItem::CATEGORIES))],
-            'unit' => 'required|string|max:20',
-            'reorder_level' => 'nullable|numeric|min:0',
-            'opening_stock' => 'nullable|numeric|min:0',
-        ], ['name.unique' => 'This site already has an item with that name.']);
+        $data = $request->validated();
         $this->ensureManages($request->user(), (int) $data['site_id']);
 
         $item = InventoryItem::create([
@@ -84,29 +79,20 @@ class InventoryController extends Controller
         ]));
     }
 
-    public function updateItem(Request $request, InventoryItem $item)
+    public function updateItem(InventoryUpdateItemRequest $request, InventoryItem $item)
     {
         $this->ensureManages($request->user(), $item->site_id);
-        $data = $request->validate([
-            'reorder_level' => 'required|numeric|min:0',
-            'unit' => 'required|string|max:20',
-        ]);
+        $data = $request->validated();
         $item->update($data + ['tracks_laundry' => $request->boolean('tracks_laundry'), 'is_active' => $request->boolean('is_active', true)]);
 
         return back()->with('success', 'Item updated');
     }
 
-    public function storeMovement(Request $request, InventoryItem $item)
+    public function storeMovement(InventoryStoreMovementRequest $request, InventoryItem $item)
     {
         $user = $request->user();
         $this->ensureSees($user, $item->site_id);
-        $data = $request->validate([
-            'type' => ['required', Rule::in(array_keys(StockMovement::TYPES))],
-            'quantity' => 'required|numeric|min:0|max:1000000',
-            'property_id' => ['nullable', Rule::exists('properties', 'id')->where('site_id', $item->site_id)],
-            'unit_cost' => 'nullable|numeric|min:0',
-            'note' => 'nullable|string|max:255',
-        ]);
+        $data = $request->validated();
 
         // Deliveries and corrected counts are for supervisors and head office.
         if (! StockMovement::TYPES[$data['type']][1]) {

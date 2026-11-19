@@ -3,9 +3,11 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\RoomTypeStoreRequest;
+use App\Http\Requests\Admin\RoomTypeUpdateRequest;
+use App\Http\Requests\Admin\RoomTypeUpdateRoomStatusRequest;
 use App\Models\Room;
 use App\Models\RoomType;
-use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
 class RoomTypeController extends Controller
@@ -22,15 +24,9 @@ class RoomTypeController extends Controller
         return view('admin.room-types.create');
     }
 
-    public function store(Request $request)
+    public function store(RoomTypeStoreRequest $request)
     {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'base_price' => 'required|numeric|min:0',
-            'total_rooms' => 'required|integer|min:1',
-            'max_adults' => 'required|integer|min:1',
-            'max_children' => 'nullable|integer|min:0',
-        ]);
+        $request->validated();
 
         $roomType = RoomType::create([
             'name' => $request->name,
@@ -70,14 +66,9 @@ class RoomTypeController extends Controller
         return view('admin.room-types.edit', compact('roomType'));
     }
 
-    public function update(Request $request, RoomType $roomType)
+    public function update(RoomTypeUpdateRequest $request, RoomType $roomType)
     {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'base_price' => 'required|numeric|min:0',
-            'total_rooms' => 'required|integer|min:1',
-            'max_adults' => 'required|integer|min:1',
-        ]);
+        $request->validated();
 
         $roomType->update([
             'name' => $request->name,
@@ -115,11 +106,9 @@ class RoomTypeController extends Controller
         return view('admin.room-types.rooms', compact('roomType', 'rooms'));
     }
 
-    public function updateRoomStatus(Request $request, Room $room)
+    public function updateRoomStatus(RoomTypeUpdateRoomStatusRequest $request, Room $room)
     {
-        $request->validate([
-            'status' => 'required|in:available,occupied,reserved,maintenance,cleaning',
-        ]);
+        $request->validated();
 
         $room->update(['status' => $request->status]);
 

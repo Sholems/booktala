@@ -3,7 +3,7 @@
     $next = \App\Support\GuestJourney::next($reservation);
     $steps = \App\Support\GuestJourney::steps($reservation);
     $tones = [
-        'gold' => 'border-[#E11D2E] bg-[#E11D2E]/10',
+        'gold' => 'border-accent bg-accent/10',
         'green' => 'border-green-300 bg-green-50',
         'blue' => 'border-blue-200 bg-blue-50',
         'amber' => 'border-amber-300 bg-amber-50',

@@ -3,15 +3,17 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\StaffAddAssignmentRequest;
+use App\Http\Requests\Admin\StaffResetPasswordRequest;
+use App\Http\Requests\Admin\StaffStoreRequest;
+use App\Http\Requests\Admin\StaffUpdateRequest;
 use App\Models\Position;
 use App\Models\Site;
 use App\Models\Staff;
 use App\Models\StaffAssignment;
 use App\Models\User;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
-use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
 
 class StaffController extends Controller
@@ -30,16 +32,9 @@ class StaffController extends Controller
         ]);
     }
 
-    public function store(Request $request)
+    public function store(StaffStoreRequest $request)
     {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|max:255|unique:users',
-            'phone' => 'nullable|string|max:30',
-            'position_id' => 'required|exists:positions,id',
-            'site_id' => 'required|exists:sites,id',
-            'password' => ['required', Password::min(8)],
-        ]);
+        $request->validated();
 
         $user = User::create([
             'name' => $request->name,
@@ -76,16 +71,11 @@ class StaffController extends Controller
         ]);
     }
 
-    public function update(Request $request, User $user)
+    public function update(StaffUpdateRequest $request, User $user)
     {
         $this->ensureStaff($user);
 
-        $data = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => ['required', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
-            'phone' => 'nullable|string|max:30',
-            'status' => 'required|in:active,suspended',
-        ]);
+        $data = $request->validated();
 
         $user->update($data);
         Staff::updateOrCreate(
@@ -104,13 +94,11 @@ class StaffController extends Controller
         return redirect()->route('admin.staff.edit', $user)->with('success', 'Staff details updated');
     }
 
-    public function resetPassword(Request $request, User $user)
+    public function resetPassword(StaffResetPasswordRequest $request, User $user)
     {
         $this->ensureStaff($user);
 
-        $request->validate([
-            'password' => ['required', 'confirmed', Password::min(8)],
-        ]);
+        $request->validated();
 
         // The model's "hashed" cast hashes the new password on save.
         $user->password = $request->password;
@@ -133,16 +121,11 @@ class StaffController extends Controller
      * Post a staff member to a site in a position (they may hold several, e.g. a
      * technician covering three buildings).
      */
-    public function addAssignment(Request $request, User $user)
+    public function addAssignment(StaffAddAssignmentRequest $request, User $user)
     {
         $this->ensureStaff($user);
 
-        $data = $request->validate([
-            'site_id' => 'required|exists:sites,id',
-            'position_id' => 'required|exists:positions,id',
-            'starts_on' => 'nullable|date',
-            'is_primary' => 'nullable|boolean',
-        ]);
+        $data = $request->validated();
 
         $profile = $this->profile($user);
         $alreadyThere = $profile->activeAssignments()

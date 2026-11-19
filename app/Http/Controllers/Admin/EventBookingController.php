@@ -3,6 +3,9 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\EventBookingStoreSpaceRequest;
+use App\Http\Requests\Admin\EventBookingUpdateRequest;
+use App\Http\Requests\Admin\EventBookingUpdateSpaceRequest;
 use App\Models\EventBooking;
 use App\Models\EventSpace;
 use Illuminate\Http\Request;
@@ -27,11 +30,9 @@ class EventBookingController extends Controller
         return view('admin.event-bookings.show', compact('booking'));
     }
 
-    public function update(Request $request, EventBooking $booking)
+    public function update(EventBookingUpdateRequest $request, EventBooking $booking)
     {
-        $request->validate([
-            'status' => 'required|in:pending,confirmed,cancelled,completed',
-        ]);
+        $request->validated();
 
         $booking->update(['status' => $request->status]);
 
@@ -50,17 +51,9 @@ class EventBookingController extends Controller
         return view('admin.event-spaces.create');
     }
 
-    public function storeSpace(Request $request)
+    public function storeSpace(EventBookingStoreSpaceRequest $request)
     {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'capacity' => 'required|integer|min:1',
-            'size' => 'nullable|integer',
-            'hourly_rate' => 'nullable|numeric|min:0',
-            'daily_rate' => 'nullable|numeric|min:0',
-            'amenities' => 'nullable|array',
-        ]);
+        $request->validated();
 
         EventSpace::create($request->all() + ['is_active' => true]);
 
@@ -72,15 +65,9 @@ class EventBookingController extends Controller
         return view('admin.event-spaces.edit', compact('space'));
     }
 
-    public function updateSpace(Request $request, EventSpace $space)
+    public function updateSpace(EventBookingUpdateSpaceRequest $request, EventSpace $space)
     {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'capacity' => 'required|integer|min:1',
-            'hourly_rate' => 'nullable|numeric|min:0',
-            'daily_rate' => 'nullable|numeric|min:0',
-        ]);
+        $request->validated();
 
         $space->update($request->all());
 

@@ -3,9 +3,8 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\PositionRequest;
 use App\Models\Position;
-use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 
 /**
  * Job positions staff can hold at a site (Security Guard, Receptionist, ...).
@@ -24,9 +23,9 @@ class PositionController extends Controller
         return view('admin.positions.index', compact('positions'));
     }
 
-    public function store(Request $request)
+    public function store(PositionRequest $request)
     {
-        Position::create($this->validated($request));
+        Position::create($request->validated());
 
         return back()->with('success', 'Position added');
     }
@@ -36,9 +35,9 @@ class PositionController extends Controller
         return view('admin.positions.edit', compact('position'));
     }
 
-    public function update(Request $request, Position $position)
+    public function update(PositionRequest $request, Position $position)
     {
-        $position->update($this->validated($request, $position));
+        $position->update($request->validated());
 
         return redirect()->route('admin.positions.index')->with('success', 'Position updated');
     }
@@ -52,15 +51,5 @@ class PositionController extends Controller
         $position->delete();
 
         return back()->with('success', 'Position deleted');
-    }
-
-    private function validated(Request $request, ?Position $position = null): array
-    {
-        return $request->validate([
-            'name' => ['required', 'string', 'max:100', Rule::unique('positions')->ignore($position?->id)],
-            'department' => ['required', Rule::in(array_keys(Position::DEPARTMENTS))],
-            'level' => ['required', Rule::in(array_keys(Position::LEVELS))],
-            'description' => 'nullable|string|max:255',
-        ]);
     }
 }

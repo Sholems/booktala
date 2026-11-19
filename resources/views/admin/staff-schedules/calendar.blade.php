@@ -59,7 +59,7 @@
                 <div class="min-h-[100px] border-b border-r border-gray-100 p-2 {{ $currentDate == $today ? 'bg-blue-50' : '' }}">
                     <div class="text-sm font-medium text-gray-500 mb-1">{{ $day }}</div>
                     @foreach($daySchedules->take(2) as $schedule)
-                        <div class="text-xs px-2 py-1 mb-1 rounded bg-[#0B2D5B]/10 text-[#0B2D5B] truncate">
+                        <div class="text-xs px-2 py-1 mb-1 rounded bg-primary/10 text-primary truncate">
                             {{ $schedule->staff->user->name ?? 'Unknown' }}: {{ $schedule->shift_type }}
                         </div>
                     @endforeach

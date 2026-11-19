@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Auth\AuthLoginRequest;
+use App\Http\Requests\Auth\AuthRegisterRequest;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -20,12 +22,9 @@ class AuthController extends Controller
         return view('auth.register');
     }
 
-    public function login(Request $request)
+    public function login(AuthLoginRequest $request)
     {
-        $credentials = $request->validate([
-            'email' => 'required|email',
-            'password' => 'required',
-        ]);
+        $credentials = $request->validated();
 
         $user = User::where('email', $credentials['email'])->first();
 
@@ -59,14 +58,9 @@ class AuthController extends Controller
         }
     }
 
-    public function register(Request $request)
+    public function register(AuthRegisterRequest $request)
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users',
-            'phone' => 'nullable|string',
-            'password' => 'required|confirmed|min:8',
-        ]);
+        $validated = $request->validated();
 
         $user = User::create([
             'name' => $validated['name'],

@@ -4,9 +4,9 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Concerns\ManagesGuestInbox;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\MessageStartConversationRequest;
 use App\Models\Conversation;
 use App\Models\Message;
-use Illuminate\Http\Request;
 
 class MessageController extends Controller
 {
@@ -22,13 +22,9 @@ class MessageController extends Controller
         return 'admin.messages';
     }
 
-    public function startConversation(Request $request)
+    public function startConversation(MessageStartConversationRequest $request)
     {
-        $request->validate([
-            'user_id' => 'required|exists:users,id',
-            'property_id' => 'nullable|exists:properties,id',
-            'message' => 'required|string',
-        ]);
+        $request->validated();
 
         $existingConversation = Conversation::where('user_id', $request->user_id)
             ->where('property_id', $request->property_id)

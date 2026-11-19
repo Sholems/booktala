@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Api\AdminPropertyRequest;
+use App\Http\Requests\Api\AdminUpdateReservationRequest;
 use App\Models\Payment;
 use App\Models\Property;
 use App\Models\Reservation;
@@ -13,7 +15,7 @@ use Illuminate\Support\Facades\DB;
 
 class AdminController extends Controller
 {
-    private const BOOKING_STATUSES = 'pending,confirmed,checked_in,checked_out,cancelled,no_show';
+    public const BOOKING_STATUSES = 'pending,confirmed,checked_in,checked_out,cancelled,no_show';
 
     public function dashboard()
     {
@@ -64,14 +66,11 @@ class AdminController extends Controller
         return response()->json($reservations);
     }
 
-    public function updateReservation(Request $request, $id, ReservationLifecycle $lifecycle)
+    public function updateReservation(AdminUpdateReservationRequest $request, $id, ReservationLifecycle $lifecycle)
     {
         $reservation = Reservation::findOrFail($id);
 
-        $request->validate([
-            'status' => 'required|in:'.self::BOOKING_STATUSES,
-            'reason' => 'nullable|string|max:500',
-        ]);
+        $request->validated();
 
         $newStatus = $request->status;
 
@@ -102,9 +101,9 @@ class AdminController extends Controller
         return response()->json($properties);
     }
 
-    public function createProperty(Request $request)
+    public function createProperty(AdminPropertyRequest $request)
     {
-        $data = $request->validate($this->propertyRules(true));
+        $data = $request->validated();
         $data['created_by'] = $request->user()->id;
 
         $property = Property::create($data);
@@ -112,11 +111,11 @@ class AdminController extends Controller
         return response()->json(['property' => $property], 201);
     }
 
-    public function updateProperty(Request $request, $id)
+    public function updateProperty(AdminPropertyRequest $request, $id)
     {
         $property = Property::findOrFail($id);
 
-        $property->update($request->validate($this->propertyRules(false)));
+        $property->update($request->validated());
 
         return response()->json(['property' => $property]);
     }
@@ -157,41 +156,5 @@ class AdminController extends Controller
         $payments = $query->latest()->paginate(20);
 
         return response()->json($payments);
-    }
-
-    private function propertyRules(bool $creating): array
-    {
-        $required = $creating ? 'required' : 'sometimes';
-
-        return [
-            'title' => "{$required}|string|max:255",
-            'description' => "{$required}|string",
-            'short_description' => 'nullable|string|max:255',
-            'address' => "{$required}|string|max:255",
-            'city' => "{$required}|string|max:100",
-            'state' => "{$required}|string|max:100",
-            'country' => 'sometimes|string|max:100',
-            'latitude' => 'nullable|numeric|between:-90,90',
-            'longitude' => 'nullable|numeric|between:-180,180',
-            'price_per_night' => "{$required}|numeric|min:0",
-            'weekend_price' => 'nullable|numeric|min:0',
-            'price_per_week' => 'nullable|numeric|min:0',
-            'price_per_month' => 'nullable|numeric|min:0',
-            'min_nights' => 'sometimes|integer|min:1',
-            'max_nights' => 'sometimes|integer|min:1',
-            'max_guests' => "{$required}|integer|min:1",
-            'bedrooms' => "{$required}|integer|min:0",
-            'bathrooms' => "{$required}|integer|min:0",
-            'toilets' => "{$required}|integer|min:0",
-            'status' => 'sometimes|in:active,inactive,maintenance',
-            'is_featured' => 'sometimes|boolean',
-            'check_in_time' => 'sometimes|date_format:H:i',
-            'check_out_time' => 'sometimes|date_format:H:i',
-            'house_rules' => 'nullable|string',
-            'cancellation_policy' => 'nullable|string',
-            'meta_title' => 'nullable|string|max:255',
-            'meta_description' => 'nullable|string',
-            'meta_keywords' => 'nullable|string|max:255',
-        ];
     }
 }

@@ -18,7 +18,7 @@
 
 @section('content')
 <!-- Page Header Banner -->
-<section class="bg-gradient-to-r from-slate-900 via-primary to-slate-900 text-white py-12 md:py-16 shadow-inner" style="background-color: #0B2D5B; background: linear-gradient(135deg, #091E3A 0%, #0B2D5B 50%, #091E3A 100%); color: #ffffff;">
+<section class="bg-gradient-to-r from-slate-900 via-primary to-slate-900 text-white py-12 md:py-16 shadow-inner" style="background-color: var(--color-primary); background: linear-gradient(135deg, #091E3A 0%, var(--color-primary) 50%, #091E3A 100%); color: #ffffff;">
     <div class="container mx-auto px-4 md:px-6 max-w-6xl">
         <nav class="flex items-center text-xs md:text-sm text-slate-300 mb-4 space-x-2">
             <a href="{{ route('home') }}" class="hover:text-white transition">Home</a>
@@ -161,7 +161,7 @@
         font-weight: 600;
     }
     .policy-content a {
-        color: #0B2D5B;
+        color: var(--color-primary);
         text-decoration: underline;
         font-weight: 600;
     }

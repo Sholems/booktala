@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\StaffScheduleStoreRequest;
+use App\Http\Requests\Admin\StaffScheduleUpdateStatusRequest;
 use App\Models\Site;
 use App\Models\Staff;
 use App\Models\StaffSchedule;
@@ -32,15 +34,9 @@ class StaffScheduleController extends Controller
         return view('admin.staff-schedules.index', compact('staff', 'schedules', 'date', 'sites', 'siteId'));
     }
 
-    public function store(Request $request, RosterService $roster)
+    public function store(StaffScheduleStoreRequest $request, RosterService $roster)
     {
-        $data = $request->validate([
-            'staff_id' => 'required|exists:staff,id',
-            'site_id' => 'nullable|exists:sites,id',
-            'date' => 'required|date',
-            'shift_type' => 'required|in:'.implode(',', array_keys(StaffSchedule::SHIFT_TIMES)),
-            'notes' => 'nullable|string|max:500',
-        ]);
+        $data = $request->validated();
 
         $staff = Staff::findOrFail($data['staff_id']);
         // Default to the person's primary site when none is chosen.
@@ -54,11 +50,9 @@ class StaffScheduleController extends Controller
         return back()->with('success', 'Schedule created successfully');
     }
 
-    public function updateStatus(Request $request, StaffSchedule $schedule)
+    public function updateStatus(StaffScheduleUpdateStatusRequest $request, StaffSchedule $schedule)
     {
-        $request->validate([
-            'status' => 'required|in:scheduled,completed,cancelled,no_show',
-        ]);
+        $request->validated();
 
         $schedule->update(['status' => $request->status]);
 

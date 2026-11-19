@@ -12,7 +12,7 @@
             <i class="fas fa-gas-pump"></i>
             <span>Generator Fuel & Hours</span>
         </a>
-        <button @click="$dispatch('open-facility-modal')" type="button" class="inline-flex items-center gap-2 bg-[#0B2D5B] hover:bg-[#123E7A] text-white px-4 py-2 rounded-lg text-sm font-semibold shadow-sm transition">
+        <button @click="$dispatch('open-facility-modal')" type="button" class="inline-flex items-center gap-2 bg-primary hover:bg-primary-light text-white px-4 py-2 rounded-lg text-sm font-semibold shadow-sm transition">
             <i class="fas fa-plus"></i>
             <span>New Schedule</span>
         </button>
@@ -45,7 +45,7 @@
     </div>
     <div class="bg-white rounded-xl p-4 border border-slate-200 shadow-sm">
         <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Estimated Budget</p>
-        <p class="text-2xl font-black text-[#0B2D5B]">₦{{ number_format($stats['estimated_monthly']) }}</p>
+        <p class="text-2xl font-black text-primary">₦{{ number_format($stats['estimated_monthly']) }}</p>
         <span class="text-xs text-slate-400">Total planned routine costs</span>
     </div>
 </div>
@@ -205,7 +205,7 @@
             <div class="grid grid-cols-2 gap-3">
                 <div>
                     <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Site *</label>
-                    <select name="site_id" required class="w-full px-3 py-2 border border-slate-200 rounded-lg text-xs focus:ring-2 focus:ring-[#0B2D5B]">
+                    <select name="site_id" required class="w-full px-3 py-2 border border-slate-200 rounded-lg text-xs focus:ring-2 focus:ring-primary">
                         @foreach($sites as $site)
                             <option value="{{ $site->id }}">{{ $site->name }}</option>
                         @endforeach
@@ -213,7 +213,7 @@
                 </div>
                 <div>
                     <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Equipment Category *</label>
-                    <select name="equipment_type" required class="w-full px-3 py-2 border border-slate-200 rounded-lg text-xs focus:ring-2 focus:ring-[#0B2D5B]">
+                    <select name="equipment_type" required class="w-full px-3 py-2 border border-slate-200 rounded-lg text-xs focus:ring-2 focus:ring-primary">
                         @foreach($equipmentTypes as $key => $label)
                             <option value="{{ $key }}">{{ $label }}</option>
                         @endforeach
@@ -223,7 +223,7 @@
 
             <div>
                 <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Routine Title *</label>
-                <input type="text" name="title" required placeholder="e.g. 100kVA Generator 250hr Oil & Filter Service" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-xs focus:ring-2 focus:ring-[#0B2D5B]">
+                <input type="text" name="title" required placeholder="e.g. 100kVA Generator 250hr Oil & Filter Service" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-xs focus:ring-2 focus:ring-primary">
             </div>
 
             <div class="grid grid-cols-2 gap-3">
@@ -255,7 +255,7 @@
 
             <div class="flex justify-end gap-3 pt-3 border-t border-slate-100">
                 <button @click="open = false" type="button" class="px-4 py-2 border border-slate-200 text-slate-600 rounded-lg text-xs font-semibold hover:bg-slate-50">Cancel</button>
-                <button type="submit" class="px-5 py-2 bg-[#0B2D5B] hover:bg-[#123E7A] text-white rounded-lg text-xs font-bold shadow">Save Routine</button>
+                <button type="submit" class="px-5 py-2 bg-primary hover:bg-primary-light text-white rounded-lg text-xs font-bold shadow">Save Routine</button>
             </div>
         </form>
     </div>

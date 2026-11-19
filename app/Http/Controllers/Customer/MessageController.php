@@ -3,13 +3,14 @@
 namespace App\Http\Controllers\Customer;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Customer\MessageReplyRequest;
+use App\Http\Requests\Customer\MessageStartConversationRequest;
+use App\Http\Requests\Customer\MessageStoreRequest;
 use App\Models\Conversation;
 use App\Models\Message;
 use App\Models\Property;
 use App\Models\Reservation;
 use App\Models\User;
-use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 
 class MessageController extends Controller
 {
@@ -39,13 +40,9 @@ class MessageController extends Controller
         return view('customer.messages.show', compact('conversation'));
     }
 
-    public function store(Request $request)
+    public function store(MessageStoreRequest $request)
     {
-        $validated = $request->validate([
-            'message' => 'required|string|max:2000',
-            'property_id' => 'nullable|exists:properties,id',
-            'reservation_id' => ['nullable', Rule::exists('reservations', 'id')->where('user_id', auth()->id())],
-        ]);
+        $validated = $request->validated();
 
         // A message about a booking goes to that property's site team as well as head office.
         if (empty($validated['property_id']) && ! empty($validated['reservation_id'])) {
@@ -72,10 +69,10 @@ class MessageController extends Controller
         return redirect()->route('customer.messages.show', $conversation)->with('success', 'Message sent. Our team will reply here.');
     }
 
-    public function reply(Request $request, Conversation $conversation)
+    public function reply(MessageReplyRequest $request, Conversation $conversation)
     {
         abort_unless($conversation->user_id === auth()->id(), 403);
-        $validated = $request->validate(['message' => 'required|string|max:2000']);
+        $validated = $request->validated();
 
         Message::create([
             'conversation_id' => $conversation->id,
@@ -90,12 +87,9 @@ class MessageController extends Controller
         return back()->with('success', 'Reply sent');
     }
 
-    public function startConversation(Request $request)
+    public function startConversation(MessageStartConversationRequest $request)
     {
-        $request->validate([
-            'property_id' => 'required|exists:properties,id',
-            'message' => 'required|string',
-        ]);
+        $request->validated();
 
         $property = Property::find($request->property_id);
         $admin = User::role('admin')->first();

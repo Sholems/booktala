@@ -92,6 +92,8 @@ php artisan queue:restart
 php artisan app:production-check
 ```
 
+Site settings are cached and refreshed automatically when changed in the admin; if you ever edit the `settings` table directly, run `php artisan cache:clear`.
+
 `app:production-check` fails if debug is on, Telescope is recording, the database is SQLite (it ignores the row locks used for bookings, payments and stock), or the app key is missing, and warns about mail, queue, https and cookie settings.
 
 Monitor `/up`, back up the database and uploaded files (including `storage/app/private`, which holds guest ID documents, receipts and incident photos), and verify restoration regularly. Telescope never records in production, whatever `TELESCOPE_ENABLED` says.

@@ -10,14 +10,14 @@
             <h2 class="text-xl font-bold text-gray-800">Event Bookings</h2>
             <p class="text-gray-500 text-sm">Manage all event space bookings</p>
         </div>
-        <a href="{{ route('admin.event-spaces.index') }}" class="px-5 py-2.5 bg-[#0B2D5B] text-white font-bold rounded-lg hover:bg-[#123E7A] transition">
+        <a href="{{ route('admin.event-spaces.index') }}" class="px-5 py-2.5 bg-primary text-white font-bold rounded-lg hover:bg-primary-light transition">
             <i class="fas fa-cogs mr-2"></i>Manage Event Spaces
         </a>
     </div>
 
     <div class="bg-white rounded-xl border border-gray-100 p-4">
         <form method="GET" class="flex flex-wrap gap-4">
-            <select name="status" class="px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#E11D2E]">
+            <select name="status" class="px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-accent">
                 <option value="">All Status</option>
                 <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>Pending</option>
                 <option value="confirmed" {{ request('status') == 'confirmed' ? 'selected' : '' }}>Confirmed</option>
@@ -25,8 +25,8 @@
                 <option value="completed" {{ request('status') == 'completed' ? 'selected' : '' }}>Completed</option>
             </select>
             <input type="text" name="search" placeholder="Search events..." value="{{ request('search') }}"
-                class="px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#E11D2E]">
-            <button type="submit" class="px-5 py-2 bg-[#E11D2E] text-white font-bold rounded-lg hover:bg-[#C21627]">
+                class="px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-accent">
+            <button type="submit" class="px-5 py-2 bg-accent text-white font-bold rounded-lg hover:bg-accent-dark">
                 Filter
             </button>
         </form>
@@ -83,7 +83,7 @@
                         </span>
                     </td>
                     <td class="px-6 py-4 text-right">
-                        <a href="{{ route('admin.event-bookings.show', $booking) }}" class="text-[#0B2D5B] hover:text-[#E11D2E] font-medium text-sm">
+                        <a href="{{ route('admin.event-bookings.show', $booking) }}" class="text-primary hover:text-accent font-medium text-sm">
                             View <i class="fas fa-chevron-right ml-1"></i>
                         </a>
                     </td>

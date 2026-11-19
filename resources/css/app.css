@@ -9,7 +9,9 @@
 @theme {
     /* Brand colours (were set per layout in the old Tailwind CDN config). */
     --color-primary: #0B2D5B;
+    --color-primary-light: #123E7A; /* hover state for primary buttons */
     --color-accent: #E11D2E;
+    --color-accent-dark: #C21627; /* hover state for accent buttons */
     --color-background: #F6F7F9;
 
     /* Tailwind 4 renamed these scales; keep the Tailwind 3 sizes the views were designed with. */
@@ -41,4 +43,26 @@
     [x-cloak] {
         display: none !important;
     }
+}
+
+/* Portal layouts (admin, staff, guest, owner): off-canvas sidebar on small screens. */
+@media (max-width: 1024px) {
+    .sidebar { position: fixed; z-index: 50; transform: translateX(-100%); transition: transform 0.3s; }
+    .sidebar.open { transform: translateX(0); }
+    .sidebar-overlay { display: none; position: fixed; inset: 0; background: rgb(0 0 0 / 0.5); z-index: 40; }
+    .sidebar-overlay.open { display: block; }
+}
+
+/* Tables that scroll sideways, or turn into stacked cards on phones (cells carry data-label). */
+.table-responsive { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.table-responsive table { width: 100%; }
+
+@media (max-width: 768px) {
+    .mobile-card-table { display: block; }
+    .mobile-card-table thead { display: none; }
+    .mobile-card-table tbody { display: flex; flex-direction: column; gap: 1rem; }
+    .mobile-card-table tr { display: flex; flex-direction: column; background: white; border-radius: 0.5rem; padding: 1rem; box-shadow: 0 1px 3px rgb(0 0 0 / 0.1); }
+    .mobile-card-table td { display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0; border-bottom: 1px solid var(--color-gray-100); }
+    .mobile-card-table td:last-child { border-bottom: none; }
+    .mobile-card-table td::before { content: attr(data-label); font-weight: 600; color: var(--color-gray-500); margin-right: 1rem; min-width: 100px; }
 }

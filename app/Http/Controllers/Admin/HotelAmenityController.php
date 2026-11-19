@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\HotelAmenityStoreRequest;
 use App\Models\HotelAmenity;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -21,12 +22,9 @@ class HotelAmenityController extends Controller
         return view('admin.hotel-amenities.create');
     }
 
-    public function store(Request $request)
+    public function store(HotelAmenityStoreRequest $request)
     {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'category' => 'required|string',
-        ]);
+        $request->validated();
 
         HotelAmenity::create([
             'name' => $request->name,

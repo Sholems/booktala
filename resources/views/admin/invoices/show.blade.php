@@ -238,7 +238,7 @@
             <div class="flex items-start gap-3.5">
                 <img src="{{ $logoUrl }}" alt="{{ $siteName }}" class="doc-logo h-12 sm:h-14 w-auto object-contain">
                 <div>
-                    <h1 class="doc-title text-lg sm:text-xl font-black tracking-tight text-primary uppercase" style="color: #0B2D5B;">{{ $siteName }} LUXURY STAYS</h1>
+                    <h1 class="doc-title text-lg sm:text-xl font-black tracking-tight text-primary uppercase" style="color: var(--color-primary);">{{ $siteName }} LUXURY STAYS</h1>
                     <p class="text-[11px] font-semibold text-slate-500 uppercase tracking-wide">Operated by {{ $companyName }}</p>
                     <p class="text-[11px] text-slate-600 mt-0.5 max-w-sm leading-snug">{{ $siteAddress }}</p>
                     <p class="text-[11px] text-slate-600 mt-0.5">
@@ -250,7 +250,7 @@
 
             <!-- Right: Dark Blue Document Identifier Badge -->
             <div class="w-full sm:w-auto text-left sm:text-right shrink-0">
-                <div class="inline-block bg-primary text-white rounded-xl px-4 py-2.5 shadow-sm text-left sm:text-right w-full sm:w-auto" style="background-color: #0B2D5B; color: #ffffff;">
+                <div class="inline-block bg-primary text-white rounded-xl px-4 py-2.5 shadow-sm text-left sm:text-right w-full sm:w-auto" style="background-color: var(--color-primary); color: #ffffff;">
                     <div class="text-[10px] font-bold tracking-widest text-slate-200 uppercase">OFFICIAL INVOICE</div>
                     <div class="text-sm sm:text-base font-black tracking-wider text-amber-400 mt-0.5" style="color: #F59E0B;">
                         #{{ $invoice->invoice_number }}
@@ -267,8 +267,8 @@
         <!-- 2-Column Information Cards: BILL TO & INVOICE METADATA -->
         <div class="doc-info-row" style="display: flex; flex-direction: row; flex-wrap: wrap; gap: 16px; margin: 16px 0; width: 100%; box-sizing: border-box;">
             <!-- Left: BILL TO Card -->
-            <div class="doc-info-billto doc-card bg-slate-50 border border-slate-200 rounded-xl p-3.5 sm:p-4 relative" style="flex: 1 1 54%; min-width: 280px; box-sizing: border-box; border-left: 4px solid #0B2D5B;">
-                <div class="text-[10px] font-bold text-primary uppercase tracking-wider mb-1 flex items-center gap-1.5" style="color: #0B2D5B;">
+            <div class="doc-info-billto doc-card bg-slate-50 border border-slate-200 rounded-xl p-3.5 sm:p-4 relative" style="flex: 1 1 54%; min-width: 280px; box-sizing: border-box; border-left: 4px solid var(--color-primary);">
+                <div class="text-[10px] font-bold text-primary uppercase tracking-wider mb-1 flex items-center gap-1.5" style="color: var(--color-primary);">
                     <i class="fas fa-user-tag text-xs"></i> BILL TO / CLIENT DETAILS
                 </div>
                 <h3 class="text-sm sm:text-base font-black text-slate-900 leading-tight">{{ $guestName }}</h3>
@@ -320,7 +320,7 @@
         <div class="doc-table overflow-x-auto rounded-xl border border-slate-200 my-4">
             <table class="w-full text-left text-xs border-collapse">
                 <thead>
-                    <tr class="bg-primary text-white font-bold" style="background-color: #0B2D5B; color: #ffffff;">
+                    <tr class="bg-primary text-white font-bold" style="background-color: var(--color-primary); color: #ffffff;">
                         <th class="py-2.5 px-3 text-center w-12 border-b border-primary/20">S/N</th>
                         <th class="py-2.5 px-4 border-b border-primary/20">Description</th>
                         <th class="py-2.5 px-3 text-center w-24 border-b border-primary/20">Qty / Nights</th>
@@ -331,7 +331,7 @@
                 <tbody class="divide-y divide-slate-100 text-slate-800">
                     <tr class="bg-slate-100 font-bold text-slate-700 text-[11px]">
                         <td colspan="5" class="py-1 px-4 tracking-wider">
-                            <span class="text-primary font-black mr-1" style="color: #0B2D5B;">◆</span> ACCOMMODATION & SERVICES BILLED
+                            <span class="text-primary font-black mr-1" style="color: var(--color-primary);">◆</span> ACCOMMODATION & SERVICES BILLED
                         </td>
                     </tr>
 
@@ -423,7 +423,7 @@
                 </div>
 
                 <!-- Balance Due Highlight Banner -->
-                <div class="bg-primary text-white rounded-lg p-2.5 flex justify-between items-center shadow-sm mt-1" style="background-color: #0B2D5B; color: #ffffff;">
+                <div class="bg-primary text-white rounded-lg p-2.5 flex justify-between items-center shadow-sm mt-1" style="background-color: var(--color-primary); color: #ffffff;">
                     <span class="font-bold text-xs uppercase tracking-wider text-slate-200">Balance Due</span>
                     <span class="text-sm sm:text-base font-black font-mono text-amber-400" style="color: #F59E0B;">
                         ₦{{ number_format((float) $invoice->balance, 2) }}
@@ -453,7 +453,7 @@
             </div>
             <div class="mt-2 pt-2 border-t border-amber-200/80 flex flex-wrap items-center justify-between gap-1">
                 <div class="text-[10px] text-slate-700">
-                    Payment Reference: <span class="bg-primary text-white px-2 py-0.5 rounded font-mono font-bold tracking-wide text-[10px]" style="background-color: #0B2D5B; color: #ffffff;">{{ $bookingRef }}</span> (Quote on all transfers)
+                    Payment Reference: <span class="bg-primary text-white px-2 py-0.5 rounded font-mono font-bold tracking-wide text-[10px]" style="background-color: var(--color-primary); color: #ffffff;">{{ $bookingRef }}</span> (Quote on all transfers)
                 </div>
             </div>
         </div>

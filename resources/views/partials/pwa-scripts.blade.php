@@ -4,7 +4,7 @@
         position: fixed; left: 50%; bottom: 16px; transform: translate(-50%, 150%); z-index: 9999;
         display: flex; align-items: center; gap: 12px; max-width: calc(100vw - 32px); width: max-content;
         padding: 10px 12px 10px 16px; border-radius: 12px; font: 500 14px/1.4 system-ui, -apple-system, "Segoe UI", sans-serif;
-        background: #0B2D5B; color: #fff; box-shadow: 0 10px 30px rgba(0, 0, 0, .2); transition: transform .3s ease;
+        background: var(--color-primary); color: #fff; box-shadow: 0 10px 30px rgba(0, 0, 0, .2); transition: transform .3s ease;
     }
     .pwa-toast.is-visible { transform: translate(-50%, 0); }
     .pwa-toast--offline { background: #92400e; }
@@ -13,7 +13,7 @@
         border: 0; border-radius: 8px; padding: 6px 12px; cursor: pointer; white-space: nowrap;
         font: 600 13px system-ui, -apple-system, "Segoe UI", sans-serif;
     }
-    .pwa-toast .pwa-primary { background: #E11D2E; color: #fff; }
+    .pwa-toast .pwa-primary { background: var(--color-accent); color: #fff; }
     .pwa-toast .pwa-dismiss { background: transparent; color: rgba(255, 255, 255, .8); padding: 6px 8px; }
     @media (prefers-reduced-motion: reduce) { .pwa-toast { transition: none; } }
 </style>

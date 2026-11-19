@@ -41,7 +41,7 @@
     </div>
     <div class="bg-white rounded-xl p-4 border border-slate-200 shadow-sm">
         <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Total Fuel Spend</p>
-        <p class="text-2xl font-black text-[#0B2D5B]">₦{{ number_format($stats['total_diesel_cost'], 2) }}</p>
+        <p class="text-2xl font-black text-primary">₦{{ number_format($stats['total_diesel_cost'], 2) }}</p>
         <span class="text-xs text-slate-400">Diesel replenishment expenditure</span>
     </div>
     <div class="bg-white rounded-xl p-4 border border-slate-200 shadow-sm">

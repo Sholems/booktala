@@ -3,8 +3,9 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\BlogStoreRequest;
+use App\Http\Requests\Admin\BlogUpdateRequest;
 use App\Models\Blog;
-use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
 class BlogController extends Controller
@@ -21,16 +22,9 @@ class BlogController extends Controller
         return view('admin.blogs.create');
     }
 
-    public function store(Request $request)
+    public function store(BlogStoreRequest $request)
     {
-        $validated = $request->validate([
-            'title' => 'required|string|max:255',
-            'content' => 'required',
-            'category' => 'nullable|string|max:100',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
-            'meta_title' => 'nullable|string|max:255',
-            'meta_description' => 'nullable|string',
-        ]);
+        $validated = $request->validated();
 
         $validated['slug'] = Str::slug($validated['title']);
         $validated['author_id'] = auth()->id();
@@ -51,16 +45,9 @@ class BlogController extends Controller
         return view('admin.blogs.edit', compact('blog'));
     }
 
-    public function update(Request $request, Blog $blog)
+    public function update(BlogUpdateRequest $request, Blog $blog)
     {
-        $validated = $request->validate([
-            'title' => 'required|string|max:255',
-            'content' => 'required',
-            'category' => 'nullable|string|max:100',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
-            'meta_title' => 'nullable|string|max:255',
-            'meta_description' => 'nullable|string',
-        ]);
+        $validated = $request->validated();
 
         if ($request->title !== $blog->title) {
             $validated['slug'] = Str::slug($validated['title']);

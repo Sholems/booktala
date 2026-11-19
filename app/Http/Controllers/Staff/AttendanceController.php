@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Staff;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Staff\AttendanceClockInRequest;
+use App\Http\Requests\Staff\AttendanceClockOutRequest;
 use App\Models\Site;
 use App\Services\AttendanceService;
 use Illuminate\Http\Request;
@@ -13,14 +15,9 @@ use Illuminate\Http\Request;
  */
 class AttendanceController extends Controller
 {
-    public function clockIn(Request $request, AttendanceService $attendance)
+    public function clockIn(AttendanceClockInRequest $request, AttendanceService $attendance)
     {
-        $data = $request->validate([
-            'site_id' => 'required|exists:sites,id',
-            'lat' => 'nullable|numeric|between:-90,90',
-            'lng' => 'nullable|numeric|between:-180,180',
-            'accuracy' => 'nullable|numeric|min:0',
-        ]);
+        $data = $request->validated();
 
         $record = $attendance->clockIn(
             $this->staff($request),
@@ -40,14 +37,9 @@ class AttendanceController extends Controller
         return back()->with('success', $message);
     }
 
-    public function clockOut(Request $request, AttendanceService $attendance)
+    public function clockOut(AttendanceClockOutRequest $request, AttendanceService $attendance)
     {
-        $data = $request->validate([
-            'lat' => 'nullable|numeric|between:-90,90',
-            'lng' => 'nullable|numeric|between:-180,180',
-            'accuracy' => 'nullable|numeric|min:0',
-            'handover_note' => 'nullable|string|max:2000',
-        ]);
+        $data = $request->validated();
 
         $record = $attendance->clockOut(
             $this->staff($request),

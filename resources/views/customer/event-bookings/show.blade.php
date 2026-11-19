@@ -38,7 +38,7 @@
             <h3 class="text-lg font-bold text-gray-800 mb-4">Pricing</h3>
             <div class="flex justify-between items-center">
                 <span class="text-gray-600">Total Amount</span>
-                <span class="text-2xl font-black text-[#0B2D5B]">₦{{ number_format($booking->total_price, 2) }}</span>
+                <span class="text-2xl font-black text-primary">₦{{ number_format($booking->total_price, 2) }}</span>
             </div>
         </div>
 

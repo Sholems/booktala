@@ -3,9 +3,9 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\ReportPeriodRequest;
 use App\Services\SiteReport;
 use Carbon\CarbonImmutable;
-use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /**
@@ -13,7 +13,7 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
  */
 class SiteReportController extends Controller
 {
-    public function index(Request $request, SiteReport $report)
+    public function index(ReportPeriodRequest $request, SiteReport $report)
     {
         [$from, $to] = $this->period($request);
 
@@ -24,7 +24,7 @@ class SiteReportController extends Controller
         ]);
     }
 
-    public function export(Request $request, SiteReport $report): StreamedResponse
+    public function export(ReportPeriodRequest $request, SiteReport $report): StreamedResponse
     {
         [$from, $to] = $this->period($request);
         $rows = $report->rows($from, $to);
@@ -43,10 +43,8 @@ class SiteReportController extends Controller
     }
 
     /** @return array{0: CarbonImmutable, 1: CarbonImmutable} */
-    private function period(Request $request): array
+    private function period(ReportPeriodRequest $request): array
     {
-        $request->validate(['from' => 'nullable|date', 'to' => 'nullable|date|after_or_equal:from']);
-
         return [
             CarbonImmutable::parse($request->query('from', today()->startOfMonth()->toDateString())),
             CarbonImmutable::parse($request->query('to', today()->toDateString())),

@@ -3,17 +3,14 @@
 namespace App\Http\Controllers\Public;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Public\NewsletterSubscribeRequest;
 use App\Models\NewsletterSubscriber;
-use Illuminate\Http\Request;
 
 class NewsletterController extends Controller
 {
-    public function subscribe(Request $request)
+    public function subscribe(NewsletterSubscribeRequest $request)
     {
-        $validated = $request->validate([
-            'email' => ['required', 'email', 'max:190'],
-            'name' => ['nullable', 'string', 'max:120'],
-        ]);
+        $validated = $request->validated();
 
         NewsletterSubscriber::updateOrCreate(
             ['email' => strtolower(trim($validated['email']))],

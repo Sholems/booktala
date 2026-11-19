@@ -3,12 +3,12 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\AttendanceFilterRequest;
 use App\Models\Attendance;
 use App\Models\Site;
 use App\Models\Staff;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /**
@@ -17,7 +17,7 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
  */
 class AttendanceController extends Controller
 {
-    public function index(Request $request)
+    public function index(AttendanceFilterRequest $request)
     {
         [$query, $from, $to] = $this->filtered($request);
 
@@ -45,7 +45,7 @@ class AttendanceController extends Controller
         ]);
     }
 
-    public function export(Request $request): StreamedResponse
+    public function export(AttendanceFilterRequest $request): StreamedResponse
     {
         [$query, $from, $to] = $this->filtered($request);
         $rows = $query->with(['staff.user', 'site', 'schedule'])->orderBy('clock_in_at')->get();
@@ -78,15 +78,8 @@ class AttendanceController extends Controller
     /**
      * @return array{0: Builder, 1: CarbonImmutable, 2: CarbonImmutable}
      */
-    private function filtered(Request $request): array
+    private function filtered(AttendanceFilterRequest $request): array
     {
-        $request->validate([
-            'site_id' => 'nullable|exists:sites,id',
-            'staff_id' => 'nullable|exists:staff,id',
-            'from' => 'nullable|date',
-            'to' => 'nullable|date',
-        ]);
-
         $from = CarbonImmutable::parse($request->query('from', today()->startOfMonth()->toDateString()))->startOfDay();
         $to = CarbonImmutable::parse($request->query('to', today()->toDateString()))->endOfDay();
 

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Staff;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Staff\PatrolRecordRequest;
 use App\Models\PatrolCheckpoint;
 use App\Support\PropertyAccess;
 use Illuminate\Http\Request;
@@ -21,14 +22,10 @@ class PatrolController extends Controller
         return view('staff.patrol', compact('checkpoint'));
     }
 
-    public function record(Request $request, string $token)
+    public function record(PatrolRecordRequest $request, string $token)
     {
         $checkpoint = $this->checkpoint($request, $token);
-        $data = $request->validate([
-            'lat' => 'nullable|numeric|between:-90,90',
-            'lng' => 'nullable|numeric|between:-180,180',
-            'note' => 'nullable|string|max:255',
-        ]);
+        $data = $request->validated();
         $staff = $request->user()->staff;
         abort_unless($staff && $staff->is_active, 403);
 

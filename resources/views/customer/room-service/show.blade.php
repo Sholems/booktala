@@ -31,7 +31,7 @@
     <!-- Airport Pickup Info (if applicable) -->
     @if($order->order_type === 'airport_pickup' && ($order->pickup_location || $order->flight_number || $order->pickup_time))
     <div class="bg-blue-50 border border-blue-200 rounded-xl p-5 mb-6">
-        <h3 class="text-sm font-bold text-[#0B2D5B] mb-3 flex items-center gap-2">
+        <h3 class="text-sm font-bold text-primary mb-3 flex items-center gap-2">
             <i class="fas fa-plane-arrival"></i>
             Airport Transfer Details
         </h3>
@@ -81,7 +81,7 @@
                 </div>
             </div>
             @if((float) $order->total_amount > 0)
-            <span class="text-2xl font-black text-[#0B2D5B]">₦{{ number_format($order->total_amount, 2) }}</span>
+            <span class="text-2xl font-black text-primary">₦{{ number_format($order->total_amount, 2) }}</span>
             @else
             <span class="text-sm text-gray-500">{{ $order->status === 'delivered' ? 'No charge' : 'To be confirmed by our team' }}</span>
             @endif

@@ -10,7 +10,7 @@
             <h2 class="text-xl font-bold text-gray-800">Event Spaces</h2>
             <p class="text-gray-500 text-sm">Manage event venues and spaces</p>
         </div>
-        <a href="{{ route('admin.event-spaces.create') }}" class="px-5 py-2.5 bg-[#E11D2E] text-white font-bold rounded-lg hover:bg-[#C21627] transition">
+        <a href="{{ route('admin.event-spaces.create') }}" class="px-5 py-2.5 bg-accent text-white font-bold rounded-lg hover:bg-accent-dark transition">
             <i class="fas fa-plus mr-2"></i>Add Space
         </a>
     </div>
@@ -31,7 +31,7 @@
                     </span>
                 </div>
                 <div class="flex gap-2">
-                    <a href="{{ route('admin.event-spaces.edit', $space) }}" class="text-gray-400 hover:text-[#E11D2E]">
+                    <a href="{{ route('admin.event-spaces.edit', $space) }}" class="text-gray-400 hover:text-accent">
                         <i class="fas fa-edit"></i>
                     </a>
                     <form action="{{ route('admin.event-spaces.destroy', $space) }}" method="POST" onsubmit="return confirm('Delete?')">

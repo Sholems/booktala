@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\SettingsUpdateRequest;
 use App\Models\Setting;
 use App\Models\SystemSetting;
 use Illuminate\Http\Request;
@@ -24,17 +25,9 @@ class SettingsController extends Controller
         return view('admin.settings.index', compact('savedSecrets'));
     }
 
-    public function update(Request $request)
+    public function update(SettingsUpdateRequest $request)
     {
-        $request->validate([
-            'vat_rate' => 'nullable|numeric|min:0|max:100',
-            'email' => 'nullable|email|max:255',
-            'mail_from_address' => 'nullable|email|max:255',
-            'mail_port' => 'nullable|integer|min:1|max:65535',
-            // No SVG: it can carry scripts. Favicons may be .ico.
-            'logo' => 'nullable|image|mimes:png,jpg,jpeg,webp|max:2048',
-            'favicon' => 'nullable|file|mimes:png,ico|max:512',
-        ]);
+        $request->validated();
 
         $fields = [
             'site_name', 'email', 'phone', 'vat_rate',

@@ -90,7 +90,7 @@
     <!-- Before & After Photos Gallery -->
     <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
         <h3 class="text-base font-bold text-slate-800 mb-4 flex items-center gap-2">
-            <i class="fas fa-images text-[#0B2D5B]"></i>
+            <i class="fas fa-images text-primary"></i>
             Turnover Photo Verification
         </h3>
 

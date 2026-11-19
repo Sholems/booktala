@@ -8,7 +8,7 @@
         <p class="text-sm text-gray-500">Supervisors review and verify turnover cleaning checklists and before/after photos before rooms switch to Available.</p>
     </div>
     <div class="flex flex-wrap items-center gap-3" x-data>
-        <button @click="$dispatch('open-inspection-modal')" type="button" class="inline-flex items-center gap-2 bg-[#0B2D5B] hover:bg-[#123E7A] text-white px-4 py-2 rounded-lg text-sm font-semibold shadow-sm transition">
+        <button @click="$dispatch('open-inspection-modal')" type="button" class="inline-flex items-center gap-2 bg-primary hover:bg-primary-light text-white px-4 py-2 rounded-lg text-sm font-semibold shadow-sm transition">
             <i class="fas fa-plus"></i>
             <span>Log Inspection</span>
         </button>
@@ -71,7 +71,7 @@
         </div>
         <form method="GET" action="{{ route('admin.inspections.index') }}" class="flex items-center gap-2">
             <input type="hidden" name="status" value="{{ $status }}">
-            <select name="unit_id" onchange="this.form.submit()" class="text-xs border border-slate-200 rounded-lg px-3 py-1.5 bg-slate-50 focus:ring-2 focus:ring-[#0B2D5B]">
+            <select name="unit_id" onchange="this.form.submit()" class="text-xs border border-slate-200 rounded-lg px-3 py-1.5 bg-slate-50 focus:ring-2 focus:ring-primary">
                 <option value="">All Units / Rooms</option>
                 @foreach($units as $unit)
                     <option value="{{ $unit->id }}" {{ request('unit_id') == $unit->id ? 'selected' : '' }}>
@@ -145,7 +145,7 @@
                         {{ $inspection->supervisor?->name ?? 'Awaiting' }}
                     </td>
                     <td class="px-4 py-3 text-right">
-                        <a href="{{ route('admin.inspections.show', $inspection) }}" class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-[#0B2D5B] hover:text-white text-slate-700 text-xs font-bold transition">
+                        <a href="{{ route('admin.inspections.show', $inspection) }}" class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-primary hover:text-white text-slate-700 text-xs font-bold transition">
                             <span>Review & Verify</span>
                             <i class="fas fa-arrow-right text-[10px]"></i>
                         </a>
@@ -189,7 +189,7 @@
 
             <div>
                 <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Unit / Room *</label>
-                <select name="unit_id" required class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-[#0B2D5B]">
+                <select name="unit_id" required class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-primary">
                     <option value="">Select unit</option>
                     @foreach($units as $unit)
                         <option value="{{ $unit->id }}">{{ $unit->title }} ({{ $unit->unit_code }})</option>
@@ -199,7 +199,7 @@
 
             <div>
                 <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Cleaner Assigned *</label>
-                <select name="cleaner_id" required class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-[#0B2D5B]">
+                <select name="cleaner_id" required class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-primary">
                     <option value="{{ auth()->id() }}">{{ auth()->user()->name }} (Current User)</option>
                 </select>
             </div>
@@ -217,12 +217,12 @@
 
             <div>
                 <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Cleaner Turnover Notes</label>
-                <textarea name="cleaner_notes" rows="2" placeholder="Linen refreshed, bathroom sanitized, AC remote replaced..." class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-[#0B2D5B]"></textarea>
+                <textarea name="cleaner_notes" rows="2" placeholder="Linen refreshed, bathroom sanitized, AC remote replaced..." class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-primary"></textarea>
             </div>
 
             <div class="flex justify-end gap-3 pt-3 border-t border-slate-100">
                 <button @click="open = false" type="button" class="px-4 py-2 border border-slate-200 text-slate-600 rounded-lg text-sm font-semibold hover:bg-slate-50">Cancel</button>
-                <button type="submit" class="px-5 py-2 bg-[#0B2D5B] hover:bg-[#123E7A] text-white rounded-lg text-sm font-bold shadow">Submit For Review</button>
+                <button type="submit" class="px-5 py-2 bg-primary hover:bg-primary-light text-white rounded-lg text-sm font-bold shadow">Submit For Review</button>
             </div>
         </form>
     </div>

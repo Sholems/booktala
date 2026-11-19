@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Api\PropertyAvailabilityRequest;
 use App\Http\Requests\ApiBookPropertyRequest;
 use App\Models\Reservation;
 use App\Models\Unit;
@@ -57,16 +58,11 @@ class PropertyController extends Controller
         ]);
     }
 
-    public function availability(Request $request, $id, PricingService $pricingService)
+    public function availability(PropertyAvailabilityRequest $request, $id, PricingService $pricingService)
     {
         $property = Unit::active()->findOrFail($id);
 
-        $request->validate([
-            'check_in' => 'required|date',
-            'check_out' => 'required|date|after:check_in',
-            'guests' => 'nullable|integer|min:1',
-            'discount_code' => 'nullable|string',
-        ]);
+        $request->validated();
 
         try {
             $pricing = $pricingService->calculatePrice(

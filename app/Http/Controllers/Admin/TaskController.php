@@ -3,10 +3,12 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\TaskAddNoteRequest;
+use App\Http\Requests\Admin\TaskStoreRequest;
+use App\Http\Requests\Admin\TaskUpdateRequest;
 use App\Models\Property;
 use App\Models\Task;
 use App\Models\User;
-use App\Rules\WorksAtProperty;
 use Illuminate\Http\Request;
 
 class TaskController extends Controller
@@ -30,17 +32,9 @@ class TaskController extends Controller
         return view('admin.tasks.index', compact('tasks', 'properties', 'staff', 'show'));
     }
 
-    public function store(Request $request)
+    public function store(TaskStoreRequest $request)
     {
-        $validated = $request->validate([
-            'title' => 'required|string|max:255',
-            'property_id' => 'required|exists:properties,id',
-            'assigned_to' => ['nullable', new WorksAtProperty($request->integer('property_id') ?: null)],
-            'priority' => 'nullable|in:low,medium,high,urgent',
-            'type' => 'required|in:cleaning,maintenance,inspection,checkin_prep',
-            'due_date' => 'nullable|date',
-            'description' => 'nullable|string|max:2000',
-        ]);
+        $validated = $request->validated();
 
         Task::create($validated + [
             'assigned_by' => auth()->id(),
@@ -52,12 +46,9 @@ class TaskController extends Controller
         return back()->with('success', 'Task created');
     }
 
-    public function update(Request $request, Task $task)
+    public function update(TaskUpdateRequest $request, Task $task)
     {
-        $validated = $request->validate([
-            'assigned_to' => ['nullable', new WorksAtProperty($task->property_id)],
-            'status' => 'sometimes|in:pending,in_progress,completed',
-        ]);
+        $validated = $request->validated();
 
         if (array_key_exists('status', $validated)) {
             $validated['completed_at'] = $validated['status'] === 'completed' ? ($task->completed_at ?? now()) : null;
@@ -79,9 +70,9 @@ class TaskController extends Controller
     /**
      * Reply in the task's note thread; the assigned staff member sees it on their task.
      */
-    public function addNote(Request $request, Task $task)
+    public function addNote(TaskAddNoteRequest $request, Task $task)
     {
-        $validated = $request->validate(['notes' => 'required|string|max:1000']);
+        $validated = $request->validated();
 
         $task->taskNotes()->create([
             'user_id' => $request->user()->id,

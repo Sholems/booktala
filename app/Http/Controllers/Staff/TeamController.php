@@ -3,6 +3,9 @@
 namespace App\Http\Controllers\Staff;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Staff\TeamAssignRepairRequest;
+use App\Http\Requests\Staff\TeamAssignTaskRequest;
+use App\Http\Requests\Staff\TeamStoreShiftRequest;
 use App\Models\Attendance;
 use App\Models\Incident;
 use App\Models\InventoryItem;
@@ -16,7 +19,6 @@ use App\Models\StaffSchedule;
 use App\Models\Task;
 use App\Models\User;
 use App\Models\VisitorLog;
-use App\Rules\WorksAtProperty;
 use App\Services\EscalationService;
 use App\Services\RosterService;
 use App\Services\WorkRouter;
@@ -101,10 +103,10 @@ class TeamController extends Controller
         ]);
     }
 
-    public function assignTask(Request $request, Task $task)
+    public function assignTask(TeamAssignTaskRequest $request, Task $task)
     {
         $this->ensureSupervises($request->user(), $task->property?->site_id);
-        $data = $request->validate(['assigned_to' => ['required', new WorksAtProperty($task->property_id)]]);
+        $data = $request->validated();
 
         $task->update(['assigned_to' => $data['assigned_to'], 'assigned_by' => $request->user()->id]);
         app(WorkRouter::class)->notifyAssigned($task->assignedTo, $task->title, 'Assigned by '.$request->user()->name.' · '.($task->property->title ?? ''), route('staff.tasks.show', $task));
@@ -112,10 +114,10 @@ class TeamController extends Controller
         return back()->with('success', 'Task assigned to '.$task->assignedTo->name);
     }
 
-    public function assignRepair(Request $request, MaintenanceReport $maintenanceReport)
+    public function assignRepair(TeamAssignRepairRequest $request, MaintenanceReport $maintenanceReport)
     {
         $this->ensureSupervises($request->user(), $maintenanceReport->property?->site_id);
-        $data = $request->validate(['assigned_to' => ['required', new WorksAtProperty($maintenanceReport->property_id)]]);
+        $data = $request->validated();
 
         $maintenanceReport->update(['assigned_to' => $data['assigned_to']]);
         app(WorkRouter::class)->notifyAssigned($maintenanceReport->assignedTo, 'Maintenance job: '.$maintenanceReport->title, 'Assigned by '.$request->user()->name.' · '.($maintenanceReport->property->title ?? ''), route('staff.maintenance.index'));
@@ -142,15 +144,9 @@ class TeamController extends Controller
         return view('staff.team.roster', compact('sites', 'site', 'weekStart', 'days', 'team', 'shifts'));
     }
 
-    public function storeShift(Request $request, RosterService $roster)
+    public function storeShift(TeamStoreShiftRequest $request, RosterService $roster)
     {
-        $data = $request->validate([
-            'site_id' => 'required|exists:sites,id',
-            'staff_id' => 'required|exists:staff,id',
-            'date' => 'required|date|after_or_equal:today',
-            'shift_type' => 'required|in:'.implode(',', array_keys(StaffSchedule::SHIFT_TIMES)),
-            'notes' => 'nullable|string|max:500',
-        ]);
+        $data = $request->validated();
         $this->ensureSupervises($request->user(), (int) $data['site_id']);
 
         $shift = $roster->schedule(Staff::findOrFail($data['staff_id']), Site::findOrFail($data['site_id']), $data['date'], $data['shift_type'], $data['notes'] ?? null, $request->user());

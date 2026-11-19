@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\ExpenseStoreRequest;
 use App\Models\Expense;
 use App\Models\MaintenanceReport;
 use App\Models\Property;
@@ -12,7 +13,6 @@ use Carbon\CarbonImmutable;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Validation\Rule;
 
 /**
  * Property expenses: what was spent, on which property, and who bears it.
@@ -47,18 +47,9 @@ class ExpenseController extends Controller
         ]);
     }
 
-    public function store(Request $request)
+    public function store(ExpenseStoreRequest $request)
     {
-        $data = $request->validate([
-            'property_id' => 'required|exists:properties,id',
-            'category' => ['required', Rule::in(array_keys(Expense::CATEGORIES))],
-            'description' => 'required|string|max:255',
-            'amount' => 'required|numeric|min:0.01|max:100000000',
-            'spent_on' => 'required|date|before_or_equal:today',
-            'charge_to' => 'required|in:owner,company',
-            'maintenance_report_id' => 'nullable|exists:maintenance_reports,id',
-            'receipt' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:5120',
-        ]);
+        $data = $request->validated();
 
         if ($request->hasFile('receipt')) {
             // Receipts are private: stored outside the public folder, downloaded through the app.

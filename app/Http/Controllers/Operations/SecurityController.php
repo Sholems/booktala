@@ -4,6 +4,11 @@ namespace App\Http\Controllers\Operations;
 
 use App\Http\Controllers\Concerns\SiteScopedPortal;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Operations\SecurityResolveIncidentRequest;
+use App\Http\Requests\Operations\SecurityStoreCheckpointRequest;
+use App\Http\Requests\Operations\SecurityStoreIncidentRequest;
+use App\Http\Requests\Operations\SecurityStoreVisitorRequest;
+use App\Http\Requests\Operations\SecurityUpdatePatrolSettingsRequest;
 use App\Models\Incident;
 use App\Models\PatrolCheckpoint;
 use App\Models\Property;
@@ -13,7 +18,6 @@ use App\Services\SecurityService;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
 /**
@@ -57,19 +61,9 @@ class SecurityController extends Controller
 
     // --- Visitors -------------------------------------------------------------------------
 
-    public function storeVisitor(Request $request)
+    public function storeVisitor(SecurityStoreVisitorRequest $request)
     {
-        $data = $request->validate([
-            'site_id' => 'required|exists:sites,id',
-            'visitor_name' => 'required|string|max:150',
-            'phone' => 'nullable|string|max:30',
-            'purpose' => ['required', Rule::in(array_keys(VisitorLog::PURPOSES))],
-            'property_id' => 'nullable|exists:properties,id',
-            'host' => 'nullable|string|max:150',
-            'vehicle_plate' => 'nullable|string|max:20',
-            'id_type' => ['nullable', Rule::in(array_keys(VisitorLog::ID_TYPES))],
-            'notes' => 'nullable|string|max:500',
-        ]);
+        $data = $request->validated();
         $this->ensureSees($request->user(), (int) $data['site_id']);
         $this->ensurePropertyAtSite($data['property_id'] ?? null, (int) $data['site_id']);
 
@@ -92,19 +86,9 @@ class SecurityController extends Controller
 
     // --- Incidents -----------------------------------------------------------------------
 
-    public function storeIncident(Request $request)
+    public function storeIncident(SecurityStoreIncidentRequest $request)
     {
-        $data = $request->validate([
-            'site_id' => 'required|exists:sites,id',
-            'property_id' => 'nullable|exists:properties,id',
-            'occurred_at' => 'required|date|before_or_equal:now',
-            'category' => ['required', Rule::in(array_keys(Incident::CATEGORIES))],
-            'severity' => ['required', Rule::in(array_keys(Incident::SEVERITIES))],
-            'title' => 'required|string|max:150',
-            'description' => 'required|string|max:5000',
-            'actions_taken' => 'nullable|string|max:3000',
-            'photo' => 'nullable|image|max:8192',
-        ]);
+        $data = $request->validated();
         $this->ensureSees($request->user(), (int) $data['site_id']);
         $this->ensurePropertyAtSite($data['property_id'] ?? null, (int) $data['site_id']);
 
@@ -140,10 +124,10 @@ class SecurityController extends Controller
         return Storage::disk('local')->response($incident->photo_path);
     }
 
-    public function resolveIncident(Request $request, Incident $incident)
+    public function resolveIncident(SecurityResolveIncidentRequest $request, Incident $incident)
     {
         $this->ensureManages($request->user(), $incident->site_id);
-        $data = $request->validate(['resolution' => 'required|string|max:3000']);
+        $data = $request->validated();
 
         if ($incident->status === 'resolved') {
             return back()->with('error', 'This incident is already resolved.');
@@ -155,25 +139,18 @@ class SecurityController extends Controller
 
     // --- Patrols ---------------------------------------------------------------------------
 
-    public function updatePatrolSettings(Request $request, Site $site)
+    public function updatePatrolSettings(SecurityUpdatePatrolSettingsRequest $request, Site $site)
     {
         $this->ensureManages($request->user(), $site->id);
-        $data = $request->validate([
-            'patrol_interval_minutes' => 'nullable|integer|min:15|max:720',
-            'patrol_from' => 'nullable|date_format:H:i|required_with:patrol_until',
-            'patrol_until' => 'nullable|date_format:H:i|required_with:patrol_from',
-        ]);
+        $data = $request->validated();
         $site->update($data);
 
         return back()->with('success', $data['patrol_interval_minutes'] ? 'Patrol schedule saved' : 'Patrol checks turned off for '.$site->name);
     }
 
-    public function storeCheckpoint(Request $request)
+    public function storeCheckpoint(SecurityStoreCheckpointRequest $request)
     {
-        $data = $request->validate([
-            'site_id' => 'required|exists:sites,id',
-            'name' => 'required|string|max:100',
-        ]);
+        $data = $request->validated();
         $this->ensureManages($request->user(), (int) $data['site_id']);
 
         PatrolCheckpoint::create($data);

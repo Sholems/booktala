@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Api\AuthLoginRequest;
+use App\Http\Requests\Api\AuthRegisterRequest;
 use App\Http\Resources\UserResource;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -10,14 +12,9 @@ use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
 {
-    public function register(Request $request)
+    public function register(AuthRegisterRequest $request)
     {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email',
-            'phone' => 'nullable|string',
-            'password' => 'required|string|min:8',
-        ]);
+        $request->validated();
 
         $user = User::create([
             'name' => $request->name,
@@ -38,12 +35,9 @@ class AuthController extends Controller
         ], 201);
     }
 
-    public function login(Request $request)
+    public function login(AuthLoginRequest $request)
     {
-        $request->validate([
-            'email' => 'required|email',
-            'password' => 'required',
-        ]);
+        $request->validated();
 
         $user = User::where('email', $request->email)->first();
 

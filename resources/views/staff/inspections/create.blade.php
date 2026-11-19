@@ -19,7 +19,7 @@
         <!-- Before & After Photos -->
         <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm space-y-4">
             <h3 class="text-sm font-bold text-slate-800 flex items-center gap-2">
-                <i class="fas fa-camera text-[#0B2D5B]"></i>
+                <i class="fas fa-camera text-primary"></i>
                 Photo Verification (Before & After)
             </h3>
             <p class="text-xs text-slate-500">Take clear photos of the room before cleaning and after completion.</p>
@@ -60,7 +60,7 @@
                     @foreach($group['items'] as $iIndex => $item)
                     <label class="flex items-start gap-2.5 p-2 bg-white rounded-lg border border-slate-100 cursor-pointer hover:bg-slate-50 transition">
                         <input type="checkbox" name="checklist[{{ $gIndex }}][items][{{ $iIndex }}][passed]" value="1" checked
-                               class="rounded text-[#0B2D5B] focus:ring-[#0B2D5B] mt-0.5">
+                               class="rounded text-primary focus:ring-primary mt-0.5">
                         <input type="hidden" name="checklist[{{ $gIndex }}][items][{{ $iIndex }}][key]" value="{{ $item['key'] }}">
                         <input type="hidden" name="checklist[{{ $gIndex }}][items][{{ $iIndex }}][label]" value="{{ $item['label'] }}">
                         <span class="text-xs text-slate-800 font-medium">{{ $item['label'] }}</span>
@@ -75,14 +75,14 @@
         <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
             <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Turnover Notes for Supervisor</label>
             <textarea name="cleaner_notes" rows="2" placeholder="e.g. Extra pillows placed in wardrobe, shampoo dispenser refilled..."
-                class="w-full px-3 py-2 border border-slate-200 rounded-lg text-xs focus:ring-2 focus:ring-[#0B2D5B]"></textarea>
+                class="w-full px-3 py-2 border border-slate-200 rounded-lg text-xs focus:ring-2 focus:ring-primary"></textarea>
         </div>
 
         <div class="flex justify-end gap-3">
             <a href="{{ route('staff.tasks.show', $task) }}" class="px-5 py-2.5 border border-slate-200 text-slate-600 font-bold text-xs rounded-lg hover:bg-slate-50 transition">
                 Cancel
             </a>
-            <button type="submit" class="px-6 py-2.5 bg-[#0B2D5B] hover:bg-[#123E7A] text-white font-bold text-xs rounded-lg transition shadow flex items-center gap-2">
+            <button type="submit" class="px-6 py-2.5 bg-primary hover:bg-primary-light text-white font-bold text-xs rounded-lg transition shadow flex items-center gap-2">
                 <i class="fas fa-check"></i>
                 <span>Submit for Supervisor Inspection</span>
             </button>

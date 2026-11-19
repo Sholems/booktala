@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\ReservationCheckInRequest;
 use App\Http\Requests\CancelReservationRequest;
 use App\Http\Requests\UpdateCautionRefundRequest;
 use App\Http\Requests\UpdateReservationRefundRequest;
@@ -71,11 +72,9 @@ class ReservationController extends Controller
         return back()->with('success', 'Reservation confirmed');
     }
 
-    public function checkIn(Request $request, Reservation $reservation, ReservationLifecycle $lifecycle)
+    public function checkIn(ReservationCheckInRequest $request, Reservation $reservation, ReservationLifecycle $lifecycle)
     {
-        $validated = $request->validate([
-            'allow_unpaid' => ['nullable', 'boolean'],
-        ]);
+        $validated = $request->validated();
 
         $lifecycle->checkIn(
             $reservation,

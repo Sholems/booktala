@@ -3,8 +3,10 @@
 namespace App\Http\Controllers\Staff;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Staff\ProfileUpdateAvatarRequest;
+use App\Http\Requests\Staff\ProfileUpdatePasswordRequest;
+use App\Http\Requests\Staff\ProfileUpdateRequest;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
@@ -19,19 +21,11 @@ class ProfileController extends Controller
         return view('staff.profile.edit', compact('user', 'staff'));
     }
 
-    public function update(Request $request): RedirectResponse
+    public function update(ProfileUpdateRequest $request): RedirectResponse
     {
         $user = auth()->user();
 
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|max:255|unique:users,email,'.$user->id,
-            'phone' => 'nullable|string|max:25',
-            'job_title' => 'nullable|string|max:100',
-            'bio' => 'nullable|string|max:1000',
-            'emergency_contact_name' => 'nullable|string|max:255',
-            'emergency_contact_phone' => 'nullable|string|max:25',
-        ]);
+        $validated = $request->validated();
 
         $user->update([
             'name' => $validated['name'],
@@ -51,11 +45,9 @@ class ProfileController extends Controller
         return back()->with('success', 'Staff profile updated successfully.');
     }
 
-    public function updateAvatar(Request $request): RedirectResponse
+    public function updateAvatar(ProfileUpdateAvatarRequest $request): RedirectResponse
     {
-        $request->validate([
-            'avatar' => 'required|image|mimes:jpeg,png,jpg,webp|max:3072',
-        ]);
+        $request->validated();
 
         $user = auth()->user();
 
@@ -82,12 +74,9 @@ class ProfileController extends Controller
         return back()->with('success', 'Profile picture removed.');
     }
 
-    public function updatePassword(Request $request): RedirectResponse
+    public function updatePassword(ProfileUpdatePasswordRequest $request): RedirectResponse
     {
-        $request->validate([
-            'current_password' => 'required|string',
-            'password' => 'required|string|min:8|confirmed',
-        ]);
+        $request->validated();
 
         $user = auth()->user();
 

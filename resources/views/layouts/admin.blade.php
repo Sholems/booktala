@@ -12,35 +12,8 @@ $logoMarkUrl = asset('images/booktala-mark.png');
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('title', 'Admin Dashboard') - BookTala</title>
+    <title>@yield('title', trim($__env->yieldContent('page_title')) ?: 'Admin Dashboard') - BookTala</title>
     @vite(['resources/css/app.css', 'resources/js/app.js', 'resources/js/admin.js'])
-    <style>
-        @media (max-width: 1024px) {
-            .sidebar { position: fixed; z-index: 50; transform: translateX(-100%); transition: transform 0.3s; }
-            .sidebar.open { transform: translateX(0); }
-            .sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 40; }
-            .sidebar-overlay.open { display: block; }
-        }
-        .nav-item { @apply block py-2 px-4 rounded hover:bg-gray-700 transition flex items-center gap-3; }
-        .nav-item.active { @apply bg-gray-700; }
-        .nav-section-title { @apply px-4 py-2 text-xs font-semibold text-gray-400 uppercase tracking-wider mt-4; }
-        .nav-section-title:first-child { @apply mt-0; }
-        .nav-divider { @apply border-t border-gray-700 my-2; }
-        
-        /* Mobile-first responsive tables */
-        .table-responsive { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
-        .table-responsive table { width: 100%; }
-        
-        @media (max-width: 768px) {
-            .mobile-card-table { display: block; }
-            .mobile-card-table thead { display: none; }
-            .mobile-card-table tbody { display: flex; flex-direction: column; gap: 1rem; }
-            .mobile-card-table tr { display: flex; flex-direction: column; background: white; border-radius: 0.5rem; padding: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-            .mobile-card-table td { display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0; border-bottom: 1px solid #f3f4f6; }
-            .mobile-card-table td:last-child { border-bottom: none; }
-            .mobile-card-table td::before { content: attr(data-label); font-weight: 600; color: #6b7280; margin-right: 1rem; min-width: 100px; }
-        }
-    </style>
     @include('partials.pwa-head')
     @stack('styles')
 </head>
@@ -73,10 +46,7 @@ $logoMarkUrl = asset('images/booktala-mark.png');
                 <div>
                     <p class="text-[11px] font-bold text-slate-500 uppercase tracking-widest px-3 mb-3">Overview</p>
                     <div class="space-y-1">
-                        <a href="{{ route('admin.dashboard') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group {{ request()->routeIs('admin.dashboard') ? 'bg-accent/10 text-accent font-semibold' : 'hover:bg-slate-800/50 hover:text-white' }}">
-                            <i class="fas fa-th-large w-5 text-sm"></i>
-                            <span class="text-sm">Dashboard</span>
-                        </a>
+                        <x-nav-link route="admin.dashboard" icon="fa-th-large">Dashboard</x-nav-link>
                     </div>
                 </div>
 
@@ -84,28 +54,13 @@ $logoMarkUrl = asset('images/booktala-mark.png');
                 <div>
                     <p class="text-[11px] font-bold text-slate-500 uppercase tracking-widest px-3 mb-3">Bookings & Finance</p>
                     <div class="space-y-1">
-                        <a href="{{ route('admin.reservations.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group {{ request()->routeIs('admin.reservations.*') ? 'bg-accent/10 text-accent font-semibold' : 'hover:bg-slate-800/50 hover:text-white' }}">
-                            <i class="fas fa-calendar-check w-5 text-sm"></i>
-                            <span class="text-sm">Reservations</span>
-                        </a>
+                        <x-nav-link route="admin.reservations.index" active="admin.reservations.*" icon="fa-calendar-check">Reservations</x-nav-link>
                         @can('reservation.create')
-                        <a href="{{ route('frontdesk.reservations.create') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group {{ request()->routeIs('frontdesk.reservations.*') ? 'bg-accent/10 text-accent font-semibold' : 'hover:bg-slate-800/50 hover:text-white' }}">
-                            <i class="fas fa-user-plus w-5 text-sm"></i>
-                            <span class="text-sm">New Front-Desk Booking</span>
-                        </a>
+                        <x-nav-link route="frontdesk.reservations.create" active="frontdesk.reservations.*" icon="fa-user-plus">New Front-Desk Booking</x-nav-link>
                         @endcan
-                        <a href="{{ route('admin.payments.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group {{ request()->routeIs('admin.payments.*') ? 'bg-accent/10 text-accent font-semibold' : 'hover:bg-slate-800/50 hover:text-white' }}">
-                            <i class="fas fa-wallet w-5 text-sm"></i>
-                            <span class="text-sm">Payments</span>
-                        </a>
-                        <a href="{{ route('admin.invoices.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group {{ request()->routeIs('admin.invoices.*') ? 'bg-accent/10 text-accent font-semibold' : 'hover:bg-slate-800/50 hover:text-white' }}">
-                            <i class="fas fa-file-invoice w-5 text-sm"></i>
-                            <span class="text-sm">Invoices</span>
-                        </a>
-                        <a href="{{ route('admin.messages.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group {{ request()->routeIs('admin.messages.*') ? 'bg-accent/10 text-accent font-semibold' : 'hover:bg-slate-800/50 hover:text-white' }}">
-                            <i class="fas fa-envelope w-5 text-sm"></i>
-                            <span class="text-sm">Messages</span>
-                        </a>
+                        <x-nav-link route="admin.payments.index" active="admin.payments.*" icon="fa-wallet">Payments</x-nav-link>
+                        <x-nav-link route="admin.invoices.index" active="admin.invoices.*" icon="fa-file-invoice">Invoices</x-nav-link>
+                        <x-nav-link route="admin.messages.index" active="admin.messages.*" icon="fa-envelope">Messages</x-nav-link>
                     </div>
                 </div>
 
@@ -113,43 +68,22 @@ $logoMarkUrl = asset('images/booktala-mark.png');
                 <div>
                     <p class="text-[11px] font-bold text-slate-500 uppercase tracking-widest px-3 mb-3">Inventory</p>
                     <div class="space-y-1">
-                        <a href="{{ route('admin.properties.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group {{ request()->routeIs('admin.properties.*') ? 'bg-accent/10 text-accent font-semibold' : 'hover:bg-slate-800/50 hover:text-white' }}">
-                            <i class="fas fa-building w-5 text-sm"></i>
-                            <span class="text-sm">{{ $propertyLabel }}</span>
-                        </a>
+                        <x-nav-link route="admin.properties.index" active="admin.properties.*" icon="fa-building">{{ $propertyLabel }}</x-nav-link>
                         @can('site.manage')
-                        <a href="{{ route('admin.sites.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group {{ request()->routeIs('admin.sites.*') ? 'bg-accent/10 text-accent font-semibold' : 'hover:bg-slate-800/50 hover:text-white' }}">
-                            <i class="fas fa-map-marker-alt w-5 text-sm"></i>
-                            <span class="text-sm">Sites</span>
-                        </a>
+                        <x-nav-link route="admin.sites.index" active="admin.sites.*" icon="fa-map-marker-alt">Sites</x-nav-link>
                         @endcan
                         @can('owner.manage')
-                        <a href="{{ route('admin.owners.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group {{ request()->routeIs('admin.owners.*') ? 'bg-accent/10 text-accent font-semibold' : 'hover:bg-slate-800/50 hover:text-white' }}">
-                            <i class="fas fa-user-tie w-5 text-sm"></i>
-                            <span class="text-sm">Owners</span>
-                        </a>
+                        <x-nav-link route="admin.owners.index" active="admin.owners.*" icon="fa-user-tie">Owners</x-nav-link>
                         @endcan
                         @if($isHotelMode)
-                        <a href="{{ route('admin.room-types.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group {{ request()->routeIs('admin.room-types.*') ? 'bg-accent/10 text-accent font-semibold' : 'hover:bg-slate-800/50 hover:text-white' }}">
-                            <i class="fas fa-door-open w-5 text-sm"></i>
-                            <span class="text-sm">Room Types</span>
-                        </a>
-                        <a href="{{ route('admin.hotel-amenities.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group {{ request()->routeIs('admin.hotel-amenities.*') ? 'bg-accent/10 text-accent font-semibold' : 'hover:bg-slate-800/50 hover:text-white' }}">
-                            <i class="fas fa-list-ul w-5 text-sm"></i>
-                            <span class="text-sm">Amenities</span>
-                        </a>
+                        <x-nav-link route="admin.room-types.index" active="admin.room-types.*" icon="fa-door-open">Room Types</x-nav-link>
+                        <x-nav-link route="admin.hotel-amenities.index" active="admin.hotel-amenities.*" icon="fa-list-ul">Amenities</x-nav-link>
                         @endif
                         @canany(['channels.manage'])
-                        <a href="{{ route('admin.channel-manager.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group {{ request()->routeIs('admin.channel-manager.*') ? 'bg-accent/10 text-accent font-semibold' : 'hover:bg-slate-800/50 hover:text-white' }}">
-                            <i class="fas fa-sync w-5 text-sm"></i>
-                            <span class="text-sm">Channels (OTA Sync)</span>
-                        </a>
+                        <x-nav-link route="admin.channel-manager.index" active="admin.channel-manager.*" icon="fa-sync">Channels (OTA Sync)</x-nav-link>
                         @endcanany
                         @can('property.view')
-                        <a href="{{ route('admin.pricing-rules.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group {{ request()->routeIs('admin.pricing-rules.*') ? 'bg-accent/10 text-accent font-semibold' : 'hover:bg-slate-800/50 hover:text-white' }}">
-                            <i class="fas fa-tags w-5 text-sm"></i>
-                            <span class="text-sm">Dynamic Pricing</span>
-                        </a>
+                        <x-nav-link route="admin.pricing-rules.index" active="admin.pricing-rules.*" icon="fa-tags">Dynamic Pricing</x-nav-link>
                         @endcan
                     </div>
                 </div>
@@ -159,32 +93,14 @@ $logoMarkUrl = asset('images/booktala-mark.png');
                     <p class="text-[11px] font-bold text-slate-500 uppercase tracking-widest px-3 mb-3">Finance</p>
                     <div class="space-y-1">
                         @can('finance.manage')
-                        <a href="{{ route('admin.expenses.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group {{ request()->routeIs('admin.expenses.*') ? 'bg-accent/10 text-accent font-semibold' : 'hover:bg-slate-800/50 hover:text-white' }}">
-                            <i class="fas fa-receipt w-5 text-sm"></i>
-                            <span class="text-sm">Expenses</span>
-                        </a>
-                        <a href="{{ route('admin.agreements.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group {{ request()->routeIs('admin.agreements.*') ? 'bg-accent/10 text-accent font-semibold' : 'hover:bg-slate-800/50 hover:text-white' }}">
-                            <i class="fas fa-file-contract w-5 text-sm"></i>
-                            <span class="text-sm">Agreements</span>
-                        </a>
-                        <a href="{{ route('admin.statements.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group {{ request()->routeIs('admin.statements.*') ? 'bg-accent/10 text-accent font-semibold' : 'hover:bg-slate-800/50 hover:text-white' }}">
-                            <i class="fas fa-file-invoice-dollar w-5 text-sm"></i>
-                            <span class="text-sm">Owner Statements</span>
-                        </a>
-                        <a href="{{ route('admin.finance.ledger.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group {{ request()->routeIs('admin.finance.ledger.*') ? 'bg-accent/10 text-accent font-semibold' : 'hover:bg-slate-800/50 hover:text-white' }}">
-                            <i class="fas fa-book-open w-5 text-sm"></i>
-                            <span class="text-sm">General Ledger</span>
-                        </a>
-                        <a href="{{ route('admin.finance.tax.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group {{ request()->routeIs('admin.finance.tax.*') ? 'bg-accent/10 text-accent font-semibold' : 'hover:bg-slate-800/50 hover:text-white' }}">
-                            <i class="fas fa-landmark w-5 text-sm"></i>
-                            <span class="text-sm">Tax & WHT Reports</span>
-                        </a>
+                        <x-nav-link route="admin.expenses.index" active="admin.expenses.*" icon="fa-receipt">Expenses</x-nav-link>
+                        <x-nav-link route="admin.agreements.index" active="admin.agreements.*" icon="fa-file-contract">Agreements</x-nav-link>
+                        <x-nav-link route="admin.statements.index" active="admin.statements.*" icon="fa-file-invoice-dollar">Owner Statements</x-nav-link>
+                        <x-nav-link route="admin.finance.ledger.index" active="admin.finance.ledger.*" icon="fa-book-open">General Ledger</x-nav-link>
+                        <x-nav-link route="admin.finance.tax.index" active="admin.finance.tax.*" icon="fa-landmark">Tax & WHT Reports</x-nav-link>
                         @endcan
                         @can('payroll.manage')
-                        <a href="{{ route('admin.payroll.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group {{ request()->routeIs('admin.payroll.*') ? 'bg-accent/10 text-accent font-semibold' : 'hover:bg-slate-800/50 hover:text-white' }}">
-                            <i class="fas fa-money-check-alt w-5 text-sm"></i>
-                            <span class="text-sm">Payroll</span>
-                        </a>
+                        <x-nav-link route="admin.payroll.index" active="admin.payroll.*" icon="fa-money-check-alt">Payroll</x-nav-link>
                         @endcan
                     </div>
                 </div>
@@ -194,14 +110,8 @@ $logoMarkUrl = asset('images/booktala-mark.png');
                 <div>
                     <p class="text-[11px] font-bold text-slate-500 uppercase tracking-widest px-3 mb-3">Guest Experience</p>
                     <div class="space-y-1">
-                        <a href="{{ route('admin.customers.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group {{ request()->routeIs('admin.customers.*') ? 'bg-accent/10 text-accent font-semibold' : 'hover:bg-slate-800/50 hover:text-white' }}">
-                            <i class="fas fa-users w-5 text-sm"></i>
-                            <span class="text-sm">Customers</span>
-                        </a>
-                        <a href="{{ route('admin.reviews.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group {{ request()->routeIs('admin.reviews.*') ? 'bg-accent/10 text-accent font-semibold' : 'hover:bg-slate-800/50 hover:text-white' }}">
-                            <i class="fas fa-star w-5 text-sm"></i>
-                            <span class="text-sm">Reviews</span>
-                        </a>
+                        <x-nav-link route="admin.customers.index" active="admin.customers.*" icon="fa-users">Customers</x-nav-link>
+                        <x-nav-link route="admin.reviews.index" active="admin.reviews.*" icon="fa-star">Reviews</x-nav-link>
                     </div>
                 </div>
 
@@ -209,53 +119,20 @@ $logoMarkUrl = asset('images/booktala-mark.png');
                 <div>
                     <p class="text-[11px] font-bold text-slate-500 uppercase tracking-widest px-3 mb-3">Operations</p>
                     <div class="space-y-1">
-                        <a href="{{ route('admin.tasks.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group {{ request()->routeIs('admin.tasks.*') ? 'bg-accent/10 text-accent font-semibold' : 'hover:bg-slate-800/50 hover:text-white' }}">
-                            <i class="fas fa-tasks w-5 text-sm"></i>
-                            <span class="text-sm">Tasks</span>
-                        </a>
-                        <a href="{{ route('admin.inspections.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group {{ request()->routeIs('admin.inspections.*') ? 'bg-accent/10 text-accent font-semibold' : 'hover:bg-slate-800/50 hover:text-white' }}">
-                            <i class="fas fa-clipboard-check w-5 text-sm"></i>
-                            <span class="text-sm">Room Inspections</span>
-                        </a>
-                        <a href="{{ route('admin.room-service.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group {{ request()->routeIs('admin.room-service.*') ? 'bg-accent/10 text-accent font-semibold' : 'hover:bg-slate-800/50 hover:text-white' }}">
-                            <i class="fas fa-concierge-bell w-5 text-sm"></i>
-                            <span class="text-sm">Room Service</span>
-                        </a>
-                        <a href="{{ route('admin.maintenance.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group {{ request()->routeIs('admin.maintenance.*') ? 'bg-accent/10 text-accent font-semibold' : 'hover:bg-slate-800/50 hover:text-white' }}">
-                            <i class="fas fa-tools w-5 text-sm"></i>
-                            <span class="text-sm">Maintenance</span>
-                        </a>
-                        <a href="{{ route('admin.facilities.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group {{ request()->routeIs('admin.facilities.*') ? 'bg-accent/10 text-accent font-semibold' : 'hover:bg-slate-800/50 hover:text-white' }}">
-                            <i class="fas fa-cogs w-5 text-sm"></i>
-                            <span class="text-sm">Facilities & Power</span>
-                        </a>
-                        <a href="{{ route('admin.staff.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group {{ request()->routeIs('admin.staff.*') ? 'bg-accent/10 text-accent font-semibold' : 'hover:bg-slate-800/50 hover:text-white' }}">
-                            <i class="fas fa-user-tie w-5 text-sm"></i>
-                            <span class="text-sm">Staff</span>
-                        </a>
+                        <x-nav-link route="admin.tasks.index" active="admin.tasks.*" icon="fa-tasks">Tasks</x-nav-link>
+                        <x-nav-link route="admin.inspections.index" active="admin.inspections.*" icon="fa-clipboard-check">Room Inspections</x-nav-link>
+                        <x-nav-link route="admin.room-service.index" active="admin.room-service.*" icon="fa-concierge-bell">Room Service</x-nav-link>
+                        <x-nav-link route="admin.maintenance.index" active="admin.maintenance.*" icon="fa-tools">Maintenance</x-nav-link>
+                        <x-nav-link route="admin.facilities.index" active="admin.facilities.*" icon="fa-cogs">Facilities & Power</x-nav-link>
+                        <x-nav-link route="admin.staff.index" active="admin.staff.*" icon="fa-user-tie">Staff</x-nav-link>
                         @can('staff.manage')
-                        <a href="{{ route('admin.positions.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group {{ request()->routeIs('admin.positions.*') ? 'bg-accent/10 text-accent font-semibold' : 'hover:bg-slate-800/50 hover:text-white' }}">
-                            <i class="fas fa-id-badge w-5 text-sm"></i>
-                            <span class="text-sm">Positions</span>
-                        </a>
+                        <x-nav-link route="admin.positions.index" active="admin.positions.*" icon="fa-id-badge">Positions</x-nav-link>
                         @endcan
-                        <a href="{{ route('admin.staff-schedules.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group {{ request()->routeIs('admin.staff-schedules.*') ? 'bg-accent/10 text-accent font-semibold' : 'hover:bg-slate-800/50 hover:text-white' }}">
-                            <i class="fas fa-calendar-alt w-5 text-sm"></i>
-                            <span class="text-sm">Schedules</span>
-                        </a>
-                        <a href="{{ route('admin.attendance.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group {{ request()->routeIs('admin.attendance.*') ? 'bg-accent/10 text-accent font-semibold' : 'hover:bg-slate-800/50 hover:text-white' }}">
-                            <i class="fas fa-user-clock w-5 text-sm"></i>
-                            <span class="text-sm">Attendance</span>
-                        </a>
+                        <x-nav-link route="admin.staff-schedules.index" active="admin.staff-schedules.*" icon="fa-calendar-alt">Schedules</x-nav-link>
+                        <x-nav-link route="admin.attendance.index" active="admin.attendance.*" icon="fa-user-clock">Attendance</x-nav-link>
                         @can('site.manage')
-                        <a href="{{ route('admin.security.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group {{ request()->routeIs('admin.security.*') ? 'bg-accent/10 text-accent font-semibold' : 'hover:bg-slate-800/50 hover:text-white' }}">
-                            <i class="fas fa-shield-alt w-5 text-sm"></i>
-                            <span class="text-sm">Security</span>
-                        </a>
-                        <a href="{{ route('admin.inventory.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group {{ request()->routeIs('admin.inventory.*') ? 'bg-accent/10 text-accent font-semibold' : 'hover:bg-slate-800/50 hover:text-white' }}">
-                            <i class="fas fa-boxes w-5 text-sm"></i>
-                            <span class="text-sm">Inventory</span>
-                        </a>
+                        <x-nav-link route="admin.security.index" active="admin.security.*" icon="fa-shield-alt">Security</x-nav-link>
+                        <x-nav-link route="admin.inventory.index" active="admin.inventory.*" icon="fa-boxes">Inventory</x-nav-link>
                         @endcan
                     </div>
                 </div>
@@ -264,26 +141,14 @@ $logoMarkUrl = asset('images/booktala-mark.png');
                 <div>
                     <p class="text-[11px] font-bold text-slate-500 uppercase tracking-widest px-3 mb-3">Analytics</p>
                     <div class="space-y-1">
-                        <a href="{{ route('admin.reports.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group {{ request()->routeIs('admin.reports.*') ? 'bg-accent/10 text-accent font-semibold' : 'hover:bg-slate-800/50 hover:text-white' }}">
-                            <i class="fas fa-chart-pie w-5 text-sm"></i>
-                            <span class="text-sm">Reports</span>
-                        </a>
-                        <a href="{{ route('admin.reports.sites') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group {{ request()->routeIs('admin.reports.sites*') ? 'bg-accent/10 text-accent font-semibold' : 'hover:bg-slate-800/50 hover:text-white' }}">
-                            <i class="fas fa-city w-5 text-sm"></i>
-                            <span class="text-sm">Site Report</span>
-                        </a>
+                        <x-nav-link route="admin.reports.index" active="admin.reports.*" icon="fa-chart-pie">Reports</x-nav-link>
+                        <x-nav-link route="admin.reports.sites" active="admin.reports.sites*" icon="fa-city">Site Report</x-nav-link>
                         <a href="{{ route('admin.ical.url') }}" target="_blank" class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group hover:bg-slate-800/50 hover:text-white">
                             <i class="fas fa-calendar-week w-5 text-sm"></i>
                             <span class="text-sm">Export to Calendar</span>
                         </a>
-                        <a href="{{ route('admin.event-bookings.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group {{ request()->routeIs('admin.event-bookings.*') ? 'bg-accent/10 text-accent font-semibold' : 'hover:bg-slate-800/50 hover:text-white' }}">
-                            <i class="fas fa-calendar-day w-5 text-sm"></i>
-                            <span class="text-sm">Event Bookings</span>
-                        </a>
-                        <a href="{{ route('admin.event-spaces.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group {{ request()->routeIs('admin.event-spaces.*') ? 'bg-accent/10 text-accent font-semibold' : 'hover:bg-slate-800/50 hover:text-white' }}">
-                            <i class="fas fa-vector-square w-5 text-sm"></i>
-                            <span class="text-sm">Event Spaces</span>
-                        </a>
+                        <x-nav-link route="admin.event-bookings.index" active="admin.event-bookings.*" icon="fa-calendar-day">Event Bookings</x-nav-link>
+                        <x-nav-link route="admin.event-spaces.index" active="admin.event-spaces.*" icon="fa-vector-square">Event Spaces</x-nav-link>
                     </div>
                 </div>
 
@@ -291,18 +156,9 @@ $logoMarkUrl = asset('images/booktala-mark.png');
                 <div>
                     <p class="text-[11px] font-bold text-slate-500 uppercase tracking-widest px-3 mb-3">Content</p>
                     <div class="space-y-1">
-                        <a href="{{ route('admin.blogs.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group {{ request()->routeIs('admin.blogs.*') ? 'bg-accent/10 text-accent font-semibold' : 'hover:bg-slate-800/50 hover:text-white' }}">
-                            <i class="fas fa-pen-nib w-5 text-sm"></i>
-                            <span class="text-sm">Blog</span>
-                        </a>
-                        <a href="{{ route('admin.pages.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group {{ request()->routeIs('admin.pages.*') ? 'bg-accent/10 text-accent font-semibold' : 'hover:bg-slate-800/50 hover:text-white' }}">
-                            <i class="fas fa-file-alt w-5 text-sm"></i>
-                            <span class="text-sm">Pages</span>
-                        </a>
-                        <a href="{{ route('admin.homepage-sections.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group {{ request()->routeIs('admin.homepage-sections.*') ? 'bg-accent/10 text-accent font-semibold' : 'hover:bg-slate-800/50 hover:text-white' }}">
-                            <i class="fas fa-th-large w-5 text-sm"></i>
-                            <span class="text-sm">Homepage Settings</span>
-                        </a>
+                        <x-nav-link route="admin.blogs.index" active="admin.blogs.*" icon="fa-pen-nib">Blog</x-nav-link>
+                        <x-nav-link route="admin.pages.index" active="admin.pages.*" icon="fa-file-alt">Pages</x-nav-link>
+                        <x-nav-link route="admin.homepage-sections.index" active="admin.homepage-sections.*" icon="fa-th-large">Homepage Settings</x-nav-link>
                     </div>
                 </div>
 
@@ -311,10 +167,7 @@ $logoMarkUrl = asset('images/booktala-mark.png');
                     <p class="text-[11px] font-bold text-slate-500 uppercase tracking-widest px-3 mb-3">Configuration</p>
                     <div class="space-y-1">
                         @can('settings.manage')
-                        <a href="{{ route('admin.settings.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group {{ request()->routeIs('admin.settings.*') ? 'bg-accent/10 text-accent font-semibold' : 'hover:bg-slate-800/50 hover:text-white' }}">
-                            <i class="fas fa-cogs w-5 text-sm"></i>
-                            <span class="text-sm">Global Settings</span>
-                        </a>
+                        <x-nav-link route="admin.settings.index" active="admin.settings.*" icon="fa-cogs">Global Settings</x-nav-link>
                         @endcan
                     </div>
                 </div>

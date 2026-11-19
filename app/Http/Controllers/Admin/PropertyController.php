@@ -3,6 +3,9 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\PropertyBulkActionRequest;
+use App\Http\Requests\Admin\PropertyStoreRequest;
+use App\Http\Requests\Admin\PropertyUpdateRequest;
 use App\Models\Amenity;
 use App\Models\Owner;
 use App\Models\Property;
@@ -47,32 +50,9 @@ class PropertyController extends Controller
         return view('admin.properties.create', compact('amenities') + $this->ownershipOptions());
     }
 
-    public function store(Request $request)
+    public function store(PropertyStoreRequest $request)
     {
-        $validated = $request->validate([
-            'title' => 'required',
-            'description' => 'required',
-            'address' => 'required',
-            'city' => 'required',
-            'state' => 'required',
-            'price_per_night' => 'required|numeric',
-            'price_per_week' => 'nullable|numeric',
-            'price_per_month' => 'nullable|numeric',
-            'max_guests' => 'required|integer',
-            'bedrooms' => 'required|integer',
-            'bathrooms' => 'required|integer',
-            'toilets' => 'required|integer',
-            'min_nights' => 'nullable|integer|min:1',
-            'max_nights' => 'nullable|integer|min:1',
-            'status' => 'nullable|in:active,inactive,maintenance',
-            'is_featured' => 'nullable|boolean',
-            'short_description' => 'nullable|string',
-            'house_rules' => 'nullable|string',
-            'cancellation_policy' => 'nullable|string',
-            // Blank owner = the company; blank site = its own one-unit site (see Property::booted).
-            'owner_id' => 'nullable|exists:owners,id',
-            'site_id' => 'nullable|exists:sites,id',
-        ]);
+        $validated = $request->validated();
 
         $validated['slug'] = Str::slug($validated['title']);
         $validated['created_by'] = auth()->check() ? auth()->user()->id : 1;
@@ -115,33 +95,9 @@ class PropertyController extends Controller
         return view('admin.properties.edit', compact('property', 'amenities') + $this->ownershipOptions());
     }
 
-    public function update(Request $request, Property $property)
+    public function update(PropertyUpdateRequest $request, Property $property)
     {
-        $validated = $request->validate([
-            'title' => 'required',
-            'slug' => 'required',
-            'description' => 'required',
-            'address' => 'required',
-            'city' => 'required',
-            'state' => 'required',
-            'price_per_night' => 'required|numeric',
-            'price_per_week' => 'nullable|numeric',
-            'price_per_month' => 'nullable|numeric',
-            'max_guests' => 'required|integer',
-            'bedrooms' => 'required|integer',
-            'bathrooms' => 'required|integer',
-            'toilets' => 'required|integer',
-            'min_nights' => 'nullable|integer|min:1',
-            'max_nights' => 'nullable|integer|min:1',
-            'status' => 'required|in:active,inactive,maintenance',
-            'is_featured' => 'required|boolean',
-            'short_description' => 'nullable|string',
-            'house_rules' => 'nullable|string',
-            'cancellation_policy' => 'nullable|string',
-            // Blank owner = the company; blank site = its own one-unit site (see Property::booted).
-            'owner_id' => 'nullable|exists:owners,id',
-            'site_id' => 'nullable|exists:sites,id',
-        ]);
+        $validated = $request->validated();
 
         if ($request->slug !== $property->slug) {
             $validated['slug'] = Str::slug($request->slug);
@@ -199,12 +155,9 @@ class PropertyController extends Controller
         return back()->with('success', 'Featured status updated');
     }
 
-    public function bulkAction(Request $request)
+    public function bulkAction(PropertyBulkActionRequest $request)
     {
-        $request->validate([
-            'property_ids' => 'required|array',
-            'action' => 'required|string|in:active,inactive,featured,delete',
-        ]);
+        $request->validated();
 
         $ids = $request->property_ids;
         $action = $request->action;

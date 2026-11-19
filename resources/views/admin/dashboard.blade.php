@@ -223,7 +223,7 @@ new Chart(revenueCtx, {
         datasets: [{
             label: 'Revenue (₦)',
             data: @json(array_values($stats['monthly_revenue'] ?? array_fill(1, 12, 0))),
-            backgroundColor: '#0B2D5B',
+            backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--color-primary').trim() || '#0B2D5B',
             borderRadius: 4
         }]
     },

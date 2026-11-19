@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\InvoiceUpdateStatusRequest;
 use App\Http\Requests\Admin\SendInvoiceEmailRequest;
 use App\Http\Requests\Admin\StoreInvoiceRequest;
 use App\Jobs\SendInvoiceEmailJob;
@@ -140,11 +141,9 @@ class InvoiceController extends Controller
         return back()->with('success', 'Invoice marked as paid');
     }
 
-    public function updateStatus(Request $request, Invoice $invoice)
+    public function updateStatus(InvoiceUpdateStatusRequest $request, Invoice $invoice)
     {
-        $request->validate([
-            'status' => 'required|in:draft,issued,partial,paid,overdue,cancelled',
-        ]);
+        $request->validated();
 
         $invoice->update(['status' => $request->status]);
 

@@ -6,7 +6,7 @@
 @section('content')
 <div class="space-y-6">
     <!-- Points Balance Card -->
-    <div class="bg-gradient-to-br from-[#0B2D5B] to-[#123E7A] rounded-2xl p-6 lg:p-8 text-white">
+    <div class="bg-gradient-to-br from-primary to-primary-light rounded-2xl p-6 lg:p-8 text-white">
         <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
             <div>
                 <p class="text-white/60 text-sm font-medium uppercase tracking-wider mb-1">Your Balance</p>
@@ -34,7 +34,7 @@
                 @php
                     $progress = min(100, (($profile->loyalty_points - $currentTier['min_points']) / ($nextTier['min_points'] - $currentTier['min_points'])) * 100);
                 @endphp
-                <div class="h-full bg-gradient-to-r from-[#E11D2E] to-[#e6c86e] rounded-full transition-all duration-500" style="width: {{ $progress }}%"></div>
+                <div class="h-full bg-gradient-to-r from-accent to-[#e6c86e] rounded-full transition-all duration-500" style="width: {{ $progress }}%"></div>
             </div>
         </div>
         @endif
@@ -51,7 +51,7 @@
             ];
         @endphp
         @foreach($tiers as $key => $tier)
-        <div class="bg-white rounded-xl p-5 border-2 {{ $profile->loyalty_tier === $key ? 'border-[#E11D2E] ring-2 ring-[#E11D2E]/20' : 'border-gray-100' }}">
+        <div class="bg-white rounded-xl p-5 border-2 {{ $profile->loyalty_tier === $key ? 'border-accent ring-2 ring-accent/20' : 'border-gray-100' }}">
             <div class="flex items-center gap-3 mb-3">
                 <div class="w-10 h-10 rounded-full flex items-center justify-center bg-{{ $tierColors[$key]['bg'] }}">
                     <i class="fas fa-crown text-{{ $tierColors[$key]['text'] }}"></i>
@@ -91,8 +91,8 @@
         <h3 class="text-lg font-bold text-gray-800 mb-4">Redeem Points</h3>
         <form action="{{ route('customer.loyalty.redeem') }}" method="POST" class="flex flex-col sm:flex-row gap-4">
             @csrf
-            <input type="number" name="points" min="100" step="100" placeholder="Enter points (min 100)" class="flex-1 px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#E11D2E] focus:border-transparent">
-            <button type="submit" class="px-6 py-3 bg-[#0B2D5B] text-white font-bold rounded-lg hover:bg-[#123E7A] transition">
+            <input type="number" name="points" min="100" step="100" placeholder="Enter points (min 100)" class="flex-1 px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent">
+            <button type="submit" class="px-6 py-3 bg-primary text-white font-bold rounded-lg hover:bg-primary-light transition">
                 Redeem for ₦Discount
             </button>
         </form>

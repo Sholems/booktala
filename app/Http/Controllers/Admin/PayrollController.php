@@ -3,6 +3,10 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\PayrollAddDeductionRequest;
+use App\Http\Requests\Admin\PayrollGenerateRequest;
+use App\Http\Requests\Admin\PayrollUpdateSalaryRequest;
+use App\Http\Requests\Admin\PayrollUpdateSettingsRequest;
 use App\Models\PayRun;
 use App\Models\Payslip;
 use App\Models\SalaryStructure;
@@ -15,7 +19,6 @@ use App\Services\PayRunService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /**
@@ -34,9 +37,9 @@ class PayrollController extends Controller
         return view('admin.payroll.index', compact('runs', 'withoutSalary'));
     }
 
-    public function generate(Request $request)
+    public function generate(PayrollGenerateRequest $request)
     {
-        $data = $request->validate(['month' => 'required|date_format:Y-m']);
+        $data = $request->validated();
         $month = CarbonImmutable::parse($data['month'].'-01');
         abort_if($month->isAfter(now()->startOfMonth()), 422, 'Pay runs cannot be prepared for future months.');
 
@@ -138,19 +141,9 @@ class PayrollController extends Controller
         return view('admin.payroll.settings', ['settings' => $settings->all(), 'defaults' => PayrollSettings::DEFAULTS]);
     }
 
-    public function updateSettings(Request $request, PayrollSettings $settings)
+    public function updateSettings(PayrollUpdateSettingsRequest $request, PayrollSettings $settings)
     {
-        $data = $request->validate([
-            'bands' => 'required|array|min:1|max:10',
-            'bands.*.width' => 'nullable|numeric|min:1',
-            'bands.*.rate' => 'required|numeric|min:0|max:100',
-            'rent_relief_rate' => 'required|numeric|min:0|max:100',
-            'rent_relief_cap' => 'required|numeric|min:0',
-            'pension_employee_rate' => 'required|numeric|min:0|max:100',
-            'pension_employer_rate' => 'required|numeric|min:0|max:100',
-            'nhf_rate' => 'required|numeric|min:0|max:100',
-            'working_days_per_month' => 'required|integer|min:1|max:31',
-        ]);
+        $data = $request->validated();
 
         $bands = array_values(array_map(fn ($b) => [isset($b['width']) && $b['width'] !== '' ? (float) $b['width'] : null, (float) $b['rate']], $data['bands']));
         // Only the last band may be open-ended.
@@ -176,22 +169,10 @@ class PayrollController extends Controller
 
     // --- Per staff member ------------------------------------------------------------------
 
-    public function updateSalary(Request $request, User $user)
+    public function updateSalary(PayrollUpdateSalaryRequest $request, User $user)
     {
         $staff = $this->staffOf($user);
-        $data = $request->validate([
-            'basic' => 'required|numeric|min:0',
-            'housing' => 'nullable|numeric|min:0',
-            'transport' => 'nullable|numeric|min:0',
-            'other_allowance' => 'nullable|numeric|min:0',
-            'overtime_rate' => 'nullable|numeric|min:0',
-            'annual_rent' => 'nullable|numeric|min:0',
-            'bank_name' => 'nullable|string|max:100',
-            'bank_account_name' => 'nullable|string|max:150',
-            'bank_account_number' => ['nullable', 'regex:/^\d{10}$/'],
-            'tax_id' => 'nullable|string|max:30',
-            'pension_pin' => 'nullable|string|max:30',
-        ], ['bank_account_number.regex' => 'Enter the 10-digit NUBAN account number.']);
+        $data = $request->validated();
 
         SalaryStructure::updateOrCreate(['staff_id' => $staff->id], [
             'basic' => $data['basic'],
@@ -209,15 +190,10 @@ class PayrollController extends Controller
         return back()->with('success', 'Pay details saved');
     }
 
-    public function addDeduction(Request $request, User $user)
+    public function addDeduction(PayrollAddDeductionRequest $request, User $user)
     {
         $staff = $this->staffOf($user);
-        $data = $request->validate([
-            'type' => ['required', Rule::in(array_keys(StaffDeduction::TYPES))],
-            'description' => 'required|string|max:255',
-            'monthly_amount' => 'required|numeric|min:1',
-            'balance' => 'nullable|numeric|min:1',
-        ]);
+        $data = $request->validated();
 
         $staff->deductions()->create($data + ['is_active' => true]);
 

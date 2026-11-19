@@ -3,6 +3,9 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\FacilityMaintenanceCompleteServiceRequest;
+use App\Http\Requests\Admin\FacilityMaintenanceStoreGeneratorLogRequest;
+use App\Http\Requests\Admin\FacilityMaintenanceStoreRequest;
 use App\Models\FacilityMaintenanceSchedule;
 use App\Models\GeneratorFuelLog;
 use App\Models\Property;
@@ -37,19 +40,9 @@ class FacilityMaintenanceController extends Controller
         return view('admin.facilities.index', compact('schedules', 'stats', 'sites', 'properties', 'equipmentTypes', 'equipmentType', 'siteId'));
     }
 
-    public function store(Request $request)
+    public function store(FacilityMaintenanceStoreRequest $request)
     {
-        $validated = $request->validate([
-            'site_id' => 'required|exists:sites,id',
-            'property_id' => 'nullable|exists:properties,id',
-            'equipment_type' => 'required|in:generator,ac,plumbing,fumigation,inverter,borehole',
-            'title' => 'required|string|max:255',
-            'frequency_days' => 'required|integer|min:1|max:365',
-            'next_due_on' => 'required|date',
-            'vendor_or_staff' => 'nullable|string|max:255',
-            'estimated_cost' => 'nullable|numeric|min:0',
-            'notes' => 'nullable|string|max:1000',
-        ]);
+        $validated = $request->validated();
 
         FacilityMaintenanceSchedule::create($validated + [
             'status' => 'active',
@@ -59,12 +52,9 @@ class FacilityMaintenanceController extends Controller
         return back()->with('success', "Preventative maintenance schedule '{$validated['title']}' created.");
     }
 
-    public function completeService(Request $request, FacilityMaintenanceSchedule $schedule)
+    public function completeService(FacilityMaintenanceCompleteServiceRequest $request, FacilityMaintenanceSchedule $schedule)
     {
-        $validated = $request->validate([
-            'service_notes' => 'nullable|string|max:1000',
-            'actual_cost' => 'nullable|numeric|min:0',
-        ]);
+        $validated = $request->validated();
 
         $schedule->recordServiceCompleted($validated['service_notes'] ?? null, $validated['actual_cost'] ?? null);
 
@@ -95,20 +85,9 @@ class FacilityMaintenanceController extends Controller
         return view('admin.facilities.generator-logs', compact('logs', 'stats', 'sites', 'siteId'));
     }
 
-    public function storeGeneratorLog(Request $request)
+    public function storeGeneratorLog(FacilityMaintenanceStoreGeneratorLogRequest $request)
     {
-        $validated = $request->validate([
-            'site_id' => 'required|exists:sites,id',
-            'generator_name' => 'required|string|max:100',
-            'run_hours_start' => 'required|numeric|min:0',
-            'run_hours_end' => 'required|numeric|gte:run_hours_start',
-            'litres_added' => 'required|numeric|min:0',
-            'diesel_cost' => 'required|numeric|min:0',
-            'fuel_level_before_percent' => 'nullable|integer|between:0,100',
-            'fuel_level_after_percent' => 'nullable|integer|between:0,100',
-            'logged_at' => 'required|date',
-            'notes' => 'nullable|string|max:1000',
-        ]);
+        $validated = $request->validated();
 
         $hoursRun = max(0, (float) $validated['run_hours_end'] - (float) $validated['run_hours_start']);
 

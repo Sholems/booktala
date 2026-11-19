@@ -11,7 +11,7 @@
             <h2 class="text-xl font-bold text-gray-800">Your Orders</h2>
             <p class="text-gray-500 text-sm">Manage your room service requests</p>
         </div>
-        <a href="{{ route('customer.room-service.create') }}" class="px-5 py-2.5 bg-[#E11D2E] text-white font-bold rounded-lg hover:bg-[#C21627] transition">
+        <a href="{{ route('customer.room-service.create') }}" class="px-5 py-2.5 bg-accent text-white font-bold rounded-lg hover:bg-accent-dark transition">
             <i class="fas fa-plus mr-2"></i>New Order
         </a>
     </div>
@@ -23,7 +23,7 @@
         </div>
         <h3 class="text-lg font-bold text-gray-800 mb-2">No Orders Yet</h3>
         <p class="text-gray-500 mb-6">You haven't placed any room service orders yet.</p>
-        <a href="{{ route('customer.room-service.create') }}" class="inline-block px-6 py-3 bg-[#0B2D5B] text-white font-bold rounded-lg hover:bg-[#123E7A] transition">
+        <a href="{{ route('customer.room-service.create') }}" class="inline-block px-6 py-3 bg-primary text-white font-bold rounded-lg hover:bg-primary-light transition">
             Place Your First Order
         </a>
     </div>
@@ -74,7 +74,7 @@
                         {{ $order->created_at->format('M j, Y') }}
                     </td>
                     <td class="px-6 py-4 text-right">
-                        <a href="{{ route('customer.room-service.show', $order) }}" class="text-[#0B2D5B] hover:text-[#E11D2E] font-medium text-sm">
+                        <a href="{{ route('customer.room-service.show', $order) }}" class="text-primary hover:text-accent font-medium text-sm">
                             View <i class="fas fa-chevron-right ml-1"></i>
                         </a>
                     </td>

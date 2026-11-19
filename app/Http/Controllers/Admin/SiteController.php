@@ -3,9 +3,10 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\SiteAttachPropertyRequest;
+use App\Http\Requests\Admin\SiteRequest;
 use App\Models\Property;
 use App\Models\Site;
-use Illuminate\Http\Request;
 
 /**
  * Sites: the buildings, estates and standalone apartments staff work at.
@@ -26,7 +27,7 @@ class SiteController extends Controller
         return view('admin.sites.form', ['site' => new Site(['country' => 'Nigeria', 'is_active' => true])]);
     }
 
-    public function store(Request $request)
+    public function store(SiteRequest $request)
     {
         $site = Site::create($this->validated($request));
 
@@ -49,7 +50,7 @@ class SiteController extends Controller
         return view('admin.sites.form', compact('site', 'otherProperties'));
     }
 
-    public function update(Request $request, Site $site)
+    public function update(SiteRequest $request, Site $site)
     {
         $site->update($this->validated($request));
 
@@ -59,9 +60,9 @@ class SiteController extends Controller
     /**
      * Move an existing property into this site (e.g. grouping flats into their building).
      */
-    public function attachProperty(Request $request, Site $site)
+    public function attachProperty(SiteAttachPropertyRequest $request, Site $site)
     {
-        $validated = $request->validate(['property_id' => 'required|exists:properties,id']);
+        $validated = $request->validated();
 
         $property = Property::findOrFail($validated['property_id']);
         $previous = $property->site;
@@ -87,21 +88,9 @@ class SiteController extends Controller
         return redirect()->route('admin.sites.index')->with('success', 'Site deleted');
     }
 
-    private function validated(Request $request): array
+    private function validated(SiteRequest $request): array
     {
-        $data = $request->validate([
-            'name' => 'required|string|max:255',
-            'address' => 'required|string|max:255',
-            'city' => 'required|string|max:100',
-            'state' => 'required|string|max:100',
-            'country' => 'nullable|string|max:100',
-            'phone' => 'nullable|string|max:30',
-            'notes' => 'nullable|string|max:2000',
-            // Where staff clock in; both or neither.
-            'latitude' => 'nullable|required_with:longitude|numeric|between:-90,90',
-            'longitude' => 'nullable|required_with:latitude|numeric|between:-180,180',
-            'geofence_radius_m' => 'nullable|integer|min:30|max:5000',
-        ]);
+        $data = $request->validated();
         $data['country'] = ($data['country'] ?? null) ?: 'Nigeria';
         $data['geofence_radius_m'] = $data['geofence_radius_m'] ?? 200;
         $data['is_active'] = $request->boolean('is_active');

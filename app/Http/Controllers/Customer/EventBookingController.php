@@ -3,9 +3,9 @@
 namespace App\Http\Controllers\Customer;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Customer\EventBookingStoreRequest;
 use App\Models\EventBooking;
 use App\Models\EventSpace;
-use Illuminate\Http\Request;
 
 class EventBookingController extends Controller
 {
@@ -27,18 +27,9 @@ class EventBookingController extends Controller
         return view('customer.event-bookings.create', compact('spaces', 'eventTypes'));
     }
 
-    public function store(Request $request)
+    public function store(EventBookingStoreRequest $request)
     {
-        $request->validate([
-            'event_space_id' => 'required|exists:event_spaces,id',
-            'event_name' => 'required|string|max:255',
-            'event_type' => 'required|in:wedding,birthday,corporate,conference,seminar,reunion,other',
-            'event_date' => 'required|date|after_or_equal:today',
-            'start_time' => 'required',
-            'end_time' => 'required|after:start_time',
-            'num_guests' => 'required|integer|min:1',
-            'notes' => 'nullable|string',
-        ]);
+        $request->validated();
 
         $space = EventSpace::findOrFail($request->event_space_id);
 

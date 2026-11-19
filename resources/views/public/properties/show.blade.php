@@ -8,13 +8,13 @@
 @push('styles')
 <style>
     .image-gallery-main { height: 400px; object-fit: cover; }
-    .thumbnail.active { border: 3px solid #0B2D5B; }
+    .thumbnail.active { border: 3px solid var(--color-primary); }
     .calendar-day { width: 36px; height: 36px; }
     .calendar-day.disabled { background-color: #fee2e2; color: #9ca3af; cursor: not-allowed; }
     .calendar-day.available:hover { background-color: #dbeafe; cursor: pointer; }
-    .calendar-day.check-in-date { background-color: #0B2D5B; color: white; }
-    .calendar-day.check-out-date { background-color: #E11D2E; color: white; }
-    .calendar-day.in-range { background-color: #dbeafe; color: #0B2D5B; }
+    .calendar-day.check-in-date { background-color: var(--color-primary); color: white; }
+    .calendar-day.check-out-date { background-color: var(--color-accent); color: white; }
+    .calendar-day.in-range { background-color: #dbeafe; color: var(--color-primary); }
 </style>
 @endpush
 

@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\OwnerStatementGenerateRequest;
+use App\Http\Requests\Admin\OwnerStatementMarkPaidRequest;
 use App\Models\Expense;
 use App\Models\Owner;
 use App\Models\OwnerStatement;
@@ -39,12 +41,9 @@ class OwnerStatementController extends Controller
         return view('admin.statements.index', compact('statements', 'ownersWithout', 'month'));
     }
 
-    public function generate(Request $request)
+    public function generate(OwnerStatementGenerateRequest $request)
     {
-        $data = $request->validate([
-            'month' => 'required|date_format:Y-m',
-            'owner_id' => 'nullable|exists:owners,id',
-        ]);
+        $data = $request->validated();
         $month = CarbonImmutable::parse($data['month'].'-01');
         abort_if($month->isAfter(now()->startOfMonth()), 422, 'Statements cannot be prepared for future months.');
 
@@ -74,9 +73,9 @@ class OwnerStatementController extends Controller
         return back()->with('success', 'Statement approved'.($statement->owner->user_id ? ' and visible in the owner portal' : ''));
     }
 
-    public function markPaid(Request $request, OwnerStatement $statement)
+    public function markPaid(OwnerStatementMarkPaidRequest $request, OwnerStatement $statement)
     {
-        $data = $request->validate(['payment_reference' => 'nullable|string|max:100']);
+        $data = $request->validated();
         $this->statements->markPaid($statement, $data['payment_reference'] ?? null);
 
         return back()->with('success', 'Payout recorded');

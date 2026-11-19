@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Staff;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Staff\TaskAddNotesRequest;
 use App\Models\Task;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class TaskController extends Controller
@@ -58,10 +58,10 @@ class TaskController extends Controller
         return back()->with('success', 'Task completed');
     }
 
-    public function addNotes(Request $request, Task $task)
+    public function addNotes(TaskAddNotesRequest $request, Task $task)
     {
         $this->ensureAssigned($task);
-        $validated = $request->validate(['notes' => 'required|string|max:1000']);
+        $validated = $request->validated();
 
         $task->taskNotes()->create([
             'user_id' => Auth::id(),

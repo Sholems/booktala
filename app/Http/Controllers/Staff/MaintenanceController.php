@@ -3,12 +3,11 @@
 namespace App\Http\Controllers\Staff;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Staff\MaintenanceStoreRequest;
+use App\Http\Requests\Staff\MaintenanceUpdateRequest;
 use App\Models\MaintenanceReport;
 use App\Models\Property;
-use App\Support\PropertyAccess;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Validation\Rule;
 
 class MaintenanceController extends Controller
 {
@@ -36,15 +35,9 @@ class MaintenanceController extends Controller
         return view('staff.maintenance.index', compact('myReports', 'reports', 'properties'));
     }
 
-    public function store(Request $request)
+    public function store(MaintenanceStoreRequest $request)
     {
-        $validated = $request->validate([
-            // Staff report problems at their own sites only.
-            'property_id' => ['required', Rule::in(PropertyAccess::visiblePropertyIds(Auth::user())->pluck('id'))],
-            'title' => 'required|string|max:255',
-            'description' => 'required|string|max:2000',
-            'priority' => 'required|in:low,medium,high,urgent,emergency',
-        ]);
+        $validated = $request->validated();
 
         MaintenanceReport::create($validated + [
             'reported_by' => Auth::id(),
@@ -57,16 +50,11 @@ class MaintenanceController extends Controller
     /**
      * Staff update reports assigned to them: start work, or resolve with a note.
      */
-    public function update(Request $request, MaintenanceReport $maintenanceReport)
+    public function update(MaintenanceUpdateRequest $request, MaintenanceReport $maintenanceReport)
     {
         abort_unless((int) $maintenanceReport->assigned_to === (int) Auth::id(), 403);
 
-        $validated = $request->validate([
-            'status' => 'required|in:in_progress,resolved',
-            'resolution_notes' => 'nullable|string|max:2000|required_if:status,resolved',
-        ], [
-            'resolution_notes.required_if' => 'Describe what you fixed before marking it resolved.',
-        ]);
+        $validated = $request->validated();
 
         if ($maintenanceReport->status === 'resolved') {
             return back()->with('error', 'This report is already resolved.');

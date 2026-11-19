@@ -2,24 +2,20 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\AvailabilityCheckRequest;
 use App\Models\BlockedDate;
 use App\Models\Reservation;
 use App\Models\Unit;
 use App\Services\PricingService;
 use Carbon\Carbon;
-use Illuminate\Http\Request;
 
 class AvailabilityController extends Controller
 {
     public function __construct(private PricingService $pricingService) {}
 
-    public function check(Request $request)
+    public function check(AvailabilityCheckRequest $request)
     {
-        $request->validate([
-            'check_in' => 'required|date',
-            'check_out' => 'required|date|after:check_in',
-            'property_id' => 'nullable|exists:properties,id',
-        ]);
+        $request->validated();
 
         $checkIn = Carbon::parse($request->check_in)->startOfDay();
         $checkOut = Carbon::parse($request->check_out)->startOfDay();

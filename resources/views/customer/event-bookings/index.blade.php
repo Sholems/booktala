@@ -10,7 +10,7 @@
             <h2 class="text-xl font-bold text-gray-800">Your Event Bookings</h2>
             <p class="text-gray-500 text-sm">View and manage your event space bookings</p>
         </div>
-        <a href="{{ route('customer.event-bookings.create') }}" class="px-5 py-2.5 bg-[#E11D2E] text-white font-bold rounded-lg hover:bg-[#C21627] transition">
+        <a href="{{ route('customer.event-bookings.create') }}" class="px-5 py-2.5 bg-accent text-white font-bold rounded-lg hover:bg-accent-dark transition">
             <i class="fas fa-plus mr-2"></i>Book Event Space
         </a>
     </div>
@@ -22,7 +22,7 @@
         </div>
         <h3 class="text-lg font-bold text-gray-800 mb-2">No Event Bookings</h3>
         <p class="text-gray-500 mb-6">You haven't booked any event spaces yet.</p>
-        <a href="{{ route('customer.event-bookings.create') }}" class="inline-block px-6 py-3 bg-[#0B2D5B] text-white font-bold rounded-lg hover:bg-[#123E7A] transition">
+        <a href="{{ route('customer.event-bookings.create') }}" class="inline-block px-6 py-3 bg-primary text-white font-bold rounded-lg hover:bg-primary-light transition">
             Book Your First Event
         </a>
     </div>

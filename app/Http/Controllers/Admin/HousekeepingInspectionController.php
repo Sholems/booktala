@@ -3,6 +3,9 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\HousekeepingInspectionApproveRequest;
+use App\Http\Requests\Admin\HousekeepingInspectionRejectRequest;
+use App\Http\Requests\Admin\HousekeepingInspectionStoreRequest;
 use App\Models\HousekeepingInspection;
 use App\Models\Unit;
 use Illuminate\Http\Request;
@@ -38,41 +41,27 @@ class HousekeepingInspectionController extends Controller
         return view('admin.inspections.show', compact('inspection'));
     }
 
-    public function approve(Request $request, HousekeepingInspection $inspection)
+    public function approve(HousekeepingInspectionApproveRequest $request, HousekeepingInspection $inspection)
     {
-        $validated = $request->validate([
-            'notes' => 'nullable|string|max:1000',
-        ]);
+        $validated = $request->validated();
 
         $inspection->approve($request->user(), $validated['notes'] ?? null);
 
         return back()->with('success', "Room {$inspection->unit?->title} inspection approved! Unit is now AVAILABLE for guests.");
     }
 
-    public function reject(Request $request, HousekeepingInspection $inspection)
+    public function reject(HousekeepingInspectionRejectRequest $request, HousekeepingInspection $inspection)
     {
-        $validated = $request->validate([
-            'notes' => 'required|string|max:1000',
-        ]);
+        $validated = $request->validated();
 
         $inspection->reject($request->user(), $validated['notes']);
 
         return back()->with('error', "Room {$inspection->unit?->title} inspection rejected. Rework notes sent to cleaner; unit remains in CLEANING.");
     }
 
-    public function store(Request $request)
+    public function store(HousekeepingInspectionStoreRequest $request)
     {
-        $validated = $request->validate([
-            'unit_id' => 'required|exists:properties,id',
-            'cleaner_id' => 'required|exists:users,id',
-            'task_id' => 'nullable|exists:tasks,id',
-            'cleaner_notes' => 'nullable|string|max:1000',
-            'checklist' => 'nullable|array',
-            'before_photos' => 'nullable|array',
-            'after_photos' => 'nullable|array',
-            'before_images.*' => 'nullable|image|max:8192',
-            'after_images.*' => 'nullable|image|max:8192',
-        ]);
+        $validated = $request->validated();
 
         $beforePhotos = $validated['before_photos'] ?? [];
         $afterPhotos = $validated['after_photos'] ?? [];

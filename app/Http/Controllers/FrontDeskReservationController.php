@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Exceptions\InvalidReservationTransition;
+use App\Http\Requests\FrontDeskReservationGuestsRequest;
+use App\Http\Requests\FrontDeskReservationQuoteRequest;
 use App\Http\Requests\StoreFrontDeskReservationRequest;
 use App\Models\Reservation;
 use App\Models\Setting;
@@ -101,16 +103,9 @@ class FrontDeskReservationController extends Controller
         return $pdf->download('receipt-'.$reservation->booking_ref.'.pdf');
     }
 
-    public function quote(Request $request, PricingService $pricing): JsonResponse
+    public function quote(FrontDeskReservationQuoteRequest $request, PricingService $pricing): JsonResponse
     {
-        $data = $request->validate([
-            'site_id' => ['required', 'integer', 'exists:sites,id'],
-            'unit_id' => ['required', 'integer', 'exists:properties,id'],
-            'check_in' => ['required', 'date', 'after_or_equal:today'],
-            'check_out' => ['required', 'date', 'after:check_in'],
-            'guests' => ['required', 'integer', 'min:1'],
-            'discount_code' => ['nullable', 'string'],
-        ]);
+        $data = $request->validated();
         abort_unless(PropertyAccess::activeSiteIds($request->user())->where('site_id', $data['site_id'])->exists() || PropertyAccess::seesAll($request->user()), 404);
         $unit = Unit::whereKey($data['unit_id'])->where('site_id', $data['site_id'])->active()->firstOrFail();
 
@@ -133,12 +128,9 @@ class FrontDeskReservationController extends Controller
         return response()->json($quote);
     }
 
-    public function guests(Request $request, GuestService $guests): JsonResponse
+    public function guests(FrontDeskReservationGuestsRequest $request, GuestService $guests): JsonResponse
     {
-        $data = $request->validate([
-            'email' => ['nullable', 'email', 'required_without:phone'],
-            'phone' => ['nullable', 'string', 'max:30', 'required_without:email'],
-        ]);
+        $data = $request->validated();
         $matches = $guests->matchForStaff($request->user(), $data)->guests;
 
         return response()->json(['guests' => $matches->map(fn ($guest) => [

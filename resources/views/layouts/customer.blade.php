@@ -10,32 +10,8 @@ $logoMarkUrl = asset('images/booktala-mark.png');
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('title', 'My Dashboard') - BookTala</title>
+    <title>@yield('title', trim($__env->yieldContent('page_title')) ?: 'My Dashboard') - BookTala</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
-    <style>
-        @media (max-width: 1024px) {
-            .sidebar { position: fixed; z-index: 50; transform: translateX(-100%); transition: transform 0.3s; }
-            .sidebar.open { transform: translateX(0); }
-            .sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 40; }
-            .sidebar-overlay.open { display: block; }
-        }
-        .nav-item { @apply block py-2 px-4 rounded hover:bg-gray-700 transition flex items-center gap-3; }
-        .nav-item.active { @apply bg-gray-700; }
-        
-        /* Mobile-first responsive tables */
-        .table-responsive { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
-        .table-responsive table { width: 100%; }
-        
-        @media (max-width: 768px) {
-            .mobile-card-table { display: block; }
-            .mobile-card-table thead { display: none; }
-            .mobile-card-table tbody { display: flex; flex-direction: column; gap: 1rem; }
-            .mobile-card-table tr { display: flex; flex-direction: column; background: white; border-radius: 0.5rem; padding: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-            .mobile-card-table td { display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0; border-bottom: 1px solid #f3f4f6; }
-            .mobile-card-table td:last-child { border-bottom: none; }
-            .mobile-card-table td::before { content: attr(data-label); font-weight: 600; color: #6b7280; margin-right: 1rem; min-width: 100px; }
-        }
-    </style>
     @include('partials.pwa-head')
     @stack('styles')
 </head>
@@ -68,10 +44,7 @@ $logoMarkUrl = asset('images/booktala-mark.png');
                 <div>
                     <p class="text-[11px] font-bold text-slate-500 uppercase tracking-widest px-3 mb-3">Overview</p>
                     <div class="space-y-1">
-                        <a href="{{ route('customer.dashboard') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group {{ request()->routeIs('customer.dashboard') ? 'bg-accent/10 text-accent font-semibold' : 'hover:bg-slate-800/50 hover:text-white' }}">
-                            <i class="fas fa-th-large w-5 text-sm"></i>
-                            <span class="text-sm">Dashboard</span>
-                        </a>
+                        <x-nav-link route="customer.dashboard" icon="fa-th-large">Dashboard</x-nav-link>
                     </div>
                 </div>
 
@@ -79,38 +52,14 @@ $logoMarkUrl = asset('images/booktala-mark.png');
                 <div>
                     <p class="text-[11px] font-bold text-slate-500 uppercase tracking-widest px-3 mb-3">My Account</p>
                     <div class="space-y-1">
-                        <a href="{{ route('customer.reservations.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group {{ request()->routeIs('customer.reservations.*') ? 'bg-accent/10 text-accent font-semibold' : 'hover:bg-slate-800/50 hover:text-white' }}">
-                            <i class="fas fa-calendar-alt w-5 text-sm"></i>
-                            <span class="text-sm">My Bookings</span>
-                        </a>
-                        <a href="{{ route('customer.wishlist.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group {{ request()->routeIs('customer.wishlist.*') ? 'bg-accent/10 text-accent font-semibold' : 'hover:bg-slate-800/50 hover:text-white' }}">
-                            <i class="fas fa-heart w-5 text-sm"></i>
-                            <span class="text-sm">Wishlist</span>
-                        </a>
-                        <a href="{{ route('customer.messages.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group {{ request()->routeIs('customer.messages.*') ? 'bg-accent/10 text-accent font-semibold' : 'hover:bg-slate-800/50 hover:text-white' }}">
-                            <i class="fas fa-envelope w-5 text-sm"></i>
-                            <span class="text-sm">Messages</span>
-                        </a>
-                        <a href="{{ route('customer.profile.edit') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group {{ request()->routeIs('customer.profile.*') ? 'bg-accent/10 text-accent font-semibold' : 'hover:bg-slate-800/50 hover:text-white' }}">
-                            <i class="fas fa-user-circle w-5 text-sm"></i>
-                            <span class="text-sm">My Profile</span>
-                        </a>
-                        <a href="{{ route('customer.loyalty.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group {{ request()->routeIs('customer.loyalty.*') ? 'bg-accent/10 text-accent font-semibold' : 'hover:bg-slate-800/50 hover:text-white' }}">
-                            <i class="fas fa-star w-5 text-sm"></i>
-                            <span class="text-sm">Loyalty Points</span>
-                        </a>
-                        <a href="{{ route('customer.checkin.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group {{ request()->routeIs('customer.checkin.*') ? 'bg-accent/10 text-accent font-semibold' : 'hover:bg-slate-800/50 hover:text-white' }}">
-                            <i class="fas fa-user-check w-5 text-sm"></i>
-                            <span class="text-sm">Pre Check-in</span>
-                        </a>
-                        <a href="{{ route('customer.room-service.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group {{ request()->routeIs('customer.room-service.*') ? 'bg-accent/10 text-accent font-semibold' : 'hover:bg-slate-800/50 hover:text-white' }}">
-                            <i class="fas fa-concierge-bell w-5 text-sm"></i>
-                            <span class="text-sm">Room Service</span>
-                        </a>
-                        <a href="{{ route('customer.event-bookings.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group {{ request()->routeIs('customer.event-bookings.*') ? 'bg-accent/10 text-accent font-semibold' : 'hover:bg-slate-800/50 hover:text-white' }}">
-                            <i class="fas fa-calendar-day w-5 text-sm"></i>
-                            <span class="text-sm">Event Booking</span>
-                        </a>
+                        <x-nav-link route="customer.reservations.index" active="customer.reservations.*" icon="fa-calendar-alt">My Bookings</x-nav-link>
+                        <x-nav-link route="customer.wishlist.index" active="customer.wishlist.*" icon="fa-heart">Wishlist</x-nav-link>
+                        <x-nav-link route="customer.messages.index" active="customer.messages.*" icon="fa-envelope">Messages</x-nav-link>
+                        <x-nav-link route="customer.profile.edit" active="customer.profile.*" icon="fa-user-circle">My Profile</x-nav-link>
+                        <x-nav-link route="customer.loyalty.index" active="customer.loyalty.*" icon="fa-star">Loyalty Points</x-nav-link>
+                        <x-nav-link route="customer.checkin.index" active="customer.checkin.*" icon="fa-user-check">Pre Check-in</x-nav-link>
+                        <x-nav-link route="customer.room-service.index" active="customer.room-service.*" icon="fa-concierge-bell">Room Service</x-nav-link>
+                        <x-nav-link route="customer.event-bookings.index" active="customer.event-bookings.*" icon="fa-calendar-day">Event Booking</x-nav-link>
                     </div>
                 </div>
 

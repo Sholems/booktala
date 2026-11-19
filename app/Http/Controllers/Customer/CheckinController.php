@@ -3,9 +3,9 @@
 namespace App\Http\Controllers\Customer;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Customer\CheckinStoreRequest;
 use App\Models\GuestCheckin;
 use App\Models\Reservation;
-use Illuminate\Http\Request;
 
 /**
  * Online pre-arrival check-in. The details a guest sends here appear on the
@@ -37,7 +37,7 @@ class CheckinController extends Controller
         return view('customer.checkin.create', compact('reservation', 'checkin', 'user'));
     }
 
-    public function store(Request $request, Reservation $reservation)
+    public function store(CheckinStoreRequest $request, Reservation $reservation)
     {
         $this->ensureCanCheckIn($reservation);
 
@@ -46,22 +46,7 @@ class CheckinController extends Controller
                 ->with('error', 'Your details have already been verified by the front desk. Please contact us to change them.');
         }
 
-        $validated = $request->validate([
-            'guest_first_name' => 'required|string|max:255',
-            'guest_last_name' => 'required|string|max:255',
-            'guest_email' => 'required|email|max:255',
-            'guest_phone' => 'required|string|max:30',
-            'arrival_flight' => 'nullable|string|max:50',
-            'arrival_time' => 'nullable|string|max:20',
-            'special_requests' => 'nullable|string|max:1000',
-            'id_type' => 'required|in:passport,national_id,drivers_license,voters_card,other',
-            'id_number' => 'required|string|max:255',
-            'num_adults' => 'required|integer|min:1|max:'.max(1, (int) $reservation->guests),
-            'num_children' => 'nullable|integer|min:0|max:20',
-            'vehicle_plate' => 'nullable|string|max:20',
-            'emergency_contact_name' => 'required|string|max:255',
-            'emergency_contact_phone' => 'required|string|max:30',
-        ]);
+        $validated = $request->validated();
 
         $checkin = GuestCheckin::updateOrCreate(
             ['reservation_id' => $reservation->id],

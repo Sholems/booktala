@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Concerns;
 
+use App\Http\Requests\Shared\GuestInboxReplyRequest;
 use App\Models\Conversation;
 use App\Models\Message;
 use App\Support\PropertyAccess;
@@ -56,11 +57,11 @@ trait ManagesGuestInbox
         ]);
     }
 
-    public function reply(Request $request, Conversation $conversation)
+    public function reply(GuestInboxReplyRequest $request, Conversation $conversation)
     {
         PropertyAccess::authorize($request->user(), $conversation->property_id);
 
-        $validated = $request->validate(['message' => 'required|string|max:2000']);
+        $validated = $request->validated();
 
         Message::create([
             'conversation_id' => $conversation->id,

@@ -3,9 +3,9 @@
 namespace App\Http\Controllers\Public;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Public\PageSubmitContactRequest;
 use App\Models\Page;
 use App\Models\Property;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
 class PageController extends Controller
@@ -20,15 +20,9 @@ class PageController extends Controller
         return view('public.pages.contact');
     }
 
-    public function submitContact(Request $request)
+    public function submitContact(PageSubmitContactRequest $request)
     {
-        $validated = $request->validate([
-            'name' => ['required', 'string', 'max:120'],
-            'email' => ['required', 'email', 'max:190'],
-            'phone' => ['nullable', 'string', 'max:40'],
-            'subject' => ['required', 'string', 'max:190'],
-            'message' => ['required', 'string', 'max:3000'],
-        ]);
+        $validated = $request->validated();
 
         // For now we persist contact enquiries in logs to ensure no messages are lost.
         Log::info('Website contact form submission', $validated);

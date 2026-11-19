@@ -3,9 +3,9 @@
 namespace App\Http\Controllers\Staff;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Staff\HousekeepingInspectionStoreRequest;
 use App\Models\HousekeepingInspection;
 use App\Models\Task;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class HousekeepingInspectionController extends Controller
@@ -20,18 +20,11 @@ class HousekeepingInspectionController extends Controller
         return view('staff.inspections.create', compact('task', 'checklist'));
     }
 
-    public function store(Request $request, Task $task)
+    public function store(HousekeepingInspectionStoreRequest $request, Task $task)
     {
         abort_unless((int) $task->assigned_to === (int) Auth::id(), 403);
 
-        $validated = $request->validate([
-            'checklist' => 'required|array',
-            'cleaner_notes' => 'nullable|string|max:1000',
-            'before_images.*' => 'nullable|image|max:8192',
-            'after_images.*' => 'nullable|image|max:8192',
-            'before_urls' => 'nullable|string',
-            'after_urls' => 'nullable|string',
-        ]);
+        $validated = $request->validated();
 
         $beforePhotos = [];
         $afterPhotos = [];

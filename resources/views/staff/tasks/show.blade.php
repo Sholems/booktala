@@ -42,7 +42,7 @@
                     </form>
                     @elseif($task->status == 'in_progress')
                     <div class="flex flex-wrap items-center gap-3">
-                        <a href="{{ route('staff.inspections.create', $task) }}" class="inline-flex items-center gap-2 px-4 py-2 bg-[#0B2D5B] text-white rounded font-bold hover:bg-[#123E7A] text-sm shadow">
+                        <a href="{{ route('staff.inspections.create', $task) }}" class="inline-flex items-center gap-2 px-4 py-2 bg-primary text-white rounded font-bold hover:bg-primary-light text-sm shadow">
                             <i class="fas fa-clipboard-check"></i>
                             <span>Complete Inspection Checklist & Photos</span>
                         </a>

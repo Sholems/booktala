@@ -3,10 +3,11 @@
 namespace App\Http\Controllers\Customer;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Customer\ReservationCancelRequest;
+use App\Http\Requests\Customer\ReservationSubmitReviewRequest;
 use App\Models\Reservation;
 use App\Services\BookingService;
 use App\Services\ReservationLifecycle;
-use Illuminate\Http\Request;
 
 class ReservationController extends Controller
 {
@@ -31,15 +32,13 @@ class ReservationController extends Controller
         return view('customer.reservations.show', compact('reservation'));
     }
 
-    public function cancel(Request $request, Reservation $reservation, ReservationLifecycle $lifecycle)
+    public function cancel(ReservationCancelRequest $request, Reservation $reservation, ReservationLifecycle $lifecycle)
     {
         if ($reservation->user_id !== auth()->id()) {
             abort(403);
         }
 
-        $validated = $request->validate([
-            'reason' => ['nullable', 'string', 'max:500'],
-        ]);
+        $validated = $request->validated();
 
         $reservation = $lifecycle->cancel($reservation, auth()->user(), $validated['reason'] ?? null);
 
@@ -65,7 +64,7 @@ class ReservationController extends Controller
         return redirect()->away($authorizationUrl);
     }
 
-    public function submitReview(Request $request, Reservation $reservation)
+    public function submitReview(ReservationSubmitReviewRequest $request, Reservation $reservation)
     {
         if ($reservation->user_id !== auth()->id()) {
             abort(403);
@@ -79,14 +78,7 @@ class ReservationController extends Controller
             return back()->with('error', 'You have already reviewed this stay.');
         }
 
-        $validated = $request->validate([
-            'overall_rating' => 'required|integer|min:1|max:5',
-            'cleanliness_rating' => 'nullable|integer|min:1|max:5',
-            'location_rating' => 'nullable|integer|min:1|max:5',
-            'value_rating' => 'nullable|integer|min:1|max:5',
-            'communication_rating' => 'nullable|integer|min:1|max:5',
-            'comment' => 'nullable|string|max:1000',
-        ]);
+        $validated = $request->validated();
 
         // Detailed ratings are optional; fall back to the overall score.
         $overall = (int) $validated['overall_rating'];

@@ -10,26 +10,8 @@ $logoMarkUrl = asset('images/booktala-mark.png');
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('title', 'Owner Portal') - BookTala</title>
+    <title>@yield('title', trim($__env->yieldContent('page_title')) ?: 'Owner Portal') - BookTala</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
-    <style>
-        @media (max-width: 1024px) {
-            .sidebar { position: fixed; z-index: 50; transform: translateX(-100%); transition: transform 0.3s; }
-            .sidebar.open { transform: translateX(0); }
-            .sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 40; }
-            .sidebar-overlay.open { display: block; }
-        }
-        .table-responsive { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
-        @media (max-width: 768px) {
-            .mobile-card-table { display: block; }
-            .mobile-card-table thead { display: none; }
-            .mobile-card-table tbody { display: flex; flex-direction: column; gap: 1rem; }
-            .mobile-card-table tr { display: flex; flex-direction: column; background: white; border-radius: 0.5rem; padding: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-            .mobile-card-table td { display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0; border-bottom: 1px solid #f3f4f6; }
-            .mobile-card-table td:last-child { border-bottom: none; }
-            .mobile-card-table td::before { content: attr(data-label); font-weight: 600; color: #6b7280; margin-right: 1rem; min-width: 100px; }
-        }
-    </style>
     @include('partials.pwa-head')
 </head>
 <body class="bg-gray-100">
