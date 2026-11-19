@@ -3,8 +3,18 @@
 @section('title', 'Forgot Password - BookTala')
 
 @section('content')
+@php
+$siteName = \App\Models\Setting::get('site_name', config('brand.name', 'BookTala'));
+$logo = \App\Models\Setting::get('logo');
+$logoUrl = $logo ? url('media/' . ltrim($logo, '/')) : asset('images/booktala-logo.png');
+@endphp
 <section class="py-12 bg-gray-50">
     <div class="container mx-auto px-6 max-w-md">
+        <div class="text-center mb-6">
+            <a href="{{ route('home') }}" class="inline-block transition hover:opacity-90 focus:outline-none" aria-label="{{ $siteName }} Home">
+                <img src="{{ $logoUrl }}" alt="{{ $siteName }}" class="h-14 w-auto mx-auto object-contain">
+            </a>
+        </div>
         <div class="bg-white rounded-lg shadow-lg p-8">
             <h1 class="text-2xl font-bold mb-6 text-center">Forgot Password</h1>
             

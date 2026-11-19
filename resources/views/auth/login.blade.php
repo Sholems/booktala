@@ -3,9 +3,17 @@
 @section('title', 'Login - BookTala')
 
 @section('content')
+@php
+$siteName = \App\Models\Setting::get('site_name', config('brand.name', 'BookTala'));
+$logo = \App\Models\Setting::get('logo');
+$logoUrl = $logo ? url('media/' . ltrim($logo, '/')) : asset('images/booktala-logo.png');
+@endphp
 <section class="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4">
     <div class="max-w-md w-full">
         <div class="text-center mb-8">
+            <a href="{{ route('home') }}" class="inline-block mb-4 transition hover:opacity-90 focus:outline-none" aria-label="{{ $siteName }} Home">
+                <img src="{{ $logoUrl }}" alt="{{ $siteName }}" class="h-16 md:h-20 w-auto mx-auto object-contain">
+            </a>
             <h2 class="text-3xl font-bold text-primary">Welcome Back</h2>
             <p class="text-gray-600 mt-2">Sign in to your account</p>
         </div>

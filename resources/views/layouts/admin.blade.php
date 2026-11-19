@@ -1,8 +1,10 @@
 @php
 $isHotelMode = \App\Models\SystemSetting::get('hotel_mode', false);
 $propertyLabel = $isHotelMode ? 'Rooms' : 'Properties';
-$siteName = \App\Models\Setting::get('site_name', config('brand.name'));
+$siteName = \App\Models\Setting::get('site_name', config('brand.name', 'BookTala'));
 $logo = \App\Models\Setting::get('logo');
+$logoUrl = $logo ? url('media/' . ltrim($logo, '/')) : asset('images/booktala-logo.png');
+$logoMarkUrl = asset('images/booktala-mark.png');
 @endphp
 <!DOCTYPE html>
 <html lang="en">
@@ -49,23 +51,19 @@ $logo = \App\Models\Setting::get('logo');
         <aside class="sidebar w-1/2 lg:w-1/5 bg-[#0f172a] text-slate-300 flex flex-col h-full overflow-hidden lg:relative border-r border-slate-800 shadow-xl fixed lg:static inset-y-0 left-0 z-50">
             <!-- Branding Header -->
             <div class="p-5 lg:p-7 shrink-0 bg-[#1e293b]/50 border-b border-slate-800/50">
-                <div class="flex items-center gap-4">
-                    @if($logo)
-                    <img src="{{ url('media/' . ltrim($logo, '/')) }}" alt="Logo" class="h-12 w-auto object-contain">
-                    @else
-                    <div class="w-12 h-12 bg-accent rounded-xl flex items-center justify-center shadow-lg shadow-accent/20 transition-transform hover:scale-105 active:scale-95 cursor-default">
-                        <i class="fas fa-building text-white text-xl"></i>
+                <a href="{{ route('admin.dashboard') }}" class="flex items-center gap-3.5 group" aria-label="{{ $siteName }} Admin">
+                    <div class="w-11 h-11 bg-white rounded-xl flex items-center justify-center p-1.5 shadow-md shadow-black/20 shrink-0 transition-transform group-hover:scale-105">
+                        <img src="{{ $logo ? url('media/' . ltrim($logo, '/')) : $logoMarkUrl }}" alt="{{ $siteName }}" class="h-full w-full object-contain">
                     </div>
-                    @endif
-                    <div class="flex flex-col">
-                        <h2 class="text-xl font-black tracking-tight text-white uppercase leading-none">
-                            {{ $siteName }}
+                    <div class="flex flex-col min-w-0">
+                        <h2 class="text-xl font-black tracking-tight text-white uppercase leading-none truncate">
+                            Book<span class="text-red-500">Tala</span>
                         </h2>
-                        <span class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1">
+                        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1 truncate">
                             {{ $isHotelMode ? 'Hotel' : 'Shortlet' }} Management
                         </span>
                     </div>
-                </div>
+                </a>
             </div>
             
             <!-- Navigation -->
@@ -335,9 +333,12 @@ $logo = \App\Models\Setting::get('logo');
         <div class="flex-1 flex flex-col overflow-hidden">
             <header class="bg-white shadow px-4 lg:px-6 py-3 lg:py-4 flex justify-between items-center">
                 <div class="flex items-center gap-3">
-                    <button class="lg:hidden text-primary" onclick="toggleSidebar()">
+                    <button class="lg:hidden text-primary" onclick="toggleSidebar()" aria-label="Toggle Navigation">
                         <i class="fas fa-bars text-xl"></i>
                     </button>
+                    <a href="{{ route('admin.dashboard') }}" class="lg:hidden flex items-center shrink-0 mr-1" aria-label="{{ $siteName }}">
+                        <img src="{{ $logoUrl }}" alt="{{ $siteName }}" class="h-8 w-auto object-contain">
+                    </a>
                     <h1 class="text-lg lg:text-xl font-bold truncate">@yield('page_title', 'Dashboard')</h1>
                 </div>
                 <div class="flex items-center gap-2 lg:space-x-4">
