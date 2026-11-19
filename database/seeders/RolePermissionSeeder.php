@@ -49,7 +49,7 @@ class RolePermissionSeeder extends Seeder
             'reservation.refund', 'reservation.checkin-unpaid',
             'customer.view', 'customer.manage',
             'staff.manage', 'owner.manage', 'site.manage', 'task.manage', 'maintenance.manage',
-            'review.manage', 'page.manage', 'report.view', 'report.export',
+            'review.manage', 'page.manage', 'settings.manage', 'report.view', 'report.export',
             'finance.manage',
         ],
         'staff' => [

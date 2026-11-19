@@ -224,16 +224,18 @@ Route::prefix('admin')->middleware(['auth', 'role:super_admin|admin'])->group(fu
     Route::get('/reports/export', [ReportController::class, 'export'])->name('admin.reports.export')->middleware('can:report.export');
 
     // Channel Manager & OTA Synchronization
-    Route::get('/channel-manager', [ChannelManagerController::class, 'index'])->name('admin.channel-manager.index')->middleware('can:settings.manage');
-    Route::post('/channel-manager', [ChannelManagerController::class, 'store'])->name('admin.channel-manager.store')->middleware('can:settings.manage');
-    Route::post('/channel-manager/mapping', [ChannelManagerController::class, 'storeMapping'])->name('admin.channel-manager.mapping.store')->middleware('can:settings.manage');
-    Route::patch('/channel-manager/mapping/{mapping}/toggle', [ChannelManagerController::class, 'toggleMapping'])->name('admin.channel-manager.mapping.toggle')->middleware('can:settings.manage');
-    Route::post('/channel-manager/mapping/{mapping}/sync', [ChannelManagerController::class, 'syncMapping'])->name('admin.channel-manager.mapping.sync')->middleware('can:settings.manage');
-    Route::post('/channel-manager/sync-all', [ChannelManagerController::class, 'syncAll'])->name('admin.channel-manager.sync-all')->middleware('can:settings.manage');
-    Route::delete('/channel-manager/mapping/{mapping}', [ChannelManagerController::class, 'destroyMapping'])->name('admin.channel-manager.mapping.destroy')->middleware('can:settings.manage');
-    Route::patch('/channel-manager/{channel}/toggle', [ChannelManagerController::class, 'toggle'])->name('admin.channel-manager.toggle')->middleware('can:settings.manage');
-    Route::post('/channel-manager/{channel}/sync', [ChannelManagerController::class, 'sync'])->name('admin.channel-manager.sync')->middleware('can:settings.manage');
-    Route::delete('/channel-manager/{channel}', [ChannelManagerController::class, 'destroy'])->name('admin.channel-manager.destroy')->middleware('can:settings.manage');
+    Route::middleware('can:settings.manage')->group(function () {
+        Route::get('/channel-manager', [ChannelManagerController::class, 'index'])->name('admin.channel-manager.index');
+        Route::post('/channel-manager', [ChannelManagerController::class, 'store'])->name('admin.channel-manager.store');
+        Route::post('/channel-manager/mapping', [ChannelManagerController::class, 'storeMapping'])->name('admin.channel-manager.mapping.store');
+        Route::patch('/channel-manager/mapping/{mapping}/toggle', [ChannelManagerController::class, 'toggleMapping'])->name('admin.channel-manager.mapping.toggle');
+        Route::post('/channel-manager/mapping/{mapping}/sync', [ChannelManagerController::class, 'syncMapping'])->name('admin.channel-manager.mapping.sync');
+        Route::post('/channel-manager/sync-all', [ChannelManagerController::class, 'syncAll'])->name('admin.channel-manager.sync-all');
+        Route::delete('/channel-manager/mapping/{mapping}', [ChannelManagerController::class, 'destroyMapping'])->name('admin.channel-manager.mapping.destroy');
+        Route::patch('/channel-manager/{channel}/toggle', [ChannelManagerController::class, 'toggle'])->name('admin.channel-manager.toggle');
+        Route::post('/channel-manager/{channel}/sync', [ChannelManagerController::class, 'sync'])->name('admin.channel-manager.sync');
+        Route::delete('/channel-manager/{channel}', [ChannelManagerController::class, 'destroy'])->name('admin.channel-manager.destroy');
+    });
 
     // Dynamic Pricing & Seasonal Rates
     Route::middleware('can:property.manage')->group(function () {

@@ -35,24 +35,30 @@
     .doc-info-row {
         display: flex;
         flex-direction: row;
+        flex-wrap: wrap;
         gap: 16px;
         margin: 16px 0;
         width: 100%;
         box-sizing: border-box;
     }
     .doc-info-billto {
-        flex: 7;
-        min-width: 0;
+        flex: 1 1 54%;
+        min-width: 280px;
         box-sizing: border-box;
     }
     .doc-info-meta {
-        flex: 5;
-        min-width: 0;
+        flex: 1 1 38%;
+        min-width: 260px;
         box-sizing: border-box;
     }
     @media (max-width: 768px) {
         .doc-info-row {
             flex-direction: column;
+        }
+        .doc-info-billto,
+        .doc-info-meta {
+            flex: 1 1 100%;
+            min-width: 100%;
         }
     }
 
@@ -245,9 +251,9 @@
         </div>
 
         <!-- 2-Column Information Cards: BILL TO & STAY DETAILS -->
-        <div class="doc-info-row">
+        <div class="doc-info-row" style="display: flex; flex-direction: row; flex-wrap: wrap; gap: 16px; margin: 16px 0; width: 100%; box-sizing: border-box;">
             <!-- Left: BILL TO Card -->
-            <div class="doc-info-billto doc-card bg-slate-50 border border-slate-200 rounded-xl p-3.5 sm:p-4 relative" style="border-left: 4px solid #0B2D5B;">
+            <div class="doc-info-billto doc-card bg-slate-50 border border-slate-200 rounded-xl p-3.5 sm:p-4 relative" style="flex: 1 1 54%; min-width: 280px; box-sizing: border-box; border-left: 4px solid #0B2D5B;">
                 <div class="text-[10px] font-bold text-primary uppercase tracking-wider mb-1 flex items-center gap-1.5" style="color: #0B2D5B;">
                     <i class="fas fa-user-tag text-xs"></i> BILL TO / GUEST DETAILS
                 </div>
@@ -263,7 +269,7 @@
             </div>
 
             <!-- Right: STAY & RECEIPT METADATA Card -->
-            <div class="doc-info-meta doc-card bg-white border border-slate-200 rounded-xl p-3.5 sm:p-4 text-xs text-slate-700 space-y-1.5">
+            <div class="doc-info-meta doc-card bg-white border border-slate-200 rounded-xl p-3.5 sm:p-4 text-xs text-slate-700 space-y-1.5" style="flex: 1 1 38%; min-width: 260px; box-sizing: border-box;">
                 <div class="flex justify-between border-b border-slate-100 pb-1">
                     <span class="text-slate-500">Receipt Date:</span>
                     <strong class="text-slate-900">{{ $invoice->created_at ? $invoice->created_at->format('d M Y') : now()->format('d M Y') }}</strong>
