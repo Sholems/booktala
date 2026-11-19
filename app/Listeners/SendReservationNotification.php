@@ -8,11 +8,16 @@ use App\Notifications\BookingCancelled;
 use App\Notifications\BookingConfirmed;
 use App\Notifications\BookingPending;
 use App\Notifications\GuestCancelledBooking;
+use App\Services\WhatsApp\WhatsAppNotificationService;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Support\Facades\Notification;
 
 class SendReservationNotification implements ShouldQueue
 {
+    public function __construct(
+        protected WhatsAppNotificationService $whatsAppService
+    ) {}
+
     public function handle(ReservationStatusChanged $event)
     {
         $reservation = $event->reservation;
@@ -25,6 +30,11 @@ class SendReservationNotification implements ShouldQueue
         switch ($event->newStatus) {
             case 'confirmed':
                 $user->notify(new BookingConfirmed($reservation));
+                try {
+                    $this->whatsAppService->sendBookingConfirmation($reservation);
+                } catch (\Throwable) {
+                    // Non-blocking
+                }
                 break;
 
             case 'pending':
@@ -34,7 +44,6 @@ class SendReservationNotification implements ShouldQueue
             case 'cancelled':
                 $user->notify(new BookingCancelled($reservation));
 
-                // When the guest cancelled it themselves, the team needs to know too.
                 if ($event->actorId !== null && $event->actorId === $reservation->user_id) {
                     $admins = User::role(['super_admin', 'admin'])->where('id', '!=', $user->id)->get();
                     Notification::send($admins, new GuestCancelledBooking($reservation));
@@ -42,7 +51,11 @@ class SendReservationNotification implements ShouldQueue
                 break;
 
             case 'checked_in':
-                // Send check-in reminder (already checked in)
+                try {
+                    $this->whatsAppService->sendCheckinInstructions($reservation);
+                } catch (\Throwable) {
+                    // Non-blocking
+                }
                 break;
         }
     }

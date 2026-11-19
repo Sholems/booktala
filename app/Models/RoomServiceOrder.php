@@ -11,9 +11,91 @@ class RoomServiceOrder extends Model
 {
     use HasFactory;
 
+    public const ORDER_FOOD = 'food';
+
+    public const ORDER_LAUNDRY = 'laundry';
+
+    public const ORDER_HOUSEKEEPING = 'housekeeping';
+
+    public const ORDER_AIRPORT_PICKUP = 'airport_pickup';
+
+    public const ORDER_AMENITY = 'amenity';
+
+    public const ORDER_MAINTENANCE = 'maintenance';
+
+    public const ORDER_OTHER = 'other';
+
+    public const PAYMENT_METHOD_FOLIO = 'folio';
+
+    public const PAYMENT_METHOD_PAYSTACK = 'paystack';
+
+    public const PAYMENT_METHOD_CASH = 'cash';
+
+    public const PAYMENT_STATUS_CHARGED_TO_FOLIO = 'charged_to_folio';
+
+    public const PAYMENT_STATUS_PAID = 'paid';
+
+    public const PAYMENT_STATUS_UNPAID = 'unpaid';
+
     /**
-     * Orders whose booking is at a property this user may see.
+     * Preset catalog services available to guests in residence.
      */
+    public const PRESET_CATALOG = [
+        self::ORDER_AIRPORT_PICKUP => [
+            [
+                'name' => 'Airport Pickup (Murtala Muhammed Int. to Island)',
+                'description' => 'Dedicated executive chauffeur pickup from MMIA to VI / Lekki / Ikoyi',
+                'price' => 30000.00,
+            ],
+            [
+                'name' => 'Airport Dropoff (Island to MMIA)',
+                'description' => 'Transfer from residence to airport with luggage assistance',
+                'price' => 25000.00,
+            ],
+        ],
+        self::ORDER_HOUSEKEEPING => [
+            [
+                'name' => 'Mid-Stay Fresh Linen & Towel Refresh',
+                'description' => 'Full replacement of bed sheets, pillowcases and luxury bath towels',
+                'price' => 7500.00,
+            ],
+            [
+                'name' => 'Full Suite Deep Housekeeping',
+                'description' => 'Comprehensive dusting, bathroom sanitation, floor mopping and bed making',
+                'price' => 15000.00,
+            ],
+        ],
+        self::ORDER_LAUNDRY => [
+            [
+                'name' => 'Wash, Dry & Fold (Per Basket)',
+                'description' => 'Same-day laundry service for up to 15 garments',
+                'price' => 8000.00,
+            ],
+            [
+                'name' => 'Executive Shirt Pressing (5 Shirts)',
+                'description' => 'Steam pressed and hung on hangers',
+                'price' => 5000.00,
+            ],
+        ],
+        self::ORDER_FOOD => [
+            [
+                'name' => 'Continental Breakfast Tray',
+                'description' => 'Fresh pastries, eggs to order, sausage, baked beans, juice & coffee',
+                'price' => 9500.00,
+            ],
+            [
+                'name' => 'Nigerian Jollof Rice with Grilled Chicken',
+                'description' => 'Smoky party jollof with spiced grilled chicken and fried plantains',
+                'price' => 8500.00,
+            ],
+            [
+                'name' => 'Late Night Beverage & Snack Pack',
+                'description' => 'Assorted soft drinks, spring water, plantain chips and roasted cashews',
+                'price' => 6000.00,
+            ],
+        ],
+    ];
+
     public function scopeVisibleTo($query, User $user)
     {
         if (PropertyAccess::seesAll($user)) {
@@ -30,9 +112,15 @@ class RoomServiceOrder extends Model
         'order_type',
         'items',
         'total_amount',
+        'payment_method',
+        'payment_status',
+        'paystack_reference',
         'status',
         'handled_by',
         'special_instructions',
+        'pickup_location',
+        'pickup_time',
+        'flight_number',
         'delivered_at',
     ];
 
@@ -41,6 +129,7 @@ class RoomServiceOrder extends Model
         return [
             'items' => 'array',
             'total_amount' => 'decimal:2',
+            'pickup_time' => 'datetime',
             'delivered_at' => 'datetime',
         ];
     }
@@ -65,7 +154,6 @@ class RoomServiceOrder extends Model
         return $this->belongsTo(User::class, 'handled_by');
     }
 
-    /** The step staff move an order to next, or null when it is finished. */
     public const NEXT_STATUS = [
         'pending' => 'preparing',
         'preparing' => 'on_the_way',
@@ -79,10 +167,6 @@ class RoomServiceOrder extends Model
         return self::NEXT_STATUS[$this->status] ?? null;
     }
 
-    /**
-     * Move the order one step forward (pending -> preparing -> on the way -> delivered),
-     * recording who handled it and, optionally, the amount to charge the guest.
-     */
     public function advance(User $actor, ?float $charge = null): bool
     {
         $next = $this->nextStatus();
@@ -110,24 +194,26 @@ class RoomServiceOrder extends Model
         ][$status] ?? null;
     }
 
-    public static function orderTypes()
+    public static function orderTypes(): array
     {
         return [
-            'food' => 'Food & Beverages',
-            'laundry' => 'Laundry Service',
-            'amenity' => 'Amenity Request',
-            'maintenance' => 'Maintenance Request',
-            'other' => 'Other',
+            self::ORDER_FOOD => 'Food & Beverages',
+            self::ORDER_LAUNDRY => 'Laundry & Dry Cleaning',
+            self::ORDER_HOUSEKEEPING => 'Extra Housekeeping & Linen',
+            self::ORDER_AIRPORT_PICKUP => 'Airport Pickup & Chauffeur Transfer',
+            self::ORDER_AMENITY => 'Extra Amenities Request',
+            self::ORDER_MAINTENANCE => 'Maintenance Support',
+            self::ORDER_OTHER => 'Other Concierge Request',
         ];
     }
 
-    public static function statuses()
+    public static function statuses(): array
     {
         return [
             'pending' => 'Pending',
-            'preparing' => 'Preparing',
-            'on_the_way' => 'On the Way',
-            'delivered' => 'Delivered',
+            'preparing' => 'Preparing / In Progress',
+            'on_the_way' => 'On the Way / Dispatched',
+            'delivered' => 'Completed / Delivered',
             'cancelled' => 'Cancelled',
         ];
     }

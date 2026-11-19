@@ -56,6 +56,10 @@ class Unit extends Model implements HasMedia
         'created_by',
         'owner_id',
         'site_id',
+        'wifi_ssid',
+        'wifi_password',
+        'door_access_code',
+        'checkin_instructions',
     ];
 
     protected static function booted(): void

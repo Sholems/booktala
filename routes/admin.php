@@ -35,6 +35,7 @@ use App\Http\Controllers\Admin\StaffController;
 use App\Http\Controllers\Admin\StaffScheduleController;
 use App\Http\Controllers\Admin\TaskController;
 use App\Http\Controllers\Admin\TaxComplianceController;
+use App\Http\Controllers\Admin\WhatsAppController;
 use App\Http\Controllers\NotificationController;
 use Illuminate\Support\Facades\Route;
 
@@ -227,6 +228,10 @@ Route::prefix('admin')->middleware(['auth', 'role:super_admin|admin'])->group(fu
     Route::get('/messages', [MessageController::class, 'index'])->name('admin.messages.index')->middleware('can:customer.view');
     Route::get('/messages/{conversation}', [MessageController::class, 'show'])->name('admin.messages.show')->middleware('can:customer.view');
     Route::post('/messages/{conversation}/reply', [MessageController::class, 'reply'])->name('admin.messages.reply')->middleware('can:customer.manage');
+
+    // Automated WhatsApp Notifications & Message Hub
+    Route::get('/whatsapp', [WhatsAppController::class, 'index'])->name('admin.whatsapp.index')->middleware('can:customer.view');
+    Route::post('/whatsapp/send', [WhatsAppController::class, 'send'])->name('admin.whatsapp.send')->middleware('can:customer.manage');
 
     Route::get('/staff-schedules', [StaffScheduleController::class, 'index'])->name('admin.staff-schedules.index')->middleware('can:staff.manage');
     Route::post('/staff-schedules', [StaffScheduleController::class, 'store'])->name('admin.staff-schedules.store')->middleware('can:staff.manage');
