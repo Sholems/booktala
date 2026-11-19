@@ -321,8 +321,23 @@ $logoMarkUrl = asset('images/booktala-mark.png');
 
             </nav>
 
-            <!-- Bottom Actions -->
-            <div class="p-4 bg-slate-950/20 border-t border-slate-800 shrink-0">
+            <!-- Bottom User & Actions -->
+            <div class="p-4 bg-slate-950/20 border-t border-slate-800 shrink-0 flex flex-col gap-3">
+                <a href="{{ route('admin.profile.edit') }}" class="flex items-center gap-3 px-2 py-1.5 rounded-lg hover:bg-slate-800/60 transition group" title="My Profile">
+                    @if(auth()->user()->avatar_url)
+                        <img src="{{ auth()->user()->avatar_url }}" alt="{{ auth()->user()->name }}" class="w-9 h-9 rounded-full object-cover ring-2 ring-primary/40 shrink-0">
+                    @else
+                        <div class="w-9 h-9 bg-accent rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0">
+                            {{ auth()->user()->initials }}
+                        </div>
+                    @endif
+                    <div class="flex-1 min-w-0">
+                        <p class="text-xs font-bold text-white truncate group-hover:text-accent transition-colors">{{ auth()->user()->name }}</p>
+                        <p class="text-[10px] text-slate-400 truncate">{{ auth()->user()->job_title ?: 'Administrator' }}</p>
+                    </div>
+                    <i class="fas fa-user-cog text-slate-500 group-hover:text-white text-xs transition-colors"></i>
+                </a>
+
                 <button class="lg:hidden w-full flex items-center justify-center gap-2 py-2 px-4 rounded-lg bg-slate-800 text-slate-400 hover:text-white transition-colors" onclick="toggleSidebar()">
                     <i class="fas fa-chevron-left text-xs"></i>
                     <span class="text-xs uppercase tracking-widest font-bold">Close Menu</span>
@@ -343,12 +358,19 @@ $logoMarkUrl = asset('images/booktala-mark.png');
                 </div>
                 <div class="flex items-center gap-2 lg:space-x-4">
                     @include('partials.notification-bell', ['portal' => 'admin'])
-                    <div class="hidden sm:flex items-center gap-2">
-                        <span class="w-8 h-8 bg-primary rounded-full flex items-center justify-center text-white text-sm font-bold">
-                            {{ substr(auth()->user()->name, 0, 1) }}
-                        </span>
-                        <span class="text-sm text-gray-600 hidden md:inline">{{ auth()->user()->name }}</span>
-                    </div>
+                    <a href="{{ route('admin.profile.edit') }}" class="flex items-center gap-2.5 p-1 rounded-lg hover:bg-gray-100 transition group" title="My Profile">
+                        @if(auth()->user()->avatar_url)
+                            <img src="{{ auth()->user()->avatar_url }}" alt="{{ auth()->user()->name }}" class="w-8 h-8 rounded-full object-cover ring-2 ring-primary/20">
+                        @else
+                            <span class="w-8 h-8 bg-primary rounded-full flex items-center justify-center text-white text-xs font-bold ring-2 ring-primary/20">
+                                {{ auth()->user()->initials }}
+                            </span>
+                        @endif
+                        <div class="hidden md:flex flex-col text-left">
+                            <span class="text-xs font-bold text-gray-800 leading-tight group-hover:text-primary transition-colors">{{ auth()->user()->name }}</span>
+                            <span class="text-[10px] text-gray-500 leading-tight">{{ auth()->user()->job_title ?: 'Admin' }}</span>
+                        </div>
+                    </a>
                     <form method="POST" action="{{ route('logout') }}">
                         @csrf
                         <button type="submit" class="text-red-600 hover:text-red-800 p-2" title="Logout">

@@ -24,6 +24,7 @@ use App\Http\Controllers\Admin\PaymentController;
 use App\Http\Controllers\Admin\PayrollController;
 use App\Http\Controllers\Admin\PositionController;
 use App\Http\Controllers\Admin\PricingRuleController;
+use App\Http\Controllers\Admin\ProfileController;
 use App\Http\Controllers\Admin\PropertyController;
 use App\Http\Controllers\Admin\ReportController;
 use App\Http\Controllers\Admin\ReservationController;
@@ -43,6 +44,13 @@ use Illuminate\Support\Facades\Route;
 
 Route::prefix('admin')->middleware(['auth', 'role:super_admin|admin'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('admin.dashboard');
+
+    // Profile & Settings
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('admin.profile.edit');
+    Route::patch('/profile', [ProfileController::class, 'update'])->name('admin.profile.update');
+    Route::post('/profile/avatar', [ProfileController::class, 'updateAvatar'])->name('admin.profile.avatar');
+    Route::delete('/profile/avatar', [ProfileController::class, 'destroyAvatar'])->name('admin.profile.avatar.destroy');
+    Route::post('/profile/password', [ProfileController::class, 'updatePassword'])->name('admin.profile.password');
 
     Route::resource('properties', PropertyController::class)->names('admin.properties')
         ->middlewareFor(['index', 'show'], 'can:property.view')

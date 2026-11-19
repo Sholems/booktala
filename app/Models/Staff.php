@@ -12,6 +12,7 @@ class Staff extends Model
     protected $fillable = [
         'user_id', 'department', 'employee_id', 'hire_date', 'is_active',
         'bank_name', 'bank_account_name', 'bank_account_number', 'tax_id', 'pension_pin',
+        'emergency_contact_name', 'emergency_contact_phone',
     ];
 
     public function salaryStructure(): HasOne

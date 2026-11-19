@@ -9,6 +9,7 @@ use App\Http\Controllers\Staff\MaintenanceController;
 use App\Http\Controllers\Staff\MessageController;
 use App\Http\Controllers\Staff\PatrolController;
 use App\Http\Controllers\Staff\PayslipController;
+use App\Http\Controllers\Staff\ProfileController;
 use App\Http\Controllers\Staff\RoomServiceController;
 use App\Http\Controllers\Staff\ScheduleController;
 use App\Http\Controllers\Staff\TaskController;
@@ -17,6 +18,13 @@ use Illuminate\Support\Facades\Route;
 
 Route::prefix('staff')->middleware(['auth', 'role:staff'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('staff.dashboard');
+
+    // Profile & Credentials
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('staff.profile.edit');
+    Route::patch('/profile', [ProfileController::class, 'update'])->name('staff.profile.update');
+    Route::post('/profile/avatar', [ProfileController::class, 'updateAvatar'])->name('staff.profile.avatar');
+    Route::delete('/profile/avatar', [ProfileController::class, 'destroyAvatar'])->name('staff.profile.avatar.destroy');
+    Route::post('/profile/password', [ProfileController::class, 'updatePassword'])->name('staff.profile.password');
 
     Route::get('/tasks', [TaskController::class, 'index'])->name('staff.tasks.index');
     Route::get('/tasks/{task}', [TaskController::class, 'show'])->name('staff.tasks.show');

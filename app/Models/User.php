@@ -18,7 +18,7 @@ use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 use Spatie\Permission\Traits\HasRoles;
 
-#[Fillable(['name', 'email', 'phone', 'password', 'status', 'avatar', 'id_document', 'id_verified', 'google_id', 'api_token'])]
+#[Fillable(['name', 'email', 'phone', 'password', 'status', 'avatar', 'bio', 'job_title', 'id_document', 'id_verified', 'google_id', 'api_token'])]
 #[Hidden(['password', 'remember_token', 'api_token'])]
 class User extends Authenticatable implements HasMedia, MustVerifyEmail
 {
@@ -30,6 +30,8 @@ class User extends Authenticatable implements HasMedia, MustVerifyEmail
         'phone',
         'password',
         'avatar',
+        'bio',
+        'job_title',
         'status',
         'id_document',
         'id_verified',
@@ -116,5 +118,29 @@ class User extends Authenticatable implements HasMedia, MustVerifyEmail
     {
         $this->api_token = null;
         $this->save();
+    }
+
+    public function getAvatarUrlAttribute(): ?string
+    {
+        if (! $this->avatar) {
+            return null;
+        }
+
+        if (str_starts_with($this->avatar, 'http://') || str_starts_with($this->avatar, 'https://')) {
+            return $this->avatar;
+        }
+
+        return asset('storage/'.ltrim($this->avatar, '/'));
+    }
+
+    public function getInitialsAttribute(): string
+    {
+        $words = preg_split('/\s+/', trim($this->name ?? 'U'));
+        $initials = '';
+        foreach (array_slice($words, 0, 2) as $w) {
+            $initials .= mb_substr($w, 0, 1);
+        }
+
+        return strtoupper($initials ?: 'U');
     }
 }

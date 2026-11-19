@@ -163,15 +163,20 @@ $logoMarkUrl = asset('images/booktala-mark.png');
 
             <!-- Bottom Actions -->
             <div class="p-4 bg-slate-950/20 border-t border-slate-800 shrink-0 flex flex-col gap-4">
-                <div class="flex items-center gap-3 px-2">
-                    <div class="w-10 h-10 bg-accent rounded-full flex items-center justify-center text-white text-sm font-bold shadow-lg shadow-accent/20">
-                        {{ substr(auth()->user()->name, 0, 1) }}
-                    </div>
+                <a href="{{ route('staff.profile.edit') }}" class="flex items-center gap-3 px-2 py-1.5 rounded-lg hover:bg-slate-800/60 transition group" title="Staff Profile">
+                    @if(auth()->user()->avatar_url)
+                        <img src="{{ auth()->user()->avatar_url }}" alt="{{ auth()->user()->name }}" class="w-10 h-10 rounded-full object-cover ring-2 ring-accent/40 shadow-md shrink-0">
+                    @else
+                        <div class="w-10 h-10 bg-accent rounded-full flex items-center justify-center text-white text-sm font-bold shadow-lg shadow-accent/20 shrink-0">
+                            {{ auth()->user()->initials }}
+                        </div>
+                    @endif
                     <div class="flex-1 min-w-0">
-                        <p class="text-sm font-bold text-white truncate">{{ auth()->user()->name }}</p>
-                        <p class="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Staff Profile</p>
+                        <p class="text-sm font-bold text-white truncate group-hover:text-accent transition-colors">{{ auth()->user()->name }}</p>
+                        <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider truncate">{{ auth()->user()->job_title ?: 'Staff Profile' }}</p>
                     </div>
-                </div>
+                    <i class="fas fa-chevron-right text-slate-500 group-hover:text-white text-xs transition-colors"></i>
+                </a>
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf
                     <button type="submit" class="w-full flex items-center gap-3 px-3 py-2 text-red-400 hover:text-red-300 transition-colors group">
@@ -200,6 +205,15 @@ $logoMarkUrl = asset('images/booktala-mark.png');
                 <div class="flex items-center gap-3">
                     <span class="text-sm text-gray-500 hidden sm:block">{{ now()->format('l, F j, Y') }}</span>
                     @include('partials.notification-bell', ['portal' => 'staff'])
+                    <a href="{{ route('staff.profile.edit') }}" class="flex items-center gap-2 p-1 rounded-lg hover:bg-gray-100 transition" title="My Profile">
+                        @if(auth()->user()->avatar_url)
+                            <img src="{{ auth()->user()->avatar_url }}" alt="{{ auth()->user()->name }}" class="w-8 h-8 rounded-full object-cover ring-2 ring-accent/20">
+                        @else
+                            <span class="w-8 h-8 bg-accent rounded-full flex items-center justify-center text-white text-xs font-bold">
+                                {{ auth()->user()->initials }}
+                            </span>
+                        @endif
+                    </a>
                 </div>
             </header>
             
