@@ -235,4 +235,78 @@ ICAL;
             'min_stay_override' => 2,
         ]);
     }
+
+    public function test_ota_sync_artisan_command_executes_successfully(): void
+    {
+        $this->artisan('ota:sync', ['--channel' => 'airbnb'])
+            ->expectsOutputToContain('Starting Two-Way OTA Synchronization...')
+            ->assertSuccessful();
+    }
+
+    public function test_rate_multiplier_applies_markup_to_inbound_ota_reservations(): void
+    {
+        // Unit base rate = 100,000 per night.
+        // Mapping rate_multiplier = 1.15 (+15%).
+        // 2 nights = 200,000 * 1.15 = 230,000.
+        $sampleIcal = <<<'ICAL'
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Airbnb Inc//Hosting Calendar 0.8.8//EN
+BEGIN:VEVENT
+DTEND;VALUE=DATE:20261220
+DTSTART;VALUE=DATE:20261218
+UID:airbnb-markup-test-7788@airbnb.com
+SUMMARY:Reserved (Alice Walker)
+END:VEVENT
+END:VCALENDAR
+ICAL;
+
+        $results = $this->syncService->syncMapping($this->mapping, $sampleIcal);
+        $this->assertEquals(1, $results['imported']);
+
+        $reservation = Reservation::where('paystack_reference', 'OTA-airbnb-markup-test-7788@airbnb.com')->first();
+        $this->assertNotNull($reservation);
+        $this->assertEquals(230000, (int) $reservation->total_amount);
+        $this->assertEquals('airbnb', $reservation->booking_source);
+    }
+
+    public function test_ota_feed_excludes_cancelled_reservations(): void
+    {
+        // Active reservation - should be in feed
+        Reservation::create([
+            'booking_ref' => 'BK-ACTIVE-1',
+            'user_id' => $this->guest->id,
+            'property_id' => $this->unit->id,
+            'check_in' => '2026-11-20',
+            'check_out' => '2026-11-22',
+            'nights' => 2,
+            'guests' => 2,
+            'subtotal' => 200000,
+            'total_amount' => 200000,
+            'booking_status' => 'confirmed',
+            'payment_status' => 'paid',
+        ]);
+
+        // Cancelled reservation - MUST NOT be in feed (avoids false calendar blocks)
+        Reservation::create([
+            'booking_ref' => 'BK-CANCELLED-1',
+            'user_id' => $this->guest->id,
+            'property_id' => $this->unit->id,
+            'check_in' => '2026-11-25',
+            'check_out' => '2026-11-28',
+            'nights' => 3,
+            'guests' => 2,
+            'subtotal' => 300000,
+            'total_amount' => 300000,
+            'booking_status' => 'cancelled',
+            'payment_status' => 'cancelled',
+        ]);
+
+        $response = $this->get(route('ota.feed', ['token' => $this->mapping->export_token]));
+        $response->assertOk();
+
+        $content = $response->getContent();
+        $this->assertStringContainsString('DTSTART;VALUE=DATE:20261120', $content);
+        $this->assertStringNotContainsString('DTSTART;VALUE=DATE:20261125', $content);
+    }
 }

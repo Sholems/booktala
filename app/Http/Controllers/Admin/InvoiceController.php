@@ -3,6 +3,9 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\SendInvoiceEmailRequest;
+use App\Http\Requests\Admin\StoreInvoiceRequest;
+use App\Jobs\SendInvoiceEmailJob;
 use App\Models\Invoice;
 use App\Models\InvoiceItem;
 use App\Models\Reservation;
@@ -44,15 +47,10 @@ class InvoiceController extends Controller
         return view('admin.invoices.create', compact('reservation', 'reservations'));
     }
 
-    public function store(Request $request)
+    public function store(StoreInvoiceRequest $request)
     {
-        $request->validate([
-            'reservation_id' => 'required|exists:reservations,id',
-            'due_date' => 'nullable|date',
-            'notes' => 'nullable|string',
-        ]);
-
-        $reservation = Reservation::with(['property', 'user', 'payments'])->find($request->reservation_id);
+        $validated = $request->validated();
+        $reservation = Reservation::with(['property', 'user', 'payments'])->findOrFail($validated['reservation_id']);
 
         // Use the amounts frozen on the reservation so the invoice matches what was charged.
         $subtotal = (float) $reservation->subtotal;
@@ -69,7 +67,7 @@ class InvoiceController extends Controller
 
         $invoice = Invoice::create([
             'invoice_number' => Invoice::generateInvoiceNumber(),
-            'reservation_id' => $request->reservation_id,
+            'reservation_id' => $reservation->id,
             'user_id' => $reservation->user_id,
             'subtotal' => $subtotal,
             'vat_amount' => $vatAmount,
@@ -80,8 +78,8 @@ class InvoiceController extends Controller
             'paid_amount' => $paidAmount,
             'balance' => $balance,
             'status' => 'issued',
-            'due_date' => $request->due_date ?? now()->addDays(7),
-            'notes' => $request->notes,
+            'due_date' => $validated['due_date'] ?? now()->addDays(7),
+            'notes' => $validated['notes'] ?? null,
         ]);
 
         InvoiceItem::create([
@@ -122,45 +120,13 @@ class InvoiceController extends Controller
         return $pdf->download('invoice-'.$invoice->invoice_number.'.pdf');
     }
 
-    public function sendEmail(Request $request, Invoice $invoice)
+    public function sendEmail(SendInvoiceEmailRequest $request, Invoice $invoice)
     {
-        $request->validate([
-            'email' => 'required|email',
-        ]);
+        $recipientEmail = $request->validated('email');
 
-        $invoice->load(['reservation.property', 'reservation.unit.site', 'user', 'items']);
+        SendInvoiceEmailJob::dispatch($invoice, $recipientEmail);
 
-        $siteName = Setting::get('site_name', config('brand.name'));
-        $siteEmail = Setting::get('email', config('brand.email'));
-        $sitePhone = Setting::get('phone', config('brand.phone'));
-        $siteAddress = Setting::get('address', config('brand.address'));
-        $companyName = Setting::get('company_name', 'G-Briel Property Ltd');
-
-        $logoPath = public_path('images/booktala-logo.png');
-        $logoBase64 = file_exists($logoPath) ? 'data:image/png;base64,'.base64_encode(file_get_contents($logoPath)) : null;
-
-        $pdf = Pdf::loadView('admin.invoices.pdf', [
-            'invoice' => $invoice,
-            'siteName' => $siteName,
-            'siteEmail' => $siteEmail,
-            'sitePhone' => $sitePhone,
-            'siteAddress' => $siteAddress,
-            'companyName' => $companyName,
-            'logoBase64' => $logoBase64,
-        ]);
-
-        $content = view('admin.invoices.email-template', [
-            'invoice' => $invoice,
-            'siteName' => $siteName,
-        ])->render();
-
-        Mail::html($content, function ($message) use ($request, $invoice, $pdf, $siteName) {
-            $message->to($request->email)
-                ->subject('Invoice #'.$invoice->invoice_number.' from '.$siteName)
-                ->attachData($pdf->output(), 'invoice-'.$invoice->invoice_number.'.pdf');
-        });
-
-        return back()->with('success', 'Invoice sent to '.$request->email);
+        return back()->with('success', 'Invoice delivery queued successfully to '.$recipientEmail);
     }
 
     public function markAsPaid(Request $request, Invoice $invoice)

@@ -4,10 +4,11 @@ namespace App\Notifications;
 
 use App\Models\Reservation;
 use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-class BookingPending extends Notification
+class BookingPending extends Notification implements ShouldQueue
 {
     use Queueable;
 

@@ -4,13 +4,14 @@ namespace App\Notifications;
 
 use App\Models\Reservation;
 use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
 /**
  * Tells admins that a guest cancelled their own booking, and whether a refund needs reviewing.
  */
-class GuestCancelledBooking extends Notification
+class GuestCancelledBooking extends Notification implements ShouldQueue
 {
     use Queueable;
 

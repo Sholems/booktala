@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\StoreChannelMappingRequest;
 use App\Models\OtaChannelMapping;
 use App\Models\SystemSetting;
 use App\Models\Unit;
@@ -46,15 +47,9 @@ class ChannelManagerController extends Controller
         ));
     }
 
-    public function storeMapping(Request $request)
+    public function storeMapping(StoreChannelMappingRequest $request)
     {
-        $data = $request->validate([
-            'property_id' => 'required|exists:properties,id',
-            'channel' => 'required|string|in:airbnb,bookingcom,vrbo,expedia,other',
-            'import_ical_url' => 'nullable|url|max:2000',
-            'rate_multiplier' => 'nullable|numeric|min:0.5|max:3.0',
-            'min_stay_override' => 'nullable|integer|min:1|max:365',
-        ]);
+        $data = $request->validated();
 
         PropertyAccess::authorize($request->user(), $data['property_id']);
 

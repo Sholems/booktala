@@ -239,4 +239,49 @@ class ReceiptAndInvoiceStandardTest extends TestCase
         $receiptPdf->render();
         $this->assertSame(1, $receiptPdf->getDomPDF()->getCanvas()->get_page_count(), 'Receipt PDF must not exceed 1 page.');
     }
+
+    public function test_send_invoice_email_dispatches_queued_job_asynchronously(): void
+    {
+        \Illuminate\Support\Facades\Queue::fake();
+
+        $response = $this->actingAs($this->admin)->post(route('admin.invoices.send', $this->invoice), [
+            'email' => 'guest@example.com',
+        ]);
+
+        $response->assertRedirect();
+        $response->assertSessionHas('success');
+
+        \Illuminate\Support\Facades\Queue::assertPushed(\App\Jobs\SendInvoiceEmailJob::class, function ($job) {
+            return $job->invoice->id === $this->invoice->id && $job->recipientEmail === 'guest@example.com';
+        });
+    }
+
+    public function test_store_invoice_uses_validated_form_request(): void
+    {
+        // Unbilled reservation
+        $newReservation = Reservation::create([
+            'booking_ref' => 'BK-UNBILLED-99',
+            'user_id' => $this->admin->id,
+            'property_id' => $this->unit->id,
+            'check_in' => '2026-12-10',
+            'check_out' => '2026-12-12',
+            'nights' => 2,
+            'guests' => 2,
+            'subtotal' => 180000,
+            'total_amount' => 180000,
+            'booking_status' => 'confirmed',
+            'payment_status' => 'paid',
+        ]);
+
+        $response = $this->actingAs($this->admin)->post(route('admin.invoices.store'), [
+            'reservation_id' => $newReservation->id,
+            'notes' => 'Corporate retreat invoice',
+        ]);
+
+        $response->assertRedirect();
+        $this->assertDatabaseHas('invoices', [
+            'reservation_id' => $newReservation->id,
+            'notes' => 'Corporate retreat invoice',
+        ]);
+    }
 }

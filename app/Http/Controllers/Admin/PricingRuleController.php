@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\StorePricingRuleRequest;
+use App\Http\Requests\Admin\UpdatePricingRuleRequest;
 use App\Models\PricingRule;
 use App\Models\Site;
 use App\Models\Unit;
@@ -42,23 +44,9 @@ class PricingRuleController extends Controller
         return view('admin.pricing.index', compact('rules', 'units', 'sites'));
     }
 
-    public function store(Request $request)
+    public function store(StorePricingRuleRequest $request)
     {
-        $data = $request->validate([
-            'name' => 'required|string|max:255',
-            'type' => 'required|in:seasonal,weekend,event,length_of_stay,promo',
-            'property_id' => 'nullable|exists:properties,id',
-            'site_id' => 'nullable|exists:sites,id',
-            'start_date' => 'required|date',
-            'end_date' => 'required|date|after_or_equal:start_date',
-            'adjustment_type' => 'required|in:fixed_override,percentage_markup,percentage_discount,fixed_markup',
-            'adjustment_value' => 'nullable|numeric|min:0',
-            'price_override' => 'nullable|numeric|min:0',
-            'min_nights' => 'nullable|integer|min:1|max:365',
-            'days_of_week' => 'nullable|array',
-            'days_of_week.*' => 'integer|min:1|max:7',
-            'priority' => 'nullable|integer|min:0|max:100',
-        ]);
+        $data = $request->validated();
 
         if (! empty($data['property_id'])) {
             PropertyAccess::authorize($request->user(), $data['property_id']);
@@ -76,27 +64,24 @@ class PricingRuleController extends Controller
         return redirect()->route('admin.pricing-rules.index')->with('success', 'Pricing rule created successfully.');
     }
 
-    public function update(Request $request, PricingRule $pricingRule)
+    public function update(UpdatePricingRuleRequest $request, PricingRule $pricingRule)
     {
         if ($pricingRule->property_id) {
             PropertyAccess::authorize($request->user(), $pricingRule->property_id);
         }
 
-        $data = $request->validate([
-            'name' => 'required|string|max:255',
-            'type' => 'required|in:seasonal,weekend,event,length_of_stay,promo',
-            'property_id' => 'nullable|exists:properties,id',
-            'site_id' => 'nullable|exists:sites,id',
-            'start_date' => 'required|date',
-            'end_date' => 'required|date|after_or_equal:start_date',
-            'adjustment_type' => 'required|in:fixed_override,percentage_markup,percentage_discount,fixed_markup',
-            'adjustment_value' => 'nullable|numeric|min:0',
-            'price_override' => 'nullable|numeric|min:0',
-            'min_nights' => 'nullable|integer|min:1|max:365',
-            'days_of_week' => 'nullable|array',
-            'days_of_week.*' => 'integer|min:1|max:7',
-            'priority' => 'nullable|integer|min:0|max:100',
-        ]);
+        $data = $request->validated();
+
+        if (! empty($data['property_id'])) {
+            PropertyAccess::authorize($request->user(), $data['property_id']);
+        }
+
+        $data['is_active'] = $request->boolean('is_active', true);
+        if ($data['adjustment_type'] === 'fixed_override') {
+            $data['price_override'] = $data['adjustment_value'] ?? $data['price_override'];
+        }
+
+        $pricingRule->update($data);
 
         if (! empty($data['property_id'])) {
             PropertyAccess::authorize($request->user(), $data['property_id']);
