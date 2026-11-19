@@ -7,9 +7,11 @@ use App\Http\Controllers\Admin\CustomerController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\EventBookingController;
 use App\Http\Controllers\Admin\ExpenseController;
+use App\Http\Controllers\Admin\FacilityMaintenanceController;
 use App\Http\Controllers\Admin\FinanceLedgerController;
 use App\Http\Controllers\Admin\HomepageSectionController;
 use App\Http\Controllers\Admin\HotelAmenityController;
+use App\Http\Controllers\Admin\HousekeepingInspectionController;
 use App\Http\Controllers\Admin\IcalController;
 use App\Http\Controllers\Admin\InvoiceController;
 use App\Http\Controllers\Admin\MaintenanceController;
@@ -165,9 +167,23 @@ Route::prefix('admin')->middleware(['auth', 'role:super_admin|admin'])->group(fu
     Route::get('/tasks/{task}', [TaskController::class, 'show'])->name('admin.tasks.show')->middleware('can:task.manage');
     Route::post('/tasks/{task}/notes', [TaskController::class, 'addNote'])->name('admin.tasks.notes')->middleware('can:task.manage');
 
+    // Housekeeping Inspections & Room Turnover Approval
+    Route::get('/inspections', [HousekeepingInspectionController::class, 'index'])->name('admin.inspections.index')->middleware('can:task.manage');
+    Route::post('/inspections', [HousekeepingInspectionController::class, 'store'])->name('admin.inspections.store')->middleware('can:task.manage');
+    Route::get('/inspections/{inspection}', [HousekeepingInspectionController::class, 'show'])->name('admin.inspections.show')->middleware('can:task.manage');
+    Route::patch('/inspections/{inspection}/approve', [HousekeepingInspectionController::class, 'approve'])->name('admin.inspections.approve')->middleware('can:task.manage');
+    Route::patch('/inspections/{inspection}/reject', [HousekeepingInspectionController::class, 'reject'])->name('admin.inspections.reject')->middleware('can:task.manage');
+
     Route::get('/maintenance', [MaintenanceController::class, 'index'])->name('admin.maintenance.index')->middleware('can:maintenance.manage');
     Route::post('/maintenance', [MaintenanceController::class, 'store'])->name('admin.maintenance.store')->middleware('can:maintenance.manage');
     Route::patch('/maintenance/{maintenanceReport}', [MaintenanceController::class, 'update'])->name('admin.maintenance.update')->middleware('can:maintenance.manage');
+
+    // Preventative Facilities & Generator Maintenance
+    Route::get('/facilities', [FacilityMaintenanceController::class, 'index'])->name('admin.facilities.index')->middleware('can:maintenance.manage');
+    Route::post('/facilities', [FacilityMaintenanceController::class, 'store'])->name('admin.facilities.store')->middleware('can:maintenance.manage');
+    Route::patch('/facilities/{schedule}/complete', [FacilityMaintenanceController::class, 'completeService'])->name('admin.facilities.complete')->middleware('can:maintenance.manage');
+    Route::get('/facilities/generator-logs', [FacilityMaintenanceController::class, 'generatorLogs'])->name('admin.facilities.generator-logs')->middleware('can:maintenance.manage');
+    Route::post('/facilities/generator-logs', [FacilityMaintenanceController::class, 'storeGeneratorLog'])->name('admin.facilities.generator-logs.store')->middleware('can:maintenance.manage');
 
     Route::get('/room-service', [RoomServiceController::class, 'index'])->name('admin.room-service.index')->middleware('can:reservation.view');
     Route::patch('/room-service/{order}/advance', [RoomServiceController::class, 'advance'])->name('admin.room-service.advance')->middleware('can:reservation.manage');

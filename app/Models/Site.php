@@ -25,6 +25,11 @@ class Site extends Model
         return ['is_active' => 'boolean', 'latitude' => 'float', 'longitude' => 'float', 'geofence_radius_m' => 'integer', 'patrol_interval_minutes' => 'integer'];
     }
 
+    public function scopeActive($query)
+    {
+        return $query->where('is_active', true);
+    }
+
     public function checkpoints(): HasMany
     {
         return $this->hasMany(PatrolCheckpoint::class);

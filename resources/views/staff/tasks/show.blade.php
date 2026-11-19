@@ -41,11 +41,17 @@
                         <button type="submit" class="px-4 py-2 text-white bg-blue-600 rounded hover:bg-blue-700">Start Task</button>
                     </form>
                     @elseif($task->status == 'in_progress')
-                    <form action="{{ route('staff.tasks.complete', $task) }}" method="POST">
-                        @csrf
-                        @method('PATCH')
-                        <button type="submit" class="px-4 py-2 text-white bg-green-600 rounded hover:bg-green-700">Mark Complete</button>
-                    </form>
+                    <div class="flex flex-wrap items-center gap-3">
+                        <a href="{{ route('staff.inspections.create', $task) }}" class="inline-flex items-center gap-2 px-4 py-2 bg-[#0B2D5B] text-white rounded font-bold hover:bg-[#123E7A] text-sm shadow">
+                            <i class="fas fa-clipboard-check"></i>
+                            <span>Complete Inspection Checklist & Photos</span>
+                        </a>
+                        <form action="{{ route('staff.tasks.complete', $task) }}" method="POST">
+                            @csrf
+                            @method('PATCH')
+                            <button type="submit" class="px-4 py-2 text-white bg-green-600 rounded hover:bg-green-700 text-sm font-semibold">Mark Complete</button>
+                        </form>
+                    </div>
                     @endif
                 </div>
                 

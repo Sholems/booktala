@@ -4,6 +4,7 @@ use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\Staff\AttendanceController;
 use App\Http\Controllers\Staff\CheckInController;
 use App\Http\Controllers\Staff\DashboardController;
+use App\Http\Controllers\Staff\HousekeepingInspectionController;
 use App\Http\Controllers\Staff\MaintenanceController;
 use App\Http\Controllers\Staff\MessageController;
 use App\Http\Controllers\Staff\PatrolController;
@@ -22,6 +23,8 @@ Route::prefix('staff')->middleware(['auth', 'role:staff'])->group(function () {
     Route::patch('/tasks/{task}/start', [TaskController::class, 'start'])->name('staff.tasks.start');
     Route::patch('/tasks/{task}/complete', [TaskController::class, 'complete'])->name('staff.tasks.complete');
     Route::post('/tasks/{task}/notes', [TaskController::class, 'addNotes'])->name('staff.tasks.notes');
+    Route::get('/tasks/{task}/inspection', [HousekeepingInspectionController::class, 'create'])->name('staff.inspections.create');
+    Route::post('/tasks/{task}/inspection', [HousekeepingInspectionController::class, 'store'])->name('staff.inspections.store');
 
     Route::get('/checkin', [CheckInController::class, 'index'])->name('staff.checkin.index');
     Route::get('/checkin/search', [CheckInController::class, 'search'])->name('staff.checkin.search');

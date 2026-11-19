@@ -215,6 +215,10 @@ $logo = \App\Models\Setting::get('logo');
                             <i class="fas fa-tasks w-5 text-sm"></i>
                             <span class="text-sm">Tasks</span>
                         </a>
+                        <a href="{{ route('admin.inspections.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group {{ request()->routeIs('admin.inspections.*') ? 'bg-accent/10 text-accent font-semibold' : 'hover:bg-slate-800/50 hover:text-white' }}">
+                            <i class="fas fa-clipboard-check w-5 text-sm"></i>
+                            <span class="text-sm">Room Inspections</span>
+                        </a>
                         <a href="{{ route('admin.room-service.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group {{ request()->routeIs('admin.room-service.*') ? 'bg-accent/10 text-accent font-semibold' : 'hover:bg-slate-800/50 hover:text-white' }}">
                             <i class="fas fa-concierge-bell w-5 text-sm"></i>
                             <span class="text-sm">Room Service</span>
@@ -222,6 +226,10 @@ $logo = \App\Models\Setting::get('logo');
                         <a href="{{ route('admin.maintenance.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group {{ request()->routeIs('admin.maintenance.*') ? 'bg-accent/10 text-accent font-semibold' : 'hover:bg-slate-800/50 hover:text-white' }}">
                             <i class="fas fa-tools w-5 text-sm"></i>
                             <span class="text-sm">Maintenance</span>
+                        </a>
+                        <a href="{{ route('admin.facilities.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group {{ request()->routeIs('admin.facilities.*') ? 'bg-accent/10 text-accent font-semibold' : 'hover:bg-slate-800/50 hover:text-white' }}">
+                            <i class="fas fa-cogs w-5 text-sm"></i>
+                            <span class="text-sm">Facilities & Power</span>
                         </a>
                         <a href="{{ route('admin.staff.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group {{ request()->routeIs('admin.staff.*') ? 'bg-accent/10 text-accent font-semibold' : 'hover:bg-slate-800/50 hover:text-white' }}">
                             <i class="fas fa-user-tie w-5 text-sm"></i>
