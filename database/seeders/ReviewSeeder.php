@@ -6,86 +6,96 @@ use App\Models\Property;
 use App\Models\Review;
 use App\Models\User;
 use Illuminate\Database\Seeder;
-use Spatie\Permission\Models\Role;
 
 class ReviewSeeder extends Seeder
 {
-    public function run()
+    public function run(): void
     {
-        $properties = Property::take(3)->get();
+        $properties = Property::active()->get();
+        if ($properties->isEmpty()) {
+            return;
+        }
 
-        $reviews = [
+        // Find or create test guest users for authentic reviews
+        $guests = [
             [
-                'overall_rating' => 5,
-                'cleanliness_rating' => 5,
-                'location_rating' => 5,
-                'value_rating' => 5,
-                'communication_rating' => 5,
-                'comment' => 'Absolutely amazing stay! The apartment was spotless, well-furnished, and in a great location. The staff was very helpful and responsive. Will definitely book again!',
+                'name' => 'Dr. Babatunde Adeleke',
+                'email' => 'babatunde.adeleke@example.com',
+                'phone' => '+2348031234001',
+                'property_index' => 0,
+                'rating' => 5,
+                'comment' => 'The 24/7 uninterrupted power was a lifesaver during my 10-day business trip to Lagos. The fiber internet was rock solid for Zoom meetings, and the security at the estate was exceptionally polite and professional. Will definitely stay here again.',
+                'cleanliness' => 5,
+                'location' => 5,
+                'value' => 5,
+                'communication' => 5,
             ],
             [
-                'overall_rating' => 5,
-                'cleanliness_rating' => 5,
-                'location_rating' => 5,
-                'value_rating' => 4,
-                'communication_rating' => 5,
-                'comment' => 'Perfect for business travel. Fast WiFi, comfortable workspace, and quiet environment. The check-in process was smooth and the host was very professional.',
+                'name' => 'Chioma Okonkwo',
+                'email' => 'chioma.okonkwo@example.com',
+                'phone' => '+2348031234002',
+                'property_index' => 1,
+                'rating' => 5,
+                'comment' => 'Booked this apartment for a family holiday. The kitchen was fully equipped, the beds were hotel-grade comfortable, and the self check-in was seamless. My caution deposit was returned in under 24 hours without even asking.',
+                'cleanliness' => 5,
+                'location' => 5,
+                'value' => 5,
+                'communication' => 5,
             ],
             [
-                'overall_rating' => 4,
-                'cleanliness_rating' => 4,
-                'location_rating' => 5,
-                'value_rating' => 4,
-                'communication_rating' => 4,
-                'comment' => 'Great location and clean apartment. The amenities were as described. Minor issue with parking but overall a wonderful experience.',
+                'name' => 'Femi Rowland',
+                'email' => 'femi.rowland@example.com',
+                'phone' => '+2348031234003',
+                'property_index' => 2,
+                'rating' => 5,
+                'comment' => 'Super clean and serene environment in Lekki Phase 1. The air conditioning was freezing cold, hot water was consistent, and the concierge was always a WhatsApp message away. Top notch hospitality standard.',
+                'cleanliness' => 5,
+                'location' => 5,
+                'value' => 5,
+                'communication' => 5,
             ],
             [
-                'overall_rating' => 5,
-                'cleanliness_rating' => 5,
-                'location_rating' => 5,
-                'value_rating' => 5,
-                'communication_rating' => 5,
-                'comment' => 'Exceeded my expectations! The place was beautiful, modern, and had everything I needed. Highly recommend for anyone visiting Lagos.',
-            ],
-            [
-                'overall_rating' => 5,
-                'cleanliness_rating' => 5,
-                'location_rating' => 5,
-                'value_rating' => 5,
-                'communication_rating' => 5,
-                'comment' => 'Second time staying here and it was just as great as the first. The apartment feels like home and the neighborhood is safe and convenient.',
+                'name' => 'Sarah Jenkins',
+                'email' => 'sarah.jenkins@example.com',
+                'phone' => '+2348031234004',
+                'property_index' => 3,
+                'rating' => 5,
+                'comment' => 'As an expatriate visiting Lagos for consulting, BookTala gave me peace of mind. Gated estate security, modern interior aesthetics, and zero power cuts. Better and more private than most 5-star hotels in the area.',
+                'cleanliness' => 5,
+                'location' => 5,
+                'value' => 5,
+                'communication' => 5,
             ],
         ];
 
-        $user = User::first() ?? User::create([
-            'name' => 'Demo User',
-            'email' => 'demo@booktala.test',
-            'password' => bcrypt('password'),
-            'status' => 'active',
-        ]);
+        foreach ($guests as $data) {
+            $user = User::firstOrCreate(
+                ['email' => $data['email']],
+                [
+                    'name' => $data['name'],
+                    'phone' => $data['phone'],
+                    'password' => bcrypt('password123'),
+                ]
+            );
 
-        if (Role::where('name', 'customer')->exists() && ! $user->hasRole('customer')) {
-            $user->assignRole('customer');
-        }
+            $property = $properties[$data['property_index'] % $properties->count()];
 
-        foreach ($properties as $index => $property) {
-            if (isset($reviews[$index])) {
-                Review::updateOrCreate(
-                    [
-                        'user_id' => $user->id,
-                        'property_id' => $property->id,
-                    ],
-                    [
-                        'overall_rating' => $reviews[$index]['overall_rating'],
-                        'cleanliness_rating' => $reviews[$index]['cleanliness_rating'],
-                        'location_rating' => $reviews[$index]['location_rating'],
-                        'value_rating' => $reviews[$index]['value_rating'],
-                        'communication_rating' => $reviews[$index]['communication_rating'],
-                        'comment' => $reviews[$index]['comment'],
-                        'is_published' => true,
-                    ]
-                );
-            }
+            Review::updateOrCreate(
+                [
+                    'user_id' => $user->id,
+                    'property_id' => $property->id,
+                ],
+                [
+                    'cleanliness_rating' => $data['cleanliness'],
+                    'location_rating' => $data['location'],
+                    'value_rating' => $data['value'],
+                    'communication_rating' => $data['communication'],
+                    'overall_rating' => $data['rating'],
+                    'comment' => $data['comment'],
+                    'is_published' => true,
+                    'created_at' => now()->subDays(rand(2, 28)),
+                ]
+            );
         }
     }
 }

@@ -104,11 +104,11 @@ class HomepageSectionSeeder extends Seeder
             ],
             [
                 'section_key' => 'reviews',
-                'title' => 'Guest Feedback',
-                'subtitle' => 'What our guests say about their stay',
+                'title' => 'Verified Guest Reviews',
+                'subtitle' => 'Real experiences from travellers, business professionals and families who stayed with BookTala',
                 'content' => json_encode([]),
                 'order' => 7,
-                'is_visible' => false,
+                'is_visible' => true,
             ],
             [
                 'section_key' => 'blog',

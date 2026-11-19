@@ -23,6 +23,7 @@ class SiteContentSeeder extends Seeder
             HomepageSectionSeeder::class,
             PageSeeder::class,
             BlogSeeder::class,
+            ReviewSeeder::class,
         ]);
     }
 }

@@ -73,24 +73,26 @@ $socialLinks = array_filter([
                 </div>
                 
                 <div class="flex items-center gap-2 md:space-x-4">
-                    @auth
-                        @php
-                            $dashboardRoute = auth()->user()->hasAnyRole(['super_admin', 'admin']) ? 'admin.dashboard'
-                                : (auth()->user()->hasRole('staff') ? 'staff.dashboard'
-                                : (auth()->user()->hasRole('owner') ? 'owner.dashboard' : 'customer.dashboard'));
-                        @endphp
-                        <a href="{{ route($dashboardRoute) }}" class="px-3 md:px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition text-sm">Dashboard</a>
-                        <form method="POST" action="{{ route('logout') }}" class="inline">
-                            @csrf
-                            <button type="submit" class="p-2 text-red-600 hover:text-red-800">
-                                <i class="fas fa-sign-out-alt"></i>
-                            </button>
-                        </form>
-                    @else
-                        <a href="{{ route('login') }}" class="px-3 py-2 text-primary hover:text-accent transition text-sm">Login</a>
-                        <a href="{{ route('register') }}" class="px-3 md:px-4 py-2 bg-accent text-white rounded-lg hover:bg-accent/90 transition text-sm">Register</a>
-                    @endauth
-                    <button class="md:hidden text-gray-700" onclick="toggleMobileMenu()">
+                    <div class="hidden md:flex items-center gap-3">
+                        @auth
+                            @php
+                                $dashboardRoute = auth()->user()->hasAnyRole(['super_admin', 'admin']) ? 'admin.dashboard'
+                                    : (auth()->user()->hasRole('staff') ? 'staff.dashboard'
+                                    : (auth()->user()->hasRole('owner') ? 'owner.dashboard' : 'customer.dashboard'));
+                            @endphp
+                            <a href="{{ route($dashboardRoute) }}" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition text-sm font-semibold">Dashboard</a>
+                            <form method="POST" action="{{ route('logout') }}" class="inline">
+                                @csrf
+                                <button type="submit" class="p-2 text-red-600 hover:text-red-800" title="Logout">
+                                    <i class="fas fa-sign-out-alt"></i>
+                                </button>
+                            </form>
+                        @else
+                            <a href="{{ route('login') }}" class="px-3 py-2 text-primary hover:text-accent transition text-sm font-semibold">Login</a>
+                            <a href="{{ route('register') }}" class="px-4 py-2 bg-accent text-white rounded-lg hover:bg-accent/90 transition text-sm font-semibold shadow-sm">Register</a>
+                        @endauth
+                    </div>
+                    <button class="md:hidden p-2 text-gray-700 hover:text-primary transition focus:outline-none" onclick="toggleMobileMenu()" aria-label="Toggle navigation">
                         <i class="fas fa-bars text-xl"></i>
                     </button>
                 </div>
@@ -100,16 +102,37 @@ $socialLinks = array_filter([
         <div id="mobile-menu" class="mobile-menu">
             <div class="flex justify-between items-center mb-4 pb-4 border-b">
                 <img src="{{ $logoUrl }}" alt="{{ $siteName }}" class="h-10 w-auto object-contain">
-                <button onclick="toggleMobileMenu()" class="p-2">
+                <button onclick="toggleMobileMenu()" class="p-2 text-gray-600 hover:text-gray-900" aria-label="Close menu">
                     <i class="fas fa-times text-xl"></i>
                 </button>
             </div>
             <a href="{{ route('home') }}" class="nav-link" onclick="toggleMobileMenu()">Home</a>
             <a href="{{ route('properties.index') }}" class="nav-link" onclick="toggleMobileMenu()">Apartments</a>
             <a href="{{ route('pages.about') }}" class="nav-link" onclick="toggleMobileMenu()">About</a>
+            <a href="{{ route('blog.index') }}" class="nav-link" onclick="toggleMobileMenu()">Blog</a>
             <a href="{{ route('pages.contact') }}" class="nav-link" onclick="toggleMobileMenu()">Contact</a>
             <a href="{{ route('pages.faq') }}" class="nav-link" onclick="toggleMobileMenu()">FAQ</a>
-            <a href="{{ route('blog.index') }}" class="nav-link" onclick="toggleMobileMenu()">Blog</a>
+
+            <div class="mt-6 pt-6 border-t border-gray-100 space-y-3">
+                @auth
+                    @php
+                        $mDashRoute = auth()->user()->hasAnyRole(['super_admin', 'admin']) ? 'admin.dashboard'
+                            : (auth()->user()->hasRole('staff') ? 'staff.dashboard'
+                            : (auth()->user()->hasRole('owner') ? 'owner.dashboard' : 'customer.dashboard'));
+                    @endphp
+                    <a href="{{ route($mDashRoute) }}" class="block w-full text-center px-4 py-2.5 bg-primary text-white rounded-xl font-bold text-sm">Dashboard</a>
+                    <form method="POST" action="{{ route('logout') }}" class="block">
+                        @csrf
+                        <button type="submit" class="w-full text-center px-4 py-2.5 border border-red-200 text-red-600 rounded-xl font-bold text-sm">Logout</button>
+                    </form>
+                @else
+                    <a href="{{ route('login') }}" class="block w-full text-center px-4 py-2.5 border border-primary text-primary rounded-xl font-bold text-sm">Login</a>
+                    <a href="{{ route('register') }}" class="block w-full text-center px-4 py-2.5 bg-accent text-white rounded-xl font-bold text-sm shadow-sm">Register</a>
+                @endauth
+                <a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', config('brand.phone')) }}" target="_blank" rel="noopener noreferrer" class="block w-full text-center px-4 py-2.5 bg-emerald-600 text-white rounded-xl font-bold text-sm shadow-sm">
+                    <i class="fab fa-whatsapp mr-1.5"></i> WhatsApp Concierge
+                </a>
+            </div>
         </div>
     </header>
 

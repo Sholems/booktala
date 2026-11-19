@@ -360,6 +360,34 @@ $facilities = $sectionItems('amenities');
 <section class="py-12 md:py-20 bg-background">
     <div class="container mx-auto px-4 md:px-6 max-w-7xl">
         @if(isset($sectionsArray['featured_properties']) && $sectionsArray['featured_properties']->is_visible)
+        
+        <!-- Lagos Neighborhood Quick Discovery Chips -->
+        <div class="mb-10 p-4 md:p-5 bg-white rounded-2xl border border-gray-100 shadow-xs">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3">
+                <span class="text-xs font-bold uppercase tracking-wider text-gray-500 flex items-center gap-2">
+                    <i class="fas fa-compass text-primary"></i> Explore Stays by Neighborhood
+                </span>
+                <span class="text-xs text-gray-400">Filter fully serviced short-lets</span>
+            </div>
+            <div class="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
+                <a href="{{ route('properties.index') }}" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition shadow-xs shrink-0 {{ !request('city') ? 'bg-primary text-white' : 'bg-gray-50 text-gray-700 hover:bg-gray-100 border border-gray-200' }}">
+                    <i class="fas fa-city text-xs"></i> All Lagos ({{ \App\Models\Property::active()->count() }})
+                </a>
+                <a href="{{ route('properties.index', ['city' => 'Lekki']) }}" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition shadow-xs shrink-0 {{ request('city') === 'Lekki' ? 'bg-primary text-white' : 'bg-gray-50 text-gray-700 hover:bg-gray-100 border border-gray-200' }}">
+                    <i class="fas fa-umbrella-beach text-accent text-xs"></i> Lekki Phase 1
+                </a>
+                <a href="{{ route('properties.index', ['city' => 'Victoria Island']) }}" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition shadow-xs shrink-0 {{ request('city') === 'Victoria Island' ? 'bg-primary text-white' : 'bg-gray-50 text-gray-700 hover:bg-gray-100 border border-gray-200' }}">
+                    <i class="fas fa-briefcase text-primary text-xs"></i> Victoria Island (VI)
+                </a>
+                <a href="{{ route('properties.index', ['city' => 'Ikoyi']) }}" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition shadow-xs shrink-0 {{ request('city') === 'Ikoyi' ? 'bg-primary text-white' : 'bg-gray-50 text-gray-700 hover:bg-gray-100 border border-gray-200' }}">
+                    <i class="fas fa-gem text-amber-500 text-xs"></i> Ikoyi Prime
+                </a>
+                <a href="{{ route('properties.index', ['city' => 'Ikeja']) }}" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition shadow-xs shrink-0 {{ request('city') === 'Ikeja' ? 'bg-primary text-white' : 'bg-gray-50 text-gray-700 hover:bg-gray-100 border border-gray-200' }}">
+                    <i class="fas fa-plane-departure text-emerald-600 text-xs"></i> Ikeja GRA / Airport
+                </a>
+            </div>
+        </div>
+
         <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-8 md:mb-12">
             <div>
                 <span class="text-xs font-bold uppercase tracking-wider text-accent mb-1 block">Curated Short-Let Collection</span>
@@ -575,99 +603,194 @@ $facilities = $sectionItems('amenities');
 </section>
 @endif
 
-@if(isset($sectionsArray['reviews']) && $sectionsArray['reviews']->is_visible)
-<section class="py-8 md:py-16 bg-gray-50">
-    <div class="container mx-auto px-4 md:px-6">
-        <div class="text-center mb-6 md:mb-12">
-            <h2 class="text-2xl md:text-3xl font-bold text-primary mb-2 md:mb-4">{{ $sectionsArray['reviews']->title ?? 'What Our Guests Say' }}</h2>
-            <p class="text-gray-600 text-sm md:text-base">{{ $sectionsArray['reviews']->subtitle ?? 'Reviews from our satisfied customers' }}</p>
-        </div>
-        
-        <div class="grid grid-cols-1 md:grid-cols-{{ count($testimonials) === 4 ? '2 lg:grid-cols-4' : '3' }} gap-8">
-            @foreach($testimonials as $testimonial)
-            <div class="bg-white p-6 rounded-lg">
-                <div class="flex items-center mb-4">
-                    <div class="w-12 h-12 bg-primary text-white rounded-full flex items-center justify-center font-bold">
-                        {{ substr($testimonial['name'], 0, 1) }}
-                    </div>
-                    <div class="ml-4">
-                        <h4 class="font-bold">{{ $testimonial['name'] }}</h4>
-                        <p class="text-sm text-gray-500">Guest</p>
-                    </div>
-                </div>
-                <i class="fas fa-quote-left text-accent mb-2"></i>
-                <p class="text-gray-600">{{ $testimonial['comment'] }}</p>
-            </div>
-            @endforeach
-
-            @if(!$testimonials)
-            @forelse($recentReviews as $review)
-            <div class="bg-gray-50 p-6 rounded-lg">
-                <div class="flex items-center mb-4">
-                    <div class="w-12 h-12 bg-primary text-white rounded-full flex items-center justify-center font-bold">
-                        {{ substr($review->user->name, 0, 1) }}
-                    </div>
-                    <div class="ml-4">
-                        <h4 class="font-bold">{{ $review->user->name }}</h4>
-                        <p class="text-sm text-gray-500">{{ $review->property->title }}</p>
-                    </div>
-                </div>
-                <div class="flex text-accent mb-2">
-                    @for($i = 1; $i <= 5; $i++)
-                    <i class="fas fa-star{{ $i <= $review->overall_rating ? '' : '-o' }}"></i>
-                    @endfor
-                </div>
-                <p class="text-gray-600">{{ Str::limit($review->comment, 150) }}</p>
-            </div>
-            @empty
-            <div class="col-span-3 text-center py-8">
-                <p class="text-gray-500">No reviews yet.</p>
-            </div>
-            @endforelse
-            @endif
-        </div>
-    </div>
-</section>
-@endif
-
-@if(isset($sectionsArray['cta']) && $sectionsArray['cta']->is_visible)
-<section class="py-16 bg-primary text-white">
-    <div class="container mx-auto px-6 text-center">
-        <h2 class="text-3xl font-bold mb-4">{{ $sectionsArray['cta']->title ?? 'Ready to Book Your Stay?' }}</h2>
-        <p class="text-xl mb-8">{{ $sectionsArray['cta']->subtitle ?? 'Stay. Relax. Connect.' }}</p>
-        <a href="{{ url($sectionsArray['cta']->button_link ?: route('properties.index')) }}" class="inline-block px-8 py-3 bg-accent text-white font-bold rounded-lg hover:bg-accent/90 transition">{{ $sectionsArray['cta']->button_text ?? 'Browse Apartments' }}</a>
-    </div>
-</section>
-@endif
-
 @if(isset($sectionsArray['amenities']) && $sectionsArray['amenities']->is_visible)
-<section class="py-16 bg-background">
-    <div class="container mx-auto px-6">
-        <div class="text-center mb-12">
-            <h2 class="text-3xl font-bold text-primary mb-4">{{ $sectionsArray['amenities']->title ?? 'Our Amenities' }}</h2>
-            <p class="text-gray-600">{{ $sectionsArray['amenities']->subtitle ?? 'Everything you need for a comfortable stay' }}</p>
+<section class="py-16 md:py-24 bg-white border-y border-gray-100">
+    <div class="container mx-auto px-4 md:px-6 max-w-7xl">
+        <div class="text-center mb-12 md:mb-16">
+            <span class="text-xs font-bold uppercase tracking-wider text-accent mb-1.5 block">Premium Living Standards</span>
+            <h2 class="text-2xl md:text-4xl font-extrabold text-primary tracking-tight">{{ $sectionsArray['amenities']->title ?? 'Our Amenities' }}</h2>
+            <p class="text-gray-600 text-sm md:text-base mt-1.5 max-w-2xl mx-auto">{{ $sectionsArray['amenities']->subtitle ?? 'Designed for business travellers, families, and discerning guests with everything you need for a comfortable stay.' }}</p>
         </div>
         
         @if($facilities)
-        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             @foreach($facilities as $facility)
-            <div class="bg-white p-6 rounded-lg text-center shadow">
-                <i class="fas {{ $facility['icon'] ?? 'fa-check' }} text-3xl text-accent mb-3"></i>
-                <p class="font-bold mb-2">{{ $facility['title'] }}</p>
-                <p class="text-gray-600 text-sm">{{ $facility['description'] }}</p>
+            <div class="bg-gray-50/70 hover:bg-white p-7 rounded-2xl border border-gray-100 hover:border-gray-200 shadow-xs hover:shadow-md transition">
+                <div class="w-12 h-12 rounded-xl bg-accent/10 text-accent flex items-center justify-center mb-4 text-xl">
+                    <i class="fas {{ $facility['icon'] ?? 'fa-check' }}"></i>
+                </div>
+                <h4 class="font-bold text-gray-900 text-lg mb-2">{{ $facility['title'] }}</h4>
+                <p class="text-gray-600 text-sm leading-relaxed">{{ $facility['description'] }}</p>
             </div>
             @endforeach
         </div>
         @else
         <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
             @foreach($amenities->flatten() as $amenity)
-            <div class="bg-white p-4 rounded-lg text-center shadow">
+            <div class="bg-gray-50/70 p-5 rounded-2xl text-center shadow-xs border border-gray-100">
                 <i class="fas {{ $amenity->icon }} text-3xl text-accent mb-2"></i>
-                <p class="font-medium">{{ $amenity->name }}</p>
+                <p class="font-bold text-sm text-gray-800">{{ $amenity->name }}</p>
             </div>
             @endforeach
         </div>
         @endif
+    </div>
+</section>
+@endif
+
+@if(isset($sectionsArray['reviews']) && $sectionsArray['reviews']->is_visible)
+<section class="py-16 md:py-24 bg-slate-50 border-b border-slate-200/60">
+    <div class="container mx-auto px-4 md:px-6 max-w-7xl">
+        <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-10 md:mb-14">
+            <div>
+                <span class="text-xs font-bold uppercase tracking-wider text-accent mb-1.5 block">Authentic Hospitality</span>
+                <h2 class="text-2xl md:text-4xl font-extrabold text-primary tracking-tight">{{ $sectionsArray['reviews']->title ?? 'Verified Guest Reviews' }}</h2>
+                <p class="text-gray-600 text-sm md:text-base mt-1.5">{{ $sectionsArray['reviews']->subtitle ?? 'Real stories from business executives, families, and expatriates who stayed at BookTala' }}</p>
+            </div>
+            <div class="flex items-center gap-3 bg-white px-4 py-2.5 rounded-2xl shadow-xs border border-gray-100 shrink-0">
+                <div class="flex text-amber-400 text-sm">
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i>
+                </div>
+                <span class="text-xs font-bold text-gray-900">4.9 / 5.0</span>
+                <span class="text-xs text-gray-400">· Over 120+ Stays</span>
+            </div>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            @forelse($recentReviews as $review)
+            <div class="bg-white rounded-2xl p-6 shadow-sm hover:shadow-md border border-gray-100 flex flex-col justify-between transition duration-200">
+                <div>
+                    <!-- Reviewer header -->
+                    <div class="flex items-center justify-between gap-3 mb-4">
+                        <div class="flex items-center gap-3">
+                            <div class="w-11 h-11 bg-primary/10 text-primary rounded-full flex items-center justify-center font-bold text-sm shrink-0 border border-primary/20">
+                                {{ strtoupper(substr($review->user->name ?? 'Guest', 0, 1)) }}
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-sm text-gray-900 leading-tight">{{ $review->user->name ?? 'Verified Guest' }}</h4>
+                                <span class="inline-flex items-center gap-1 text-[10px] text-emerald-600 font-semibold">
+                                    <i class="fas fa-check-circle text-[9px]"></i> Verified Stay
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Stars -->
+                    <div class="flex text-amber-400 text-xs mb-3">
+                        @for($i = 1; $i <= 5; $i++)
+                        <i class="fas fa-star{{ $i <= $review->overall_rating ? '' : '-o' }}"></i>
+                        @endfor
+                    </div>
+
+                    <!-- Quote -->
+                    <p class="text-gray-600 text-xs leading-relaxed italic line-clamp-4">
+                        "{{ $review->comment }}"
+                    </p>
+                </div>
+
+                @if($review->property)
+                <div class="mt-5 pt-4 border-t border-gray-100 flex items-center justify-between text-[11px] text-gray-500">
+                    <span class="truncate max-w-[170px] font-medium text-gray-700">
+                        <i class="fas fa-home text-gray-400 mr-1"></i> {{ $review->property->title }}
+                    </span>
+                    <span class="text-[10px] text-gray-400 shrink-0">{{ $review->created_at->diffForHumans(null, true) }}</span>
+                </div>
+                @endif
+            </div>
+            @empty
+            <div class="col-span-4 text-center py-8">
+                <p class="text-gray-500">No reviews yet.</p>
+            </div>
+            @endforelse
+        </div>
+    </div>
+</section>
+@endif
+
+<!-- Partner with BookTala / Property Owner Section -->
+<section class="py-16 md:py-24 bg-gradient-to-br from-slate-900 via-primary to-slate-900 text-white relative overflow-hidden" style="background-color: #0B2D5B; background: linear-gradient(135deg, #091E3A 0%, #0B2D5B 60%, #091E3A 100%);">
+    <div class="absolute -right-20 -bottom-20 w-80 h-80 rounded-full bg-accent/10 blur-3xl pointer-events-none"></div>
+    <div class="container mx-auto px-4 md:px-6 max-w-7xl relative z-10">
+        <div class="grid lg:grid-cols-12 gap-10 items-center">
+            <div class="lg:col-span-5 text-center lg:text-left">
+                <span class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-xs font-semibold text-amber-300 uppercase tracking-wider mb-4">
+                    <i class="fas fa-handshake"></i> Property Owner Partnership
+                </span>
+                <h2 class="text-3xl md:text-5xl font-black tracking-tight leading-tight">
+                    Own a Luxury Apartment in Lagos? <span class="block text-accent">Maximize Your Returns.</span>
+                </h2>
+                <p class="mt-4 text-sm md:text-base text-gray-300 leading-relaxed max-w-xl mx-auto lg:mx-0">
+                    Partner with BookTala to convert your vacant or residential property into a high-yielding serviced short-let. Enjoy 100% hands-off management, guest vetting, premium upkeep, and predictable bi-weekly rental yields.
+                </p>
+
+                <div class="mt-8 flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4">
+                    <a href="{{ url('/owner-partnership-terms') }}" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-3.5 bg-accent hover:bg-accent/90 text-white font-bold rounded-xl shadow-lg transition">
+                        <span>List Your Property</span>
+                        <i class="fas fa-arrow-right text-xs"></i>
+                    </a>
+                    <a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', config('brand.phone')) }}?text=Hello%20BookTala,%20I%20own%20a%20property%20and%20would%20like%20to%20partner%20with%20you." target="_blank" rel="noopener noreferrer" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl transition shadow-sm">
+                        <i class="fab fa-whatsapp text-lg"></i>
+                        <span>Speak with Acquisitions</span>
+                    </a>
+                </div>
+            </div>
+
+            <div class="lg:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div class="p-6 rounded-2xl bg-white/10 backdrop-blur-md border border-white/15 hover:bg-white/15 transition">
+                    <div class="w-12 h-12 rounded-xl bg-accent/20 text-accent flex items-center justify-center mb-4 text-xl">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-white mb-2">Up to 2x Rental Yields</h3>
+                    <p class="text-xs text-gray-300 leading-relaxed">Dynamic pricing and corporate bookings substantially outperform traditional annual leases.</p>
+                </div>
+
+                <div class="p-6 rounded-2xl bg-white/10 backdrop-blur-md border border-white/15 hover:bg-white/15 transition">
+                    <div class="w-12 h-12 rounded-xl bg-amber-400/20 text-amber-400 flex items-center justify-center mb-4 text-xl">
+                        <i class="fas fa-concierge-bell"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-white mb-2">100% Hands-Off Hospitality</h3>
+                    <p class="text-xs text-gray-300 leading-relaxed">We handle 24/7 guest check-in, hotel-grade housekeeping, linen laundering, and day-to-day operations.</p>
+                </div>
+
+                <div class="p-6 rounded-2xl bg-white/10 backdrop-blur-md border border-white/15 hover:bg-white/15 transition">
+                    <div class="w-12 h-12 rounded-xl bg-emerald-400/20 text-emerald-400 flex items-center justify-center mb-4 text-xl">
+                        <i class="fas fa-user-shield"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-white mb-2">Strict Guest Vetting</h3>
+                    <p class="text-xs text-gray-300 leading-relaxed">Government ID verification, caution deposits, and house rules compliance safeguard your asset.</p>
+                </div>
+
+                <div class="p-6 rounded-2xl bg-white/10 backdrop-blur-md border border-white/15 hover:bg-white/15 transition">
+                    <div class="w-12 h-12 rounded-xl bg-blue-400/20 text-blue-400 flex items-center justify-center mb-4 text-xl">
+                        <i class="fas fa-wallet"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-white mb-2">Guaranteed On-Time Payouts</h3>
+                    <p class="text-xs text-gray-300 leading-relaxed">Direct automated bank disbursements with detailed statements in your dedicated owner portal.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@if(isset($sectionsArray['cta']) && $sectionsArray['cta']->is_visible)
+<section class="py-16 md:py-20 bg-slate-900 text-white relative">
+    <div class="container mx-auto px-4 md:px-6 max-w-4xl text-center">
+        <span class="text-xs font-bold uppercase tracking-widest text-accent mb-2 block">✦ Your Next Stay in Lagos Awaits ✦</span>
+        <h2 class="text-3xl md:text-5xl font-black mb-4 tracking-tight">{{ $sectionsArray['cta']->title ?? 'Ready to Book Your Stay?' }}</h2>
+        <p class="text-base md:text-xl text-gray-300 mb-8 max-w-2xl mx-auto leading-relaxed">{{ $sectionsArray['cta']->subtitle ?? 'Stay. Relax. Connect. Experience the comfort of home with 5-star hotel service.' }}</p>
+        <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+            <a href="{{ url($sectionsArray['cta']->button_link ?: route('properties.index')) }}" class="w-full sm:w-auto px-8 py-4 bg-accent hover:bg-accent/90 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition">
+                {{ $sectionsArray['cta']->button_text ?? 'Browse Apartments' }}
+            </a>
+            <a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', config('brand.phone')) }}" target="_blank" rel="noopener noreferrer" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-4 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl transition shadow-sm">
+                <i class="fab fa-whatsapp text-lg"></i>
+                <span>WhatsApp Concierge</span>
+            </a>
+        </div>
     </div>
 </section>
 @endif
