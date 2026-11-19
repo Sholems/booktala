@@ -49,7 +49,7 @@ class RoomServiceController extends Controller
             'items.*.name' => 'required|string|max:100',
             'items.*.quantity' => 'required|integer|min:1|max:50',
             'items.*.price' => 'nullable|numeric|min:0',
-            'payment_method' => 'required|in:folio,paystack,cash',
+            'payment_method' => 'nullable|in:folio,paystack,cash',
             'special_instructions' => 'nullable|string|max:1000',
             'pickup_location' => 'nullable|string|max:255',
             'pickup_time' => 'nullable|date',
@@ -57,6 +57,8 @@ class RoomServiceController extends Controller
         ], [
             'reservation_id.in' => 'Concierge service is only available for a stay you are checked in to.',
         ]);
+
+        $paymentMethod = $validated['payment_method'] ?? 'folio';
 
         $catalog = RoomServiceOrder::PRESET_CATALOG[$validated['order_type']] ?? [];
         $catalogMap = collect($catalog)->keyBy('name');
@@ -66,12 +68,10 @@ class RoomServiceController extends Controller
             $name = $item['name'];
             $qty = (int) $item['quantity'];
 
-            // Match preset catalog price if available, otherwise take submitted or 0
+            // Match preset catalog price if available; custom requests default to 0 for staff confirmation
             $price = 0.0;
             if ($catalogItem = $catalogMap->get($name)) {
                 $price = (float) $catalogItem['price'];
-            } elseif (! empty($item['price'])) {
-                $price = (float) $item['price'];
             }
 
             $totalAmount += ($price * $qty);
@@ -83,7 +83,7 @@ class RoomServiceController extends Controller
             ];
         })->values()->all();
 
-        $paymentStatus = match ($validated['payment_method']) {
+        $paymentStatus = match ($paymentMethod) {
             'folio' => RoomServiceOrder::PAYMENT_STATUS_CHARGED_TO_FOLIO,
             'paystack' => RoomServiceOrder::PAYMENT_STATUS_UNPAID,
             default => RoomServiceOrder::PAYMENT_STATUS_UNPAID,
@@ -95,9 +95,9 @@ class RoomServiceController extends Controller
             'order_type' => $validated['order_type'],
             'items' => $items,
             'total_amount' => $totalAmount,
-            'payment_method' => $validated['payment_method'],
+            'payment_method' => $paymentMethod,
             'payment_status' => $paymentStatus,
-            'paystack_reference' => $validated['payment_method'] === 'paystack' ? 'PST-CON-'.uniqid() : null,
+            'paystack_reference' => $paymentMethod === 'paystack' ? 'PST-CON-'.uniqid() : null,
             'special_instructions' => $validated['special_instructions'] ?? null,
             'pickup_location' => $validated['pickup_location'] ?? null,
             'pickup_time' => $validated['pickup_time'] ?? null,

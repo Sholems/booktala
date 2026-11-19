@@ -197,13 +197,13 @@ class RoomServiceOrder extends Model
     public static function orderTypes(): array
     {
         return [
-            self::ORDER_FOOD => 'Food & Beverages',
-            self::ORDER_LAUNDRY => 'Laundry & Dry Cleaning',
-            self::ORDER_HOUSEKEEPING => 'Extra Housekeeping & Linen',
-            self::ORDER_AIRPORT_PICKUP => 'Airport Pickup & Chauffeur Transfer',
-            self::ORDER_AMENITY => 'Extra Amenities Request',
-            self::ORDER_MAINTENANCE => 'Maintenance Support',
-            self::ORDER_OTHER => 'Other Concierge Request',
+            self::ORDER_FOOD => 'Food & Dining',
+            self::ORDER_LAUNDRY => 'Laundry',
+            self::ORDER_HOUSEKEEPING => 'Housekeeping',
+            self::ORDER_AIRPORT_PICKUP => 'Airport Transfer',
+            self::ORDER_AMENITY => 'Amenity Request',
+            self::ORDER_MAINTENANCE => 'Maintenance',
+            self::ORDER_OTHER => 'Other',
         ];
     }
 
