@@ -118,11 +118,14 @@
                 </div>
             </div>
 
-            <div class="text-center">
-                <a href="{{ route('customer.reservations.show', $reservation) }}" class="inline-block bg-primary text-white px-6 py-3 rounded-lg hover:bg-primary/90">
+            <div class="text-center flex flex-wrap items-center justify-center gap-3 print:hidden">
+                <a href="{{ route('customer.reservations.show', $reservation) }}" class="inline-block bg-primary text-white px-6 py-3 rounded-lg hover:bg-primary/90 font-semibold text-sm transition">
                     View My Reservation
                 </a>
-                <a href="{{ route('home') }}" class="inline-block ml-4 text-primary hover:underline">
+                <button type="button" onclick="window.print()" class="inline-block bg-white border border-gray-300 text-gray-700 px-5 py-3 rounded-lg hover:bg-gray-50 font-semibold text-sm transition">
+                    <i class="fas fa-print mr-1.5"></i> Print Booking Voucher
+                </button>
+                <a href="{{ route('home') }}" class="inline-block text-primary hover:underline text-sm font-semibold">
                     Back to Home
                 </a>
             </div>

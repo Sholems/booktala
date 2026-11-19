@@ -29,6 +29,7 @@ Route::get('/ota/feed/{token}.ics', [OtaFeedController::class, 'export'])->name(
 Route::prefix('front-desk')->middleware(['auth', 'role:super_admin|admin|staff', 'can:reservation.create'])->group(function () {
     Route::get('/reservations/create', [FrontDeskReservationController::class, 'create'])->name('frontdesk.reservations.create');
     Route::get('/reservations/{reservation}/receipt', [FrontDeskReservationController::class, 'receipt'])->name('frontdesk.reservations.receipt');
+    Route::get('/reservations/{reservation}/receipt/pdf', [FrontDeskReservationController::class, 'receiptPdf'])->name('frontdesk.reservations.receipt.pdf');
     Route::get('/guests', [FrontDeskReservationController::class, 'guests'])->name('frontdesk.guests.index');
     Route::post('/reservations/quote', [FrontDeskReservationController::class, 'quote'])->name('frontdesk.reservations.quote');
     Route::post('/reservations', [FrontDeskReservationController::class, 'store'])->name('frontdesk.reservations.store');

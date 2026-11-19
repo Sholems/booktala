@@ -98,17 +98,25 @@ class InvoiceController extends Controller
 
     public function generatePdf(Invoice $invoice)
     {
-        $invoice->load(['reservation.property', 'user', 'items']);
+        $invoice->load(['reservation.property', 'reservation.unit.site', 'user', 'items']);
 
         $siteName = Setting::get('site_name', config('brand.name'));
         $siteEmail = Setting::get('email', config('brand.email'));
         $sitePhone = Setting::get('phone', config('brand.phone'));
+        $siteAddress = Setting::get('address', config('brand.address'));
+        $companyName = Setting::get('company_name', 'G-Briel Property Ltd');
+
+        $logoPath = public_path('images/booktala-logo.png');
+        $logoBase64 = file_exists($logoPath) ? 'data:image/png;base64,'.base64_encode(file_get_contents($logoPath)) : null;
 
         $pdf = Pdf::loadView('admin.invoices.pdf', [
             'invoice' => $invoice,
             'siteName' => $siteName,
             'siteEmail' => $siteEmail,
             'sitePhone' => $sitePhone,
+            'siteAddress' => $siteAddress,
+            'companyName' => $companyName,
+            'logoBase64' => $logoBase64,
         ]);
 
         return $pdf->download('invoice-'.$invoice->invoice_number.'.pdf');
@@ -120,16 +128,25 @@ class InvoiceController extends Controller
             'email' => 'required|email',
         ]);
 
-        $invoice->load(['reservation.property', 'user', 'items']);
+        $invoice->load(['reservation.property', 'reservation.unit.site', 'user', 'items']);
 
         $siteName = Setting::get('site_name', config('brand.name'));
         $siteEmail = Setting::get('email', config('brand.email'));
+        $sitePhone = Setting::get('phone', config('brand.phone'));
+        $siteAddress = Setting::get('address', config('brand.address'));
+        $companyName = Setting::get('company_name', 'G-Briel Property Ltd');
+
+        $logoPath = public_path('images/booktala-logo.png');
+        $logoBase64 = file_exists($logoPath) ? 'data:image/png;base64,'.base64_encode(file_get_contents($logoPath)) : null;
 
         $pdf = Pdf::loadView('admin.invoices.pdf', [
             'invoice' => $invoice,
             'siteName' => $siteName,
             'siteEmail' => $siteEmail,
-            'sitePhone' => Setting::get('phone', config('brand.phone')),
+            'sitePhone' => $sitePhone,
+            'siteAddress' => $siteAddress,
+            'companyName' => $companyName,
+            'logoBase64' => $logoBase64,
         ]);
 
         $content = view('admin.invoices.email-template', [

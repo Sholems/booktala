@@ -48,7 +48,7 @@ $logoMarkUrl = asset('images/booktala-mark.png');
     <div class="flex h-screen">
         <div class="sidebar-overlay" onclick="toggleSidebar()"></div>
         
-        <aside class="sidebar w-1/2 lg:w-1/5 bg-[#0f172a] text-slate-300 flex flex-col h-full overflow-hidden lg:relative border-r border-slate-800 shadow-xl fixed lg:static inset-y-0 left-0 z-50">
+        <aside class="sidebar print:hidden w-1/2 lg:w-1/5 bg-[#0f172a] text-slate-300 flex flex-col h-full overflow-hidden lg:relative border-r border-slate-800 shadow-xl fixed lg:static inset-y-0 left-0 z-50">
             <!-- Branding Header -->
             <div class="p-5 lg:p-7 shrink-0 bg-[#1e293b]/50 border-b border-slate-800/50">
                 <a href="{{ route('admin.dashboard') }}" class="flex items-center gap-3.5 group" aria-label="{{ $siteName }} Admin">
@@ -346,7 +346,7 @@ $logoMarkUrl = asset('images/booktala-mark.png');
         </aside>
         
         <div class="flex-1 flex flex-col overflow-hidden">
-            <header class="bg-white shadow px-4 lg:px-6 py-3 lg:py-4 flex justify-between items-center">
+            <header class="bg-white shadow px-4 lg:px-6 py-3 lg:py-4 flex justify-between items-center print:hidden">
                 <div class="flex items-center gap-3">
                     <button class="lg:hidden text-primary" onclick="toggleSidebar()" aria-label="Toggle Navigation">
                         <i class="fas fa-bars text-xl"></i>
