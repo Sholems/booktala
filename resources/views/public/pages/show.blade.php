@@ -75,7 +75,7 @@
             </aside>
 
             <!-- Main Content Area -->
-            <main class="flex-1 min-w-0 w-full order-1 lg:order-2">
+            <div class="flex-1 min-w-0 w-full order-1 lg:order-2">
                 <article class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 md:p-10 leading-relaxed text-gray-800 policy-content w-full">
                     {!! $page->content !!}
                 </article>
@@ -95,7 +95,7 @@
                         </a>
                     </div>
                 </div>
-            </main>
+            </div>
         </div>
     </div>
 </section>
@@ -107,6 +107,9 @@
         overflow-wrap: break-word;
         line-height: 1.75;
         font-size: 0.975rem;
+        width: 100%;
+        max-width: 100%;
+        box-sizing: border-box;
     }
     .policy-content h2 {
         font-size: 1.45rem;

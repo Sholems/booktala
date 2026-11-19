@@ -196,6 +196,17 @@ $socialLinks = array_filter([
         </div>
     </footer>
 
+    <!-- Floating WhatsApp Concierge Desk -->
+    <a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', \App\Models\Setting::get('phone', config('brand.phone'))) }}?text=Hello%20BookTala%20Concierge,%20I%20have%20an%20inquiry%20about%20a%20stay."
+       target="_blank" rel="noopener noreferrer"
+       class="fixed bottom-6 right-6 z-40 bg-emerald-600 hover:bg-emerald-700 text-white rounded-full p-3.5 shadow-xl hover:shadow-2xl flex items-center gap-2 group transition-all duration-300 hover:scale-105"
+       aria-label="Chat on WhatsApp">
+        <i class="fab fa-whatsapp text-2xl"></i>
+        <span class="max-w-0 overflow-hidden whitespace-nowrap group-hover:max-w-xs transition-all duration-300 ease-in-out font-bold text-xs pr-1">
+            24/7 Concierge
+        </span>
+    </a>
+
     <script>
         function toggleMobileMenu() {
             document.getElementById('mobile-menu').classList.toggle('open');
