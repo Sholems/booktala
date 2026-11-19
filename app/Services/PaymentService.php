@@ -6,6 +6,7 @@ use App\Models\DiscountCode;
 use App\Models\Payment;
 use App\Models\PaymentEvent;
 use App\Models\Reservation;
+use App\Services\Finance\LedgerPostingService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -218,6 +219,8 @@ class PaymentService
                 ]);
             }
 
+            app(LedgerPostingService::class)->postCollection($payment);
+
             return $reservation;
         });
     }
@@ -328,6 +331,8 @@ class PaymentService
         if ($reservation->booking_status === 'pending' && $status !== 'pending') {
             $this->reservationLifecycle->confirmAfterPayment($reservation);
         }
+
+        app(LedgerPostingService::class)->postCollection($payment);
 
         return $reservation->fresh();
     }

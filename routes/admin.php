@@ -12,6 +12,7 @@ use App\Http\Controllers\Admin\HotelAmenityController;
 use App\Http\Controllers\Admin\IcalController;
 use App\Http\Controllers\Admin\InvoiceController;
 use App\Http\Controllers\Admin\MaintenanceController;
+use App\Http\Controllers\Admin\ManagementAgreementController;
 use App\Http\Controllers\Admin\MessageController;
 use App\Http\Controllers\Admin\OwnerController;
 use App\Http\Controllers\Admin\OwnerStatementController;
@@ -108,6 +109,15 @@ Route::prefix('admin')->middleware(['auth', 'role:super_admin|admin'])->group(fu
         Route::post('/expenses', [ExpenseController::class, 'store'])->name('admin.expenses.store');
         Route::get('/expenses/{expense}/receipt', [ExpenseController::class, 'receipt'])->name('admin.expenses.receipt');
         Route::delete('/expenses/{expense}', [ExpenseController::class, 'destroy'])->name('admin.expenses.destroy');
+
+        Route::get('/agreements', [ManagementAgreementController::class, 'index'])->name('admin.agreements.index');
+        Route::get('/agreements/audit', [ManagementAgreementController::class, 'audit'])->name('admin.agreements.audit');
+        Route::get('/agreements/create', [ManagementAgreementController::class, 'create'])->name('admin.agreements.create');
+        Route::post('/agreements', [ManagementAgreementController::class, 'store'])->name('admin.agreements.store');
+        Route::get('/agreements/{agreement}', [ManagementAgreementController::class, 'show'])->name('admin.agreements.show');
+        Route::patch('/agreements/{agreement}/review', [ManagementAgreementController::class, 'review'])->name('admin.agreements.review');
+        Route::patch('/agreements/{agreement}/retire', [ManagementAgreementController::class, 'retire'])->name('admin.agreements.retire');
+        Route::delete('/agreements/{agreement}', [ManagementAgreementController::class, 'destroy'])->name('admin.agreements.destroy');
 
         Route::get('/statements', [OwnerStatementController::class, 'index'])->name('admin.statements.index');
         Route::post('/statements/generate', [OwnerStatementController::class, 'generate'])->name('admin.statements.generate');

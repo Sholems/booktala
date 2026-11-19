@@ -58,6 +58,108 @@ class AgreementResolver
         }, 3);
     }
 
+    public function retire(ManagementAgreement $agreement): ManagementAgreement
+    {
+        return DB::transaction(function () use ($agreement) {
+            $locked = ManagementAgreement::query()->lockForUpdate()->findOrFail($agreement->id);
+
+            if ($locked->status !== ManagementAgreement::STATUS_REVIEWED) {
+                throw new \DomainException('Only reviewed agreements can be retired.');
+            }
+
+            $locked->update([
+                'status' => ManagementAgreement::STATUS_RETIRED,
+            ]);
+
+            return $locked->refresh();
+        }, 3);
+    }
+
+    public function coverageAudit(?int $siteId = null, ?User $user = null): array
+    {
+        $unitsQuery = Unit::query()->with(['owner', 'site']);
+
+        if ($user !== null) {
+            $unitsQuery->visibleTo($user);
+        }
+
+        if ($siteId !== null) {
+            $unitsQuery->where('site_id', $siteId);
+        }
+
+        // Only externally managed units require management agreements (R1).
+        $externalUnits = $unitsQuery->whereHas('owner', fn ($q) => $q->where('is_company_owned', false))->get();
+
+        $uncoveredUnits = [];
+        $coveredCount = 0;
+
+        foreach ($externalUnits as $unit) {
+            $agreements = ManagementAgreement::query()
+                ->where('unit_id', $unit->id)
+                ->where('status', ManagementAgreement::STATUS_REVIEWED)
+                ->orderBy('effective_from')
+                ->get();
+
+            $uncoveredDates = [];
+            $reasons = [];
+
+            if ($agreements->isEmpty()) {
+                $reasons[] = 'No reviewed management agreement exists for this unit.';
+                $uncoveredDates[] = 'All dates';
+            } else {
+                // Check for reservations lacking coverage on check-in date
+                $reservations = $unit->reservations()
+                    ->whereIn('booking_status', ['confirmed', 'checked_in', 'checked_out'])
+                    ->get();
+
+                foreach ($reservations as $reservation) {
+                    $checkInDate = $reservation->check_in->toDateString();
+                    $covered = $agreements->contains(function ($agreement) use ($checkInDate) {
+                        return $agreement->effective_from->toDateString() <= $checkInDate
+                            && ($agreement->effective_to === null || $agreement->effective_to->toDateString() >= $checkInDate);
+                    });
+
+                    if (! $covered) {
+                        $uncoveredDates[] = $checkInDate." (Booking {$reservation->booking_ref})";
+                    }
+                }
+
+                // Check if current date is covered
+                $today = today()->toDateString();
+                $todayCovered = $agreements->contains(function ($agreement) use ($today) {
+                    return $agreement->effective_from->toDateString() <= $today
+                        && ($agreement->effective_to === null || $agreement->effective_to->toDateString() >= $today);
+                });
+
+                if (! $todayCovered) {
+                    $reasons[] = 'No reviewed agreement covers current operations today ('.$today.').';
+                    if (! in_array($today, $uncoveredDates, true)) {
+                        $uncoveredDates[] = $today;
+                    }
+                }
+            }
+
+            if (! empty($uncoveredDates) || ! empty($reasons)) {
+                $uncoveredUnits[] = [
+                    'unit' => $unit,
+                    'owner' => $unit->owner,
+                    'site' => $unit->site,
+                    'reasons' => $reasons,
+                    'uncovered_dates' => array_values(array_unique($uncoveredDates)),
+                ];
+            } else {
+                $coveredCount++;
+            }
+        }
+
+        return [
+            'uncovered_units' => $uncoveredUnits,
+            'covered_units_count' => $coveredCount,
+            'uncovered_units_count' => count($uncoveredUnits),
+            'total_external_units' => $externalUnits->count(),
+        ];
+    }
+
     public function resolve(Unit|int $unit, CarbonInterface|string $economicDate): ManagementAgreement
     {
         $unit = $unit instanceof Unit ? $unit : Unit::query()->findOrFail($unit);

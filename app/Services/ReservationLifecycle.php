@@ -8,6 +8,7 @@ use App\Models\Reservation;
 use App\Models\Room;
 use App\Models\Unit;
 use App\Models\User;
+use App\Services\Finance\LedgerPostingService;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -136,6 +137,10 @@ class ReservationLifecycle
             if ($locked->room_id) {
                 $room = Room::whereKey($locked->room_id)->lockForUpdate()->first();
                 $room?->update(['status' => 'cleaning']);
+            }
+
+            if ($locked->payment_status === 'paid') {
+                app(LedgerPostingService::class)->postStayCompletion($locked, $actor->id);
             }
 
             return $changes;

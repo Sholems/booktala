@@ -7,8 +7,10 @@ use App\Http\Requests\CancelReservationRequest;
 use App\Http\Requests\UpdateCautionRefundRequest;
 use App\Http\Requests\UpdateReservationRefundRequest;
 use App\Models\Reservation;
+use App\Services\Finance\LedgerPostingService;
 use App\Services\ReservationLifecycle;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class ReservationController extends Controller
 {
@@ -130,10 +132,18 @@ class ReservationController extends Controller
             return back()->with('error', 'This caution fee is not waiting for a refund decision.');
         }
 
-        $reservation->update([
-            'caution_fee_status' => $validated['caution_fee_status'],
-            'caution_refunded_at' => $validated['caution_fee_status'] === 'refunded' ? now() : null,
-        ]);
+        DB::transaction(function () use ($reservation, $validated) {
+            $reservation->update([
+                'caution_fee_status' => $validated['caution_fee_status'],
+                'caution_refunded_at' => $validated['caution_fee_status'] === 'refunded' ? now() : null,
+            ]);
+
+            if ($validated['caution_fee_status'] === 'refunded') {
+                app(LedgerPostingService::class)->postCautionRefund($reservation, null, auth()->id());
+            } elseif ($validated['caution_fee_status'] === 'forfeited') {
+                app(LedgerPostingService::class)->postCautionForfeiture($reservation, null, auth()->id());
+            }
+        });
 
         return back()->with(
             'success',

@@ -159,6 +159,10 @@ $logo = \App\Models\Setting::get('logo');
                             <i class="fas fa-receipt w-5 text-sm"></i>
                             <span class="text-sm">Expenses</span>
                         </a>
+                        <a href="{{ route('admin.agreements.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group {{ request()->routeIs('admin.agreements.*') ? 'bg-accent/10 text-accent font-semibold' : 'hover:bg-slate-800/50 hover:text-white' }}">
+                            <i class="fas fa-file-contract w-5 text-sm"></i>
+                            <span class="text-sm">Agreements</span>
+                        </a>
                         <a href="{{ route('admin.statements.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group {{ request()->routeIs('admin.statements.*') ? 'bg-accent/10 text-accent font-semibold' : 'hover:bg-slate-800/50 hover:text-white' }}">
                             <i class="fas fa-file-invoice-dollar w-5 text-sm"></i>
                             <span class="text-sm">Owner Statements</span>

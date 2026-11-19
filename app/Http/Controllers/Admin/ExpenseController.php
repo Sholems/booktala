@@ -6,8 +6,11 @@ use App\Http\Controllers\Controller;
 use App\Models\Expense;
 use App\Models\MaintenanceReport;
 use App\Models\Property;
+use App\Services\Finance\LedgerPostingService;
+use App\Support\PropertyAccess;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 
@@ -63,7 +66,12 @@ class ExpenseController extends Controller
         }
         unset($data['receipt']);
 
-        Expense::create($data + ['recorded_by' => $request->user()->id]);
+        PropertyAccess::authorize($request->user(), $data['property_id']);
+
+        DB::transaction(function () use ($data, $request) {
+            $expense = Expense::create($data + ['recorded_by' => $request->user()->id]);
+            app(LedgerPostingService::class)->postExpense($expense);
+        });
 
         return back()->with('success', 'Expense recorded');
     }
