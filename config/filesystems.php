@@ -33,7 +33,11 @@ return [
         'local' => [
             'driver' => 'local',
             'root' => storage_path('app/private'),
-            'serve' => true,
+            // Off: Laravel's signed "storage/{path}" route would replace the app's
+            // public /storage/{path} route (StorageController, used where the
+            // storage symlink is unavailable). Private files are streamed by
+            // their own authorised controllers instead.
+            'serve' => false,
             'throw' => false,
             'report' => false,
         ],

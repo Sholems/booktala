@@ -1,8 +1,9 @@
 @extends('layouts.app')
 
 @section('title', $property->meta_title ?: $property->title . ' - BookTala')
-@section('meta_description', $property->meta_description ?: $property->short_description)
-@section('meta_keywords', $property->meta_keywords)
+{{-- Always pass strings: a null value makes Blade open a block section that never closes. --}}
+@section('meta_description', (string) ($property->meta_description ?: $property->short_description))
+@section('meta_keywords', (string) $property->meta_keywords)
 
 @push('styles')
 <style>

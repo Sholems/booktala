@@ -8,7 +8,10 @@
  *
  * Bump VERSION whenever this file or the precached files change.
  */
-const VERSION = 'bt-2026-11-19-1';
+const VERSION = 'bt-2026-11-19-2';
+// This release replaces a worker that could leave pages unstyled, so it takes
+// over without waiting for the "new version" prompt. Set back to false next release.
+const ACTIVATE_IMMEDIATELY = true;
 const PRECACHE = `${VERSION}-precache`;
 const PAGES = `${VERSION}-pages`;
 const ASSETS = `${VERSION}-assets`;
@@ -60,8 +63,9 @@ self.addEventListener('install', (event) => {
         }));
     })());
     // The page decides when to switch to a new version (see SKIP_WAITING below),
-    // except on the very first install, where there is nothing to replace.
-    if (!self.registration.active) self.skipWaiting();
+    // except on the very first install, where there is nothing to replace, and
+    // for releases that must replace a faulty worker straight away.
+    if (!self.registration.active || ACTIVATE_IMMEDIATELY) self.skipWaiting();
 });
 
 self.addEventListener('activate', (event) => {
@@ -93,7 +97,10 @@ self.addEventListener('fetch', (event) => {
 
     if (reqUrl.origin === BASE.origin) {
         if (isPrivate(reqUrl)) return; // API calls, uploads etc.: straight to the network.
-        if (request.destination === 'image') {
+        if (relativePath(reqUrl).startsWith('build/')) {
+            // Vite output is content-hashed and never changes: cache first.
+            event.respondWith(cacheFirst(request, ASSETS));
+        } else if (request.destination === 'image') {
             event.respondWith(staleWhileRevalidate(request, IMAGES));
         } else if (['style', 'script', 'font', 'manifest'].includes(request.destination)) {
             event.respondWith(staleWhileRevalidate(request, ASSETS));
@@ -160,16 +167,38 @@ async function offlineFallback() {
     });
 }
 
+// Fetch from the network; if the original request fails (seen with stylesheet
+// requests on some servers), retry once as a plain same-origin GET.
+async function fetchWithRetry(request) {
+    try {
+        return await fetch(request);
+    } catch (e) {
+        const url = new URL(request.url);
+        if (url.origin !== BASE.origin) throw e;
+        return fetch(url.href, { credentials: 'same-origin' });
+    }
+}
+
 async function staleWhileRevalidate(request, cacheName) {
     const cache = await caches.open(cacheName);
     const cached = await cache.match(request);
-    const network = fetch(request).then((response) => {
+    const network = fetchWithRetry(request).then((response) => {
         if (response && (response.ok || response.type === 'opaque')) {
             cache.put(request, response.clone()).then(() => trim(cacheName));
         }
         return response;
-    }).catch(() => cached);
-    return cached || network;
+    });
+
+    if (cached) {
+        network.catch(() => {}); // background refresh only
+        return cached;
+    }
+    // Nothing cached: the page needs this file, so never answer with nothing.
+    try {
+        return await network;
+    } catch (e) {
+        return Response.error();
+    }
 }
 
 async function cacheFirst(request, cacheName) {
@@ -177,7 +206,7 @@ async function cacheFirst(request, cacheName) {
     const cached = await cache.match(request);
     if (cached) return cached;
     try {
-        const response = await fetch(request);
+        const response = await fetchWithRetry(request);
         if (response && (response.ok || response.type === 'opaque')) {
             await cache.put(request, response.clone());
             trim(cacheName);

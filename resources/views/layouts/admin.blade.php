@@ -139,7 +139,7 @@ $logoMarkUrl = asset('images/booktala-mark.png');
                             <span class="text-sm">Amenities</span>
                         </a>
                         @endif
-                        @canany(['settings.manage', 'property.edit'])
+                        @canany(['channels.manage'])
                         <a href="{{ route('admin.channel-manager.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group {{ request()->routeIs('admin.channel-manager.*') ? 'bg-accent/10 text-accent font-semibold' : 'hover:bg-slate-800/50 hover:text-white' }}">
                             <i class="fas fa-sync w-5 text-sm"></i>
                             <span class="text-sm">Channels (OTA Sync)</span>

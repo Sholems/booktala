@@ -19,7 +19,8 @@
         "pragmarx/google2fa-laravel": "^3.0",
         "spatie/laravel-medialibrary": "^11.21",
         "spatie/laravel-permission": "^7.2",
-        "spatie/laravel-sluggable": "^3.8"
+        "spatie/laravel-sluggable": "^3.8",
+        "symfony/html-sanitizer": "^7.4"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",

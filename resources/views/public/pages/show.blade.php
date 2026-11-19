@@ -77,7 +77,7 @@
             <!-- Main Content Area -->
             <div class="flex-1 min-w-0 w-full order-1 lg:order-2">
                 <article class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 md:p-10 leading-relaxed text-gray-800 policy-content w-full">
-                    {!! $page->content !!}
+                    {!! \App\Support\SafeHtml::clean($page->content) !!}
                 </article>
 
                 <!-- Bottom Questions Card -->

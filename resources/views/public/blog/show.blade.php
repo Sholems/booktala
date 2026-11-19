@@ -1,7 +1,8 @@
 @extends('layouts.app')
 
 @section('title', $blog->meta_title ?: $blog->title . ' - BookTala Blog')
-@section('meta_description', $blog->meta_description)
+{{-- Always pass a string: a null value makes Blade open a block section that never closes. --}}
+@section('meta_description', (string) ($blog->meta_description ?: $blog->excerpt))
 
 @section('content')
 <section class="py-12 bg-primary text-white">
@@ -36,7 +37,7 @@
             </div>
             
             <div class="prose max-w-none">
-                {!! $blog->content !!}
+                {!! \App\Support\SafeHtml::clean($blog->content) !!}
             </div>
             
             <div class="mt-12 pt-8 border-t">

@@ -45,7 +45,7 @@ $isHotelMode = \App\Models\SystemSetting::get('hotel_mode', false);
                     <img src="{{ url('media/' . ltrim(\App\Models\Setting::get('logo'), '/')) }}" alt="Logo" class="h-16 w-auto object-contain bg-gray-100 p-2 rounded">
                 </div>
                 @endif
-                <input type="file" name="logo" accept="image/*" class="w-full border rounded px-3 py-2">
+                <input type="file" name="logo" accept="image/png,image/jpeg,image/webp" class="w-full border rounded px-3 py-2">
                 <p class="text-xs text-gray-500 mt-1">Recommended: 200x60px, PNG with transparency</p>
             </div>
             <div class="mb-4">
@@ -55,7 +55,7 @@ $isHotelMode = \App\Models\SystemSetting::get('hotel_mode', false);
                     <img src="{{ url('media/' . ltrim(\App\Models\Setting::get('favicon'), '/')) }}" alt="Favicon" class="h-8 w-8 object-contain">
                 </div>
                 @endif
-                <input type="file" name="favicon" accept="image/*" class="w-full border rounded px-3 py-2">
+                <input type="file" name="favicon" accept=".ico,image/png" class="w-full border rounded px-3 py-2">
                 <p class="text-xs text-gray-500 mt-1">Recommended: 32x32px or 64x64px, ICO/PNG</p>
             </div>
             <button type="submit" class="bg-primary text-white px-4 py-2 rounded">Save Branding</button>
@@ -120,7 +120,7 @@ $isHotelMode = \App\Models\SystemSetting::get('hotel_mode', false);
             </div>
             <div class="mb-4">
                 <label class="block text-sm font-medium mb-2">Paystack Secret Key</label>
-                <input type="password" name="paystack_secret_key" value="{{ \App\Models\Setting::get('paystack_secret_key') }}" class="w-full border rounded px-3 py-2" placeholder="sk_live_...">
+                <input type="password" name="paystack_secret_key" value="" autocomplete="new-password" class="w-full border rounded px-3 py-2" placeholder="{{ $savedSecrets['paystack_secret_key'] ? 'Saved. Leave blank to keep it' : 'sk_live_...' }}">
             </div>
             <div class="mb-4">
                 <label class="block text-sm font-medium mb-2">Paystack Merchant Email</label>
@@ -163,7 +163,7 @@ $isHotelMode = \App\Models\SystemSetting::get('hotel_mode', false);
                 </div>
                 <div class="mb-4">
                     <label class="block text-sm font-medium mb-2">Mail Password</label>
-                    <input type="password" name="mail_password" value="{{ \App\Models\Setting::get('mail_password') }}" class="w-full border rounded px-3 py-2">
+                    <input type="password" name="mail_password" value="" autocomplete="new-password" class="w-full border rounded px-3 py-2" placeholder="{{ $savedSecrets['mail_password'] ? 'Saved. Leave blank to keep it' : '' }}">
                 </div>
                 <div class="mb-4">
                     <label class="block text-sm font-medium mb-2">Mail Encryption</label>
@@ -193,7 +193,7 @@ $isHotelMode = \App\Models\SystemSetting::get('hotel_mode', false);
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div class="mb-4">
                     <label class="block text-sm font-medium mb-2">Termii API Key</label>
-                    <input type="text" name="termii_api_key" value="{{ \App\Models\Setting::get('termii_api_key') }}" class="w-full border rounded px-3 py-2" placeholder="Your Termii API key">
+                    <input type="password" name="termii_api_key" value="" autocomplete="new-password" class="w-full border rounded px-3 py-2" placeholder="{{ $savedSecrets['termii_api_key'] ? 'Saved. Leave blank to keep it' : 'Your Termii API key' }}">
                 </div>
                 <div class="mb-4">
                     <label class="block text-sm font-medium mb-2">Sender ID</label>

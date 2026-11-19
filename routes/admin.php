@@ -89,6 +89,7 @@ Route::prefix('admin')->middleware(['auth', 'role:super_admin|admin'])->group(fu
 
     Route::get('/customers', [CustomerController::class, 'index'])->name('admin.customers.index')->middleware('can:customer.view');
     Route::get('/customers/{user}', [CustomerController::class, 'show'])->name('admin.customers.show')->middleware('can:customer.view');
+    Route::get('/customers/{user}/id-document', [CustomerController::class, 'idDocument'])->name('admin.customers.id-document')->middleware('can:customer.manage');
     Route::patch('/customers/{user}/verify', [CustomerController::class, 'verify'])->name('admin.customers.verify')->middleware('can:customer.manage');
     Route::patch('/customers/{user}/status', [CustomerController::class, 'updateStatus'])->name('admin.customers.status')->middleware('can:customer.manage');
 
@@ -224,7 +225,7 @@ Route::prefix('admin')->middleware(['auth', 'role:super_admin|admin'])->group(fu
     Route::get('/reports/export', [ReportController::class, 'export'])->name('admin.reports.export')->middleware('can:report.export');
 
     // Channel Manager & OTA Synchronization
-    Route::middleware('can:settings.manage')->group(function () {
+    Route::middleware('can:channels.manage')->group(function () {
         Route::get('/channel-manager', [ChannelManagerController::class, 'index'])->name('admin.channel-manager.index');
         Route::post('/channel-manager', [ChannelManagerController::class, 'store'])->name('admin.channel-manager.store');
         Route::post('/channel-manager/mapping', [ChannelManagerController::class, 'storeMapping'])->name('admin.channel-manager.mapping.store');

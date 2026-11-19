@@ -3,9 +3,9 @@
 namespace App\Http\Controllers\Customer;
 
 use App\Http\Controllers\Controller;
+use App\Support\IdDocuments;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Storage;
 
 class ProfileController extends Controller
 {
@@ -44,11 +44,9 @@ class ProfileController extends Controller
 
         $user = auth()->user();
 
-        if ($user->id_document) {
-            Storage::disk('public')->delete($user->id_document);
-        }
-
-        $path = $request->file('id_document')->store('id-documents', 'public');
+        // ID documents are personal data: private storage only, never a public URL.
+        IdDocuments::delete($user->id_document);
+        $path = IdDocuments::store($request->file('id_document'));
 
         $user->update([
             'id_document' => $path,

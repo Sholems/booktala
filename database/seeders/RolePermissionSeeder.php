@@ -34,7 +34,8 @@ class RolePermissionSeeder extends Seeder
         'maintenance.manage',
         'review.manage',
         'page.manage',
-        'settings.manage',
+        'settings.manage',  // site settings, payment and mail credentials: super admin only by default
+        'channels.manage',  // OTA channel manager
         'report.view',
         'report.export',
         'finance.manage',  // expenses and owner statements
@@ -49,7 +50,7 @@ class RolePermissionSeeder extends Seeder
             'reservation.refund', 'reservation.checkin-unpaid',
             'customer.view', 'customer.manage',
             'staff.manage', 'owner.manage', 'site.manage', 'task.manage', 'maintenance.manage',
-            'review.manage', 'page.manage', 'settings.manage', 'report.view', 'report.export',
+            'review.manage', 'page.manage', 'channels.manage', 'report.view', 'report.export',
             'finance.manage',
         ],
         'staff' => [

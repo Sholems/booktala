@@ -6,16 +6,36 @@ use App\Http\Controllers\Controller;
 use App\Models\Setting;
 use App\Models\SystemSetting;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class SettingsController extends Controller
 {
+    /**
+     * Credentials are never sent back to the browser. The form shows whether
+     * one is saved; leaving the field blank keeps it.
+     */
+    public const SECRET_FIELDS = ['paystack_secret_key', 'mail_password', 'termii_api_key'];
+
     public function index()
     {
-        return view('admin.settings.index');
+        $savedSecrets = collect(self::SECRET_FIELDS)
+            ->mapWithKeys(fn ($field) => [$field => filled(Setting::get($field))]);
+
+        return view('admin.settings.index', compact('savedSecrets'));
     }
 
     public function update(Request $request)
     {
+        $request->validate([
+            'vat_rate' => 'nullable|numeric|min:0|max:100',
+            'email' => 'nullable|email|max:255',
+            'mail_from_address' => 'nullable|email|max:255',
+            'mail_port' => 'nullable|integer|min:1|max:65535',
+            // No SVG: it can carry scripts. Favicons may be .ico.
+            'logo' => 'nullable|image|mimes:png,jpg,jpeg,webp|max:2048',
+            'favicon' => 'nullable|file|mimes:png,ico|max:512',
+        ]);
+
         $fields = [
             'site_name', 'email', 'phone', 'vat_rate',
             'paystack_public_key', 'paystack_secret_key', 'paystack_merchant_email',
@@ -26,25 +46,27 @@ class SettingsController extends Controller
         ];
 
         foreach ($fields as $field) {
-            if ($request->has($field)) {
-                Setting::set($field, $request->input($field));
+            if (! $request->has($field)) {
+                continue;
             }
+            // A blank secret means "keep the saved one".
+            if (in_array($field, self::SECRET_FIELDS, true) && ! $request->filled($field)) {
+                continue;
+            }
+            Setting::set($field, $request->input($field));
         }
 
-        if ($request->has('paystack_live_mode')) {
-            Setting::set('paystack_live_mode', true);
-        } else {
-            Setting::set('paystack_live_mode', false);
-        }
+        Setting::set('paystack_live_mode', $request->has('paystack_live_mode'));
 
-        if ($request->hasFile('logo')) {
-            $logo = $request->file('logo')->store('public/settings');
-            Setting::set('logo', str_replace('public/', '', $logo));
-        }
-
-        if ($request->hasFile('favicon')) {
-            $favicon = $request->file('favicon')->store('public/settings');
-            Setting::set('favicon', str_replace('public/', '', $favicon));
+        // Branding images are public: they go on the public disk that /media serves.
+        foreach (['logo', 'favicon'] as $key) {
+            if ($request->hasFile($key)) {
+                $old = Setting::get($key);
+                Setting::set($key, $request->file($key)->store('settings', 'public'));
+                if ($old) {
+                    Storage::disk('public')->delete($old);
+                }
+            }
         }
 
         return back()->with('success', 'Settings updated successfully');

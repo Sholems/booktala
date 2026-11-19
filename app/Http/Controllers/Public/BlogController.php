@@ -18,7 +18,8 @@ class BlogController extends Controller
 
     public function show($slug)
     {
-        $blog = Blog::where('slug', $slug)->firstOrFail();
+        // Drafts and scheduled posts are not public.
+        $blog = Blog::published()->where('slug', $slug)->firstOrFail();
 
         return view('public.blog.show', compact('blog'));
     }

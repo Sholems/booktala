@@ -16,11 +16,11 @@
 <tbody class="divide-y divide-gray-200">
 @forelse($customers as $customer)
 <tr>
-<td class="px-6 py-4" data-label="Name">{{ $customer->name }}</td>
+<td class="px-6 py-4" data-label="Name"><a href="{{ route('admin.customers.show', $customer) }}" class="text-primary hover:underline">{{ $customer->name }}</a></td>
 <td class="px-6 py-4" data-label="Email">{{ $customer->email }}</td>
 <td class="px-6 py-4" data-label="Phone">{{ $customer->phone }}</td>
 <td class="px-6 py-4" data-label="Status">{{ ucfirst($customer->status) }}</td>
-<td class="px-6 py-4" data-label="Verified">{{ $customer->id_verified ? 'Yes' : 'No' }}</td>
+<td class="px-6 py-4" data-label="Verified">{{ $customer->id_verified ? 'Yes' : ($customer->id_document ? 'Awaiting check' : 'No') }}</td>
 </tr>
 @empty
 <tr>
