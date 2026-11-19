@@ -2,9 +2,11 @@
 
 namespace Database\Seeders;
 
+use App\Models\Owner;
 use App\Models\Position;
 use App\Models\Site;
 use App\Models\Staff;
+use App\Models\Unit;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 
@@ -22,6 +24,7 @@ class LocalTestAccountsSeeder extends Seeder
         'admin.test@booktala.test' => ['Test Admin', 'admin', 'AdminTest#2026'],
         'staff.test@booktala.test' => ['Test Staff', 'staff', 'StaffTest#2026'],
         'guest.test@booktala.test' => ['Test Guest', 'customer', 'GuestTest#2026'],
+        'owner.test@booktala.test' => ['Test Landlord', 'owner', 'OwnerTest#2026'],
     ];
 
     public function run(): void
@@ -52,6 +55,31 @@ class LocalTestAccountsSeeder extends Seeder
                     foreach (Site::orderBy('id')->get() as $site) {
                         $staff->assignTo($site, $receptionist);
                     }
+                }
+            }
+
+            if ($role === 'owner') {
+                $owner = Owner::firstOrCreate(
+                    ['user_id' => $user->id],
+                    [
+                        'name' => 'Alhaji Ibrahim Musa',
+                        'type' => 'individual',
+                        'email' => $email,
+                        'phone' => '+234 803 123 4567',
+                        'address' => 'Plot 8, Victoria Island, Lagos',
+                        'is_company_owned' => false,
+                        'is_active' => true,
+                        'commission_rate' => 15.00,
+                        'deduct_expenses' => true,
+                        'bank_name' => 'Zenith Bank',
+                        'bank_account_name' => 'Ibrahim Musa Properties',
+                        'bank_account_number' => '1012345678',
+                    ]
+                );
+
+                $unit = Unit::first();
+                if ($unit && empty($unit->owner_id)) {
+                    $unit->update(['owner_id' => $owner->id]);
                 }
             }
 
