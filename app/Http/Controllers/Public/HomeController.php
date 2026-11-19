@@ -15,8 +15,14 @@ class HomeController extends Controller
     {
         $featuredProperties = Property::active()
             ->featured()
-            ->with(['images', 'primaryImage'])
-            ->take(6)
+            ->with(['images', 'primaryImage', 'amenities'])
+            ->withCount(['reviews' => function ($q) {
+                $q->where('is_published', true);
+            }])
+            ->withAvg(['reviews' => function ($q) {
+                $q->where('is_published', true);
+            }], 'overall_rating')
+            ->take(8)
             ->get();
 
         $recentReviews = Review::with(['user', 'property'])

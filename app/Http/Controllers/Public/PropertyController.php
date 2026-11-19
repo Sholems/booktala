@@ -16,6 +16,23 @@ class PropertyController extends Controller
     {
         $query = Unit::active()->with(['images', 'primaryImage', 'amenities', 'reviews']);
 
+        if ($request->filled('check_in') && $request->filled('check_out')) {
+            $checkIn = $request->check_in;
+            $checkOut = $request->check_out;
+            $query->whereDoesntHave('reservations', function ($q) use ($checkIn, $checkOut) {
+                $q->blockingAvailability()
+                    ->where(function ($sub) use ($checkIn, $checkOut) {
+                        $sub->where('check_in', '<', $checkOut)
+                            ->where('check_out', '>', $checkIn);
+                    });
+            })->whereDoesntHave('blockedDates', function ($q) use ($checkIn, $checkOut) {
+                $q->where(function ($sub) use ($checkIn, $checkOut) {
+                    $sub->where('start_date', '<=', $checkOut)
+                        ->where('end_date', '>=', $checkIn);
+                });
+            });
+        }
+
         if ($request->has('city') && $request->city) {
             $location = '%'.$request->city.'%';
             $query->where(function ($q) use ($location) {

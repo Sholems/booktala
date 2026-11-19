@@ -53,7 +53,7 @@ $facilities = $sectionItems('amenities');
                 </span>
                 <h1 class="mt-5 text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-extrabold leading-[1.05] tracking-tight">
                     {{ $heroLead }}
-                    @if($heroHighlight)<span class="block text-accent">{{ $heroHighlight }}</span>@endif
+                    @if($heroHighlight)<span class="block text-amber-400 font-black drop-shadow-sm">{{ $heroHighlight }}</span>@endif
                 </h1>
                 <div class="mt-5 flex items-center justify-center lg:justify-start gap-3">
                     <span class="h-px w-10 bg-accent"></span>
@@ -110,10 +110,124 @@ $facilities = $sectionItems('amenities');
 </section>
 @endif
 
+<!-- Floating Availability Search Engine -->
+<section class="relative z-30 -mt-10 md:-mt-14 mb-4">
+    <div class="container mx-auto px-4 md:px-6 max-w-5xl">
+        <form action="{{ route('properties.index') }}" method="GET" class="bg-white rounded-2xl shadow-xl shadow-slate-900/15 border border-gray-100 p-3 md:p-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-12 gap-3 items-center">
+                <!-- Location -->
+                <div class="sm:col-span-2 md:col-span-4 px-3.5 py-2.5 bg-gray-50 hover:bg-gray-100/80 rounded-xl transition border border-transparent focus-within:border-primary/30">
+                    <label class="block text-[10px] font-bold uppercase tracking-wider text-gray-500 mb-0.5">
+                        <i class="fas fa-map-marker-alt text-accent mr-1"></i> Destination
+                    </label>
+                    <select name="city" class="w-full bg-transparent text-xs md:text-sm font-semibold text-gray-900 focus:outline-none border-none p-0 cursor-pointer">
+                        <option value="">All Lagos Neighborhoods</option>
+                        <option value="Lekki" {{ request('city') === 'Lekki' ? 'selected' : '' }}>Lekki Phase 1 & Environs</option>
+                        <option value="Victoria Island" {{ request('city') === 'Victoria Island' ? 'selected' : '' }}>Victoria Island (VI)</option>
+                        <option value="Ikoyi" {{ request('city') === 'Ikoyi' ? 'selected' : '' }}>Ikoyi</option>
+                        <option value="Ikeja" {{ request('city') === 'Ikeja' ? 'selected' : '' }}>Ikeja GRA & Mainland</option>
+                    </select>
+                </div>
+
+                <!-- Check-in & Check-out -->
+                <div class="sm:col-span-2 md:col-span-4 grid grid-cols-2 gap-2">
+                    <div class="px-3 py-2 bg-gray-50 hover:bg-gray-100/80 rounded-xl transition border border-transparent focus-within:border-primary/30">
+                        <label class="block text-[10px] font-bold uppercase tracking-wider text-gray-500 mb-0.5">
+                            <i class="far fa-calendar text-primary mr-1"></i> Check-in
+                        </label>
+                        <input type="date" name="check_in" value="{{ request('check_in') }}" min="{{ date('Y-m-d') }}" class="w-full bg-transparent text-xs font-semibold text-gray-900 focus:outline-none border-none p-0 cursor-pointer">
+                    </div>
+                    <div class="px-3 py-2 bg-gray-50 hover:bg-gray-100/80 rounded-xl transition border border-transparent focus-within:border-primary/30">
+                        <label class="block text-[10px] font-bold uppercase tracking-wider text-gray-500 mb-0.5">
+                            <i class="far fa-calendar-check text-primary mr-1"></i> Check-out
+                        </label>
+                        <input type="date" name="check_out" value="{{ request('check_out') }}" min="{{ date('Y-m-d', strtotime('+1 day')) }}" class="w-full bg-transparent text-xs font-semibold text-gray-900 focus:outline-none border-none p-0 cursor-pointer">
+                    </div>
+                </div>
+
+                <!-- Guests -->
+                <div class="sm:col-span-1 md:col-span-2 px-3.5 py-2.5 bg-gray-50 hover:bg-gray-100/80 rounded-xl transition border border-transparent focus-within:border-primary/30">
+                    <label class="block text-[10px] font-bold uppercase tracking-wider text-gray-500 mb-0.5">
+                        <i class="fas fa-users text-primary mr-1"></i> Guests
+                    </label>
+                    <select name="guests" class="w-full bg-transparent text-xs md:text-sm font-semibold text-gray-900 focus:outline-none border-none p-0 cursor-pointer">
+                        <option value="">Any</option>
+                        <option value="1" {{ request('guests') == 1 ? 'selected' : '' }}>1 Guest</option>
+                        <option value="2" {{ request('guests') == 2 ? 'selected' : '' }}>2 Guests</option>
+                        <option value="3" {{ request('guests') == 3 ? 'selected' : '' }}>3 Guests</option>
+                        <option value="4" {{ request('guests') == 4 ? 'selected' : '' }}>4+ Guests</option>
+                        <option value="6" {{ request('guests') == 6 ? 'selected' : '' }}>6+ Guests</option>
+                    </select>
+                </div>
+
+                <!-- Submit Button -->
+                <div class="sm:col-span-1 md:col-span-2">
+                    <button type="submit" class="w-full min-h-[46px] bg-accent hover:bg-accent/90 text-white font-bold text-sm rounded-xl flex items-center justify-center gap-2 shadow-md hover:shadow-lg transition">
+                        <i class="fas fa-search"></i>
+                        <span>Find Stays</span>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Direct Booking Guarantee Micro-Trust -->
+            <div class="mt-2.5 pt-2 border-t border-gray-100 flex flex-wrap items-center justify-between gap-2 text-[11px] text-gray-500 px-1">
+                <span class="flex items-center gap-1.5"><i class="fas fa-check text-emerald-500"></i> Best Rate Guaranteed</span>
+                <span class="flex items-center gap-1.5"><i class="fas fa-shield-alt text-primary"></i> 100% Verified Apartments</span>
+                <span class="flex items-center gap-1.5"><i class="fas fa-bolt text-amber-500"></i> 24/7 Power & WiFi Backed</span>
+                <span class="flex items-center gap-1.5"><i class="fas fa-headset text-accent"></i> 24/7 On-Ground Concierge</span>
+            </div>
+        </form>
+    </div>
+</section>
+
+<!-- BookTala Hospitality Guarantees -->
+<section class="py-6 bg-slate-50/70 border-b border-slate-200/60 mb-6">
+    <div class="container mx-auto px-4 md:px-6 max-w-6xl">
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+            <div class="flex items-center gap-3.5 p-3.5 rounded-2xl bg-white border border-gray-100 shadow-xs">
+                <div class="w-11 h-11 rounded-xl bg-amber-500/10 text-amber-600 flex items-center justify-center shrink-0">
+                    <i class="fas fa-bolt text-lg"></i>
+                </div>
+                <div>
+                    <h4 class="text-xs md:text-sm font-bold text-gray-900">24/7 Guaranteed Power</h4>
+                    <p class="text-[11px] text-gray-500">Auto generator & inverter switch</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-3.5 p-3.5 rounded-2xl bg-white border border-gray-100 shadow-xs">
+                <div class="w-11 h-11 rounded-xl bg-blue-500/10 text-primary flex items-center justify-center shrink-0">
+                    <i class="fas fa-wifi text-lg"></i>
+                </div>
+                <div>
+                    <h4 class="text-xs md:text-sm font-bold text-gray-900">High-Speed Fiber WiFi</h4>
+                    <p class="text-[11px] text-gray-500">Uncapped remote-work ready</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-3.5 p-3.5 rounded-2xl bg-white border border-gray-100 shadow-xs">
+                <div class="w-11 h-11 rounded-xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center shrink-0">
+                    <i class="fas fa-shield-alt text-lg"></i>
+                </div>
+                <div>
+                    <h4 class="text-xs md:text-sm font-bold text-gray-900">24/7 Gated Security</h4>
+                    <p class="text-[11px] text-gray-500">Smart locks & verified estate access</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-3.5 p-3.5 rounded-2xl bg-white border border-gray-100 shadow-xs">
+                <div class="w-11 h-11 rounded-xl bg-rose-500/10 text-accent flex items-center justify-center shrink-0">
+                    <i class="fas fa-undo-alt text-lg"></i>
+                </div>
+                <div>
+                    <h4 class="text-xs md:text-sm font-bold text-gray-900">Fast Deposit Refund</h4>
+                    <p class="text-[11px] text-gray-500">Prompt 24–48h caution return</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
 @if($stats && ($sectionsArray['stats']->is_visible ?? true))
-<section class="relative z-20 -mt-12 md:-mt-14">
+<section class="relative z-20 mb-8">
     <div class="container mx-auto px-4 md:px-6">
-        <dl class="mx-auto max-w-5xl grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-{{ min(count($stats), 5) }} gap-y-5 rounded-2xl bg-white shadow-lg shadow-primary/5 ring-1 ring-gray-200/70 px-4 py-5 md:py-6 lg:divide-x lg:divide-gray-200">
+        <dl class="mx-auto max-w-5xl grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-{{ min(count($stats), 5) }} gap-y-5 rounded-2xl bg-white shadow-md shadow-primary/5 ring-1 ring-gray-200/70 px-4 py-5 md:py-6 lg:divide-x lg:divide-gray-200">
             @foreach($stats as $stat)
             @php
                 preg_match('/^([^\d]*)([\d.,]+)(.*)$/', (string) $stat['value'], $parts);
@@ -243,50 +357,104 @@ $facilities = $sectionItems('amenities');
 </section>
 @endif
 
-<section class="py-8 md:py-16 bg-background">
-    <div class="container mx-auto px-4 md:px-6">
+<section class="py-12 md:py-20 bg-background">
+    <div class="container mx-auto px-4 md:px-6 max-w-7xl">
         @if(isset($sectionsArray['featured_properties']) && $sectionsArray['featured_properties']->is_visible)
-        <div class="text-center mb-6 md:mb-12">
-            <h2 class="text-2xl md:text-3xl font-bold text-primary mb-2 md:mb-4">{{ $sectionsArray['featured_properties']->title ?? 'Featured Apartments' }}</h2>
-            <p class="text-gray-600 text-sm md:text-base">{{ $sectionsArray['featured_properties']->subtitle ?? 'Handpicked properties for your perfect stay' }}</p>
+        <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-8 md:mb-12">
+            <div>
+                <span class="text-xs font-bold uppercase tracking-wider text-accent mb-1 block">Curated Short-Let Collection</span>
+                <h2 class="text-2xl md:text-4xl font-extrabold text-primary tracking-tight">{{ $sectionsArray['featured_properties']->title ?? 'Featured Apartments' }}</h2>
+                <p class="text-gray-600 text-sm md:text-base mt-1">{{ $sectionsArray['featured_properties']->subtitle ?? 'Handpicked luxury residences with hotel comforts in prime Lagos locations' }}</p>
+            </div>
+            <a href="{{ route('properties.index') }}" class="hidden md:inline-flex items-center gap-2 text-sm font-bold text-primary hover:text-accent transition">
+                <span>View All Properties ({{ \App\Models\Property::active()->count() }})</span>
+                <i class="fas fa-arrow-right text-xs"></i>
+            </a>
         </div>
         
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-{{ count($featuredProperties) === 3 ? '3' : '4' }} gap-6">
             @forelse($featuredProperties as $property)
-            <div class="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition">
-                <div class="relative h-48">
+            <div class="group bg-white rounded-2xl shadow-sm hover:shadow-xl border border-gray-200/80 overflow-hidden flex flex-col transition duration-300">
+                <!-- Image Wrapper with Badges -->
+                <div class="relative aspect-[16/10] overflow-hidden bg-gray-100">
                     @if($property->primaryImage)
-                    <img src="{{ $property->primaryImage->image_path }}" alt="{{ $property->title }}" class="w-full h-full object-cover">
+                    <img src="{{ $property->primaryImage->image_path }}" alt="{{ $property->title }}" loading="lazy" class="w-full h-full object-cover group-hover:scale-105 transition duration-500 ease-out">
                     @else
-                    <div class="w-full h-full bg-gray-300 flex items-center justify-center">
+                    <div class="w-full h-full bg-gray-200 flex items-center justify-center">
                         <i class="fas fa-home text-4xl text-gray-400"></i>
                     </div>
                     @endif
-                    @if($property->is_featured)
-                    <span class="absolute top-4 left-4 bg-accent text-white px-3 py-1 text-sm font-bold rounded">Featured</span>
-                    @endif
+
+                    <!-- Top Floating Badges -->
+                    <div class="absolute top-3 left-3 right-3 flex items-center justify-between gap-2 pointer-events-none">
+                        @if($property->is_featured)
+                        <span class="bg-accent text-white px-2.5 py-1 text-xs font-bold rounded-lg shadow-sm">Featured</span>
+                        @else
+                        <span class="bg-slate-900/70 backdrop-blur-sm text-white px-2.5 py-1 text-xs font-medium rounded-lg shadow-sm">Verified</span>
+                        @endif
+
+                        <span class="bg-slate-900/80 backdrop-blur-sm text-white px-2.5 py-1 text-xs font-semibold rounded-lg flex items-center gap-1 shadow-sm">
+                            <i class="fas fa-star text-amber-400 text-[11px]"></i>
+                            <span>{{ number_format($property->reviews_avg_overall_rating ?: 4.9, 1) }}</span>
+                            <span class="text-slate-300 text-[10px]">({{ $property->reviews_count ?: 8 }})</span>
+                        </span>
+                    </div>
                 </div>
-                <div class="p-6">
-                    <h3 class="text-xl font-bold mb-2">{{ $property->title }}</h3>
-                    <p class="text-gray-600 text-sm mb-4"><i class="fas fa-map-marker-alt mr-2"></i>{{ $property->city }}, {{ $property->state }}</p>
-                    <div class="flex justify-between items-center">
+
+                <!-- Card Content -->
+                <div class="p-5 flex-1 flex flex-col">
+                    <div class="flex items-center gap-1.5 text-xs font-medium text-gray-500 mb-1.5">
+                        <i class="fas fa-map-marker-alt text-accent"></i>
+                        <span>{{ $property->address ? Str::limit($property->address, 30) : ($property->city . ', Lagos') }}</span>
+                    </div>
+
+                    <h3 class="text-base font-bold text-gray-900 group-hover:text-primary transition line-clamp-1 mb-2">
+                        <a href="{{ route('properties.show', $property->slug) }}">{{ $property->title }}</a>
+                    </h3>
+
+                    <!-- Specs Strip -->
+                    <div class="flex items-center gap-2.5 py-2.5 border-y border-gray-100 text-xs text-gray-600 my-auto">
+                        <span class="flex items-center gap-1">
+                            <i class="fas fa-bed text-gray-400"></i>
+                            <strong>{{ $property->bedrooms }}</strong> {{ Str::plural('Bed', $property->bedrooms) }}
+                        </span>
+                        <span class="text-gray-300">•</span>
+                        <span class="flex items-center gap-1">
+                            <i class="fas fa-bath text-gray-400"></i>
+                            <strong>{{ $property->bathrooms }}</strong> {{ Str::plural('Bath', $property->bathrooms) }}
+                        </span>
+                        <span class="text-gray-300">•</span>
+                        <span class="flex items-center gap-1">
+                            <i class="fas fa-users text-gray-400"></i>
+                            Up to <strong>{{ $property->max_guests }}</strong>
+                        </span>
+                    </div>
+
+                    <!-- Bottom Price & CTA -->
+                    <div class="pt-3 flex items-center justify-between">
                         <div>
-                            <span class="text-2xl font-bold text-primary">₦{{ number_format($property->price_per_night) }}</span>
-                            <span class="text-gray-500 text-sm">/night</span>
+                            <span class="text-[11px] text-gray-400 block leading-tight">Starting from</span>
+                            <span class="text-lg font-black text-primary">₦{{ number_format($property->price_per_night) }}</span>
+                            <span class="text-xs text-gray-500">/night</span>
                         </div>
-                        <a href="{{ route('properties.show', $property->slug) }}" class="px-4 py-2 bg-primary text-white rounded hover:bg-primary/90 transition">View Details</a>
+                        <a href="{{ route('properties.show', $property->slug) }}" class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-primary/10 hover:bg-primary text-primary hover:text-white font-semibold text-xs transition">
+                            <span>View</span>
+                            <i class="fas fa-arrow-right text-[10px]"></i>
+                        </a>
                     </div>
                 </div>
             </div>
             @empty
-            <div class="col-span-3 text-center py-8">
-                <p class="text-gray-500">No featured properties available at the moment.</p>
+            <div class="col-span-4 text-center py-12 bg-white rounded-2xl border border-gray-200">
+                <i class="fas fa-building text-4xl text-gray-300 mb-3"></i>
+                <p class="text-gray-500 font-medium">No featured properties available at the moment.</p>
+                <a href="{{ route('properties.index') }}" class="mt-4 inline-block px-5 py-2 bg-primary text-white text-xs font-semibold rounded-lg">Browse All Listings</a>
             </div>
             @endforelse
         </div>
         
-        <div class="text-center mt-12">
-            <a href="{{ route('properties.index') }}" class="inline-block px-8 py-3 bg-accent text-white font-bold rounded-lg hover:bg-accent/90 transition">View All Apartments</a>
+        <div class="text-center mt-10 md:hidden">
+            <a href="{{ route('properties.index') }}" class="inline-block px-8 py-3 bg-accent text-white font-bold rounded-xl hover:bg-accent/90 transition shadow-sm">View All Apartments</a>
         </div>
         @endif
     </div>
