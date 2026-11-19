@@ -187,4 +187,43 @@ class DynamicPricingTest extends TestCase
         $response->assertSee('Ikoyi Presidential Villa');
         $response->assertSee('December 2026');
     }
+
+    public function test_regular_admin_role_can_view_and_manage_pricing_rules(): void
+    {
+        $regularAdmin = User::create([
+            'name' => 'Regular Admin Staff',
+            'email' => 'regularadmin@example.com',
+            'password' => 'password123',
+            'status' => 'active',
+        ]);
+        $regularAdmin->assignRole('admin');
+
+        // Test regular admin can view index
+        $indexResponse = $this->actingAs($regularAdmin)->get(route('admin.pricing-rules.index'));
+        $indexResponse->assertOk();
+
+        // Test regular admin can view simulator
+        $simResponse = $this->actingAs($regularAdmin)->get(route('admin.pricing-rules.simulator', [
+            'unit_id' => $this->unit->id,
+            'month' => '2026-12',
+        ]));
+        $simResponse->assertOk();
+
+        // Test regular admin can create pricing rule
+        $createResponse = $this->actingAs($regularAdmin)->post(route('admin.pricing-rules.store'), [
+            'name' => 'Regular Admin Promo',
+            'type' => 'promo',
+            'property_id' => $this->unit->id,
+            'start_date' => '2027-01-10',
+            'end_date' => '2027-01-20',
+            'adjustment_type' => 'percentage_discount',
+            'adjustment_value' => 10,
+            'is_active' => 1,
+        ]);
+        $createResponse->assertRedirect(route('admin.pricing-rules.index'));
+        $this->assertDatabaseHas('pricing_rules', [
+            'name' => 'Regular Admin Promo',
+            'adjustment_value' => 10,
+        ]);
+    }
 }

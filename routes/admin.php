@@ -238,14 +238,12 @@ Route::prefix('admin')->middleware(['auth', 'role:super_admin|admin'])->group(fu
     });
 
     // Dynamic Pricing & Seasonal Rates
-    Route::middleware('can:property.manage')->group(function () {
-        Route::get('/pricing-rules', [PricingRuleController::class, 'index'])->name('admin.pricing-rules.index');
-        Route::post('/pricing-rules', [PricingRuleController::class, 'store'])->name('admin.pricing-rules.store');
-        Route::put('/pricing-rules/{pricingRule}', [PricingRuleController::class, 'update'])->name('admin.pricing-rules.update');
-        Route::patch('/pricing-rules/{pricingRule}/toggle', [PricingRuleController::class, 'toggle'])->name('admin.pricing-rules.toggle');
-        Route::delete('/pricing-rules/{pricingRule}', [PricingRuleController::class, 'destroy'])->name('admin.pricing-rules.destroy');
-        Route::get('/pricing-rules/simulator', [PricingRuleController::class, 'simulator'])->name('admin.pricing-rules.simulator');
-    });
+    Route::get('/pricing-rules', [PricingRuleController::class, 'index'])->name('admin.pricing-rules.index')->middleware('can:property.view');
+    Route::get('/pricing-rules/simulator', [PricingRuleController::class, 'simulator'])->name('admin.pricing-rules.simulator')->middleware('can:property.view');
+    Route::post('/pricing-rules', [PricingRuleController::class, 'store'])->name('admin.pricing-rules.store')->middleware('can:property.edit');
+    Route::put('/pricing-rules/{pricingRule}', [PricingRuleController::class, 'update'])->name('admin.pricing-rules.update')->middleware('can:property.edit');
+    Route::patch('/pricing-rules/{pricingRule}/toggle', [PricingRuleController::class, 'toggle'])->name('admin.pricing-rules.toggle')->middleware('can:property.edit');
+    Route::delete('/pricing-rules/{pricingRule}', [PricingRuleController::class, 'destroy'])->name('admin.pricing-rules.destroy')->middleware('can:property.edit');
 
     Route::get('/ical/reservations', [IcalController::class, 'exportReservations'])->name('admin.ical.reservations')->middleware('can:reservation.view');
     Route::get('/ical/property/{propertyId}', [IcalController::class, 'exportProperty'])->name('admin.ical.property')->middleware('can:reservation.view');

@@ -145,12 +145,12 @@ $logoMarkUrl = asset('images/booktala-mark.png');
                             <span class="text-sm">Channels (OTA Sync)</span>
                         </a>
                         @endcanany
-                        @canany(['property.manage', 'property.view', 'property.edit'])
+                        @can('property.view')
                         <a href="{{ route('admin.pricing-rules.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group {{ request()->routeIs('admin.pricing-rules.*') ? 'bg-accent/10 text-accent font-semibold' : 'hover:bg-slate-800/50 hover:text-white' }}">
                             <i class="fas fa-tags w-5 text-sm"></i>
                             <span class="text-sm">Dynamic Pricing</span>
                         </a>
-                        @endcanany
+                        @endcan
                     </div>
                 </div>
 
