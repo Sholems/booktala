@@ -1,9 +1,107 @@
 @extends('layouts.app')
 
-@section('title', $property->meta_title ?: $property->title . ' - BookTala')
-{{-- Always pass strings: a null value makes Blade open a block section that never closes. --}}
-@section('meta_description', (string) ($property->meta_description ?: $property->short_description))
+@php
+    $primaryImageUrl = $property->images->first()?->image_path ? asset($property->images->first()->image_path) : asset('images/og-default.jpg');
+    $seoDescription = (string) ($property->meta_description ?: $property->short_description ?: ('Book ' . $property->title . ' in ' . ($property->city ?? 'Lagos') . '. Luxury serviced shortlet apartment with 24/7 power, high-speed WiFi, air conditioning, and top-tier security. Direct rates from ₦' . number_format($property->price_per_night) . '/night.'));
+    $pageTitle = $property->meta_title ?: ($property->title . ' - Luxury Shortlet in ' . ($property->city ?? 'Lagos') . ' | BookTala');
+@endphp
+
+@section('title', $pageTitle)
+@section('meta_description', $seoDescription)
 @section('meta_keywords', (string) $property->meta_keywords)
+
+@section('og_title', $pageTitle)
+@section('og_description', $seoDescription)
+@section('og_image', $primaryImageUrl)
+@section('og_type', 'place')
+
+@section('twitter_title', $pageTitle)
+@section('twitter_description', $seoDescription)
+@section('twitter_image', $primaryImageUrl)
+
+@push('schema')
+<script type="application/ld+json">
+{
+  "@@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": ["Apartment", "Accommodation"],
+      "@id": "{{ url()->current() }}#apartment",
+      "name": "{{ $property->title }}",
+      "description": {{ json_encode($seoDescription) }},
+      "url": "{{ url()->current() }}",
+      "image": [
+        @foreach($property->images as $img)
+        "{{ $img->image_path }}"@if(!$loop->last),@endif
+        @endforeach
+      ],
+      "numberOfRooms": {{ $property->bedrooms ?? 1 }},
+      "numberOfBedrooms": {{ $property->bedrooms ?? 1 }},
+      "numberOfBathroomsTotal": {{ $property->bathrooms ?? 1 }},
+      "occupancy": {
+        "@type": "QuantitativeValue",
+        "maxValue": {{ $property->max_guests ?? 2 }}
+      },
+      "address": {
+        "@type": "PostalAddress",
+        "streetAddress": "{{ $property->address ?? 'Plot 14, Admiralty Way, Lekki Phase 1' }}",
+        "addressLocality": "{{ $property->city ?? 'Lekki Phase 1' }}",
+        "addressRegion": "{{ $property->state ?? 'Lagos' }}",
+        "addressCountry": "NG"
+      },
+      @if($property->latitude && $property->longitude)
+      "geo": {
+        "@type": "GeoCoordinates",
+        "latitude": {{ (float) $property->latitude }},
+        "longitude": {{ (float) $property->longitude }}
+      },
+      @endif
+      "offers": {
+        "@type": "Offer",
+        "price": "{{ (float) $property->price_per_night }}",
+        "priceCurrency": "NGN",
+        "availability": "https://schema.org/InStock",
+        "url": "{{ url()->current() }}",
+        "validFrom": "{{ now()->toIso8601String() }}"
+      },
+      "amenityFeature": [
+        { "@type": "LocationFeatureSpecification", "name": "24/7 Uninterrupted Power Supply", "value": true },
+        { "@type": "LocationFeatureSpecification", "name": "High-Speed Fiber WiFi", "value": true },
+        { "@type": "LocationFeatureSpecification", "name": "Air Conditioning", "value": true },
+        { "@type": "LocationFeatureSpecification", "name": "24/7 Gated Security & CCTV", "value": true }
+        @foreach($property->amenities as $amenity)
+        ,{ "@type": "LocationFeatureSpecification", "name": "{{ $amenity->name }}", "value": true }
+        @endforeach
+      ]
+    },
+    {
+      "@type": "BreadcrumbList",
+      "@id": "{{ url()->current() }}#breadcrumb",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "{{ route('home') }}"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Apartments",
+          "item": "{{ route('properties.index') }}"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "{{ $property->title }}",
+          "item": "{{ url()->current() }}"
+        }
+      ]
+    }
+  ]
+}
+</script>
+@endpush
 
 @push('styles')
 <style>

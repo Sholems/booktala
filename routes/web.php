@@ -73,6 +73,7 @@ Route::post('/newsletter/subscribe', [NewsletterController::class, 'subscribe'])
 
 Route::get('/sitemap.xml', [PageController::class, 'sitemap'])->name('sitemap');
 Route::get('/robots.txt', [PageController::class, 'robots'])->name('robots');
+Route::get('/llms.txt', [PageController::class, 'llmsTxt'])->name('llms.txt');
 
 require __DIR__.'/admin.php';
 require __DIR__.'/staff.php';

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Public;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Public\PageSubmitContactRequest;
+use App\Models\Blog;
 use App\Models\Page;
 use App\Models\Property;
 use Illuminate\Support\Facades\Log;
@@ -69,14 +70,27 @@ class PageController extends Controller
 
     public function sitemap()
     {
-        $properties = Property::active()->get();
-        $pages = Page::where('is_published', true)->get();
+        $properties = Property::active()->with('images')->orderBy('updated_at', 'desc')->get();
+        $pages = Page::where('is_published', true)->orderBy('updated_at', 'desc')->get();
+        $blogs = Blog::where('is_published', true)->whereNotNull('published_at')->orderBy('published_at', 'desc')->get();
 
-        return response()->view('public.sitemap', compact('properties', 'pages'))->header('Content-Type', 'text/xml');
+        return response()->view('public.sitemap', compact('properties', 'pages', 'blogs'))
+            ->header('Content-Type', 'text/xml; charset=utf-8');
     }
 
     public function robots()
     {
         return response()->view('public.robots')->header('Content-Type', 'text/plain');
+    }
+
+    public function llmsTxt()
+    {
+        $path = public_path('llms.txt');
+        if (! file_exists($path)) {
+            abort(404);
+        }
+
+        return response(file_get_contents($path), 200)
+            ->header('Content-Type', 'text/markdown; charset=utf-8');
     }
 }

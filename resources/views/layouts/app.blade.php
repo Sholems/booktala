@@ -28,12 +28,15 @@ $socialLinks = array_filter([
     <meta property="og:description" content="@yield('og_description', 'Stays, Travels & Better Living')">
     <meta property="og:image" content="@yield('og_image', asset('images/og-default.jpg'))">
     <meta property="og:url" content="{{ url()->current() }}">
-    <meta property="og:type" content="website">
+    <meta property="og:type" content="@yield('og_type', 'website')">
+    <meta property="og:site_name" content="{{ $siteName }}">
+    <meta property="og:locale" content="en_NG">
     
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="@yield('twitter_title', $siteName)">
     <meta name="twitter:description" content="@yield('twitter_description', 'Stays, Travels & Better Living')">
     <meta name="twitter:image" content="@yield('twitter_image', asset('images/og-default.jpg'))">
+    @yield('extra_meta')
     
     <link rel="canonical" href="{{ url()->current() }}">
     @if($favicon)
@@ -41,6 +44,9 @@ $socialLinks = array_filter([
     @else
     <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
     @endif
+    
+    @include('partials.seo-schema-global')
+    @stack('schema')
     
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <style>

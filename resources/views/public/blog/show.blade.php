@@ -1,8 +1,63 @@
 @extends('layouts.app')
 
-@section('title', $blog->meta_title ?: $blog->title . ' - BookTala Blog')
-{{-- Always pass a string: a null value makes Blade open a block section that never closes. --}}
-@section('meta_description', (string) ($blog->meta_description ?: $blog->excerpt))
+@php
+    $blogImageUrl = $blog->image
+        ? (\Illuminate\Support\Str::startsWith($blog->image, ['http://', 'https://']) ? $blog->image : url('media/' . ltrim($blog->image, '/')))
+        : asset('images/og-default.jpg');
+    $blogExcerpt = (string) ($blog->meta_description ?: $blog->excerpt ?: \Illuminate\Support\Str::limit(strip_tags($blog->content), 155));
+    $blogTitle = $blog->meta_title ?: ($blog->title . ' - BookTala Blog');
+@endphp
+
+@section('title', $blogTitle)
+@section('meta_description', $blogExcerpt)
+
+@section('og_title', $blogTitle)
+@section('og_description', $blogExcerpt)
+@section('og_image', $blogImageUrl)
+@section('og_type', 'article')
+
+@section('twitter_title', $blogTitle)
+@section('twitter_description', $blogExcerpt)
+@section('twitter_image', $blogImageUrl)
+
+@section('extra_meta')
+    <meta property="article:published_time" content="{{ $blog->published_at ? $blog->published_at->toIso8601String() : $blog->created_at->toIso8601String() }}">
+    <meta property="article:modified_time" content="{{ $blog->updated_at->toIso8601String() }}">
+    <meta property="article:author" content="{{ $blog->author->name ?? 'BookTala Editorial' }}">
+    @if($blog->category)
+    <meta property="article:section" content="{{ $blog->category }}">
+    @endif
+@endsection
+
+@push('schema')
+<script type="application/ld+json">
+{
+  "@@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": {{ json_encode($blog->title) }},
+  "description": {{ json_encode($blogExcerpt) }},
+  "image": "{{ $blogImageUrl }}",
+  "datePublished": "{{ $blog->published_at ? $blog->published_at->toIso8601String() : $blog->created_at->toIso8601String() }}",
+  "dateModified": "{{ $blog->updated_at->toIso8601String() }}",
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "{{ url()->current() }}"
+  },
+  "author": {
+    "@type": "Person",
+    "name": "{{ $blog->author->name ?? 'BookTala Editorial' }}"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "BookTala",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "{{ asset('images/booktala-logo.png') }}"
+    }
+  }
+}
+</script>
+@endpush
 
 @section('content')
 <section class="py-12 bg-primary text-white">
