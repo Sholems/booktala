@@ -6,6 +6,8 @@ use App\Models\Blog;
 use App\Models\Page;
 use App\Models\Property;
 use App\Models\PropertyImage;
+use App\Models\Review;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -208,5 +210,132 @@ class SeoGeoAeoTest extends TestCase
         $this->assertStringContainsString('<meta property="article:published_time"', $content);
         $this->assertStringContainsString('"@type": "BlogPosting"', $content);
         $this->assertStringContainsString('Top 10 Benefits of Direct Booking vs OTAs in 2026', $content);
+    }
+
+    public function test_properties_catalog_contains_collection_schema_and_dynamic_geo_title(): void
+    {
+        $property = Property::create([
+            'title' => 'The Admiralty Presidential Shortlet',
+            'slug' => 'admiralty-presidential-shortlet',
+            'description' => 'Serviced shortlet in Lekki.',
+            'address' => 'Plot 10 Admiralty Way',
+            'city' => 'Lekki',
+            'state' => 'Lagos',
+            'price_per_night' => 180000,
+            'max_guests' => 4,
+            'min_nights' => 1,
+            'max_nights' => 30,
+            'bedrooms' => 2,
+            'bathrooms' => 2,
+            'toilets' => 2,
+            'status' => 'active',
+        ]);
+
+        $response = $this->get(route('properties.index'));
+
+        $response->assertOk();
+        $content = $response->getContent();
+
+        $this->assertStringContainsString('"@type": "CollectionPage"', $content);
+        $this->assertStringContainsString('"@type": "ItemList"', $content);
+        $this->assertStringContainsString('The Admiralty Presidential Shortlet', $content);
+    }
+
+    public function test_properties_catalog_handles_city_and_type_filter_seo_metadata(): void
+    {
+        $response = $this->get(route('properties.index', ['city' => 'Lekki', 'property_type' => 'penthouse']));
+
+        $response->assertOk();
+        $content = $response->getContent();
+
+        $this->assertStringContainsString('Luxury Penthouses in Lekki - BookTala', $content);
+        $this->assertStringContainsString('Lekki, Lagos with 24/7 power', $content);
+    }
+
+    public function test_apartment_detail_renders_aggregaterating_and_reviews_when_present(): void
+    {
+        $user = User::factory()->create(['name' => 'Dr. Babatunde Cole']);
+        $property = Property::create([
+            'title' => 'Banana Island Executive Waterfront Villa',
+            'slug' => 'banana-island-executive-waterfront-villa',
+            'description' => 'Ultra high-end waterfront villa.',
+            'address' => 'Ocean Drive, Banana Island',
+            'city' => 'Ikoyi',
+            'state' => 'Lagos',
+            'price_per_night' => 450000,
+            'max_guests' => 8,
+            'min_nights' => 3,
+            'max_nights' => 90,
+            'bedrooms' => 4,
+            'bathrooms' => 4,
+            'toilets' => 5,
+            'status' => 'active',
+        ]);
+
+        Review::create([
+            'user_id' => $user->id,
+            'property_id' => $property->id,
+            'cleanliness_rating' => 5,
+            'location_rating' => 5,
+            'value_rating' => 5,
+            'communication_rating' => 5,
+            'overall_rating' => 5,
+            'comment' => 'Exceptional hospitality and flawless 24/7 power backup.',
+            'is_published' => true,
+        ]);
+
+        $response = $this->get(route('properties.show', $property->slug));
+
+        $response->assertOk();
+        $content = $response->getContent();
+
+        $this->assertStringContainsString('"@type": "AggregateRating"', $content);
+        $this->assertStringContainsString('"ratingValue": "5.0"', $content);
+        $this->assertStringContainsString('"reviewCount": 1', $content);
+        $this->assertStringContainsString('Dr. Babatunde Cole', $content);
+        $this->assertStringContainsString('Exceptional hospitality and flawless 24/7 power backup.', $content);
+    }
+
+    public function test_blog_index_contains_collectionpage_and_itemlist_schema(): void
+    {
+        Blog::create([
+            'title' => 'Top Lagos Restaurants Near Lekki Shortlets',
+            'slug' => 'top-lagos-restaurants-lekki',
+            'excerpt' => 'Our curated culinary guide for guests.',
+            'content' => 'Gourmet dining options.',
+            'is_published' => true,
+            'published_at' => now()->subDays(2),
+        ]);
+
+        $response = $this->get(route('blog.index'));
+
+        $response->assertOk();
+        $content = $response->getContent();
+
+        $this->assertStringContainsString('"@type": "CollectionPage"', $content);
+        $this->assertStringContainsString('"@type": "ItemList"', $content);
+        $this->assertStringContainsString('Top Lagos Restaurants Near Lekki Shortlets', $content);
+    }
+
+    public function test_faq_and_blog_pages_include_voice_search_speakable_specification(): void
+    {
+        $faqResponse = $this->get(route('pages.faq'));
+        $faqResponse->assertOk();
+        $this->assertStringContainsString('"@type": "SpeakableSpecification"', $faqResponse->getContent());
+        $this->assertStringContainsString('.aeo-answer-capsule', $faqResponse->getContent());
+
+        $blog = Blog::create([
+            'title' => 'Voice Assistant Enabled Travel Tips',
+            'slug' => 'voice-assistant-travel-tips',
+            'excerpt' => 'A guide for modern voice-guided travel.',
+            'content' => 'Content here.',
+            'is_published' => true,
+            'published_at' => now()->subDay(),
+        ]);
+
+        $blogResponse = $this->get(route('blog.show', $blog->slug));
+        $blogResponse->assertOk();
+        $this->assertStringContainsString('"@type": "SpeakableSpecification"', $blogResponse->getContent());
+        $this->assertStringContainsString('.blog-headline', $blogResponse->getContent());
     }
 }

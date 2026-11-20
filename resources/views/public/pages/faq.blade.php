@@ -30,6 +30,10 @@ $faqs = [
 {
   "@@context": "https://schema.org",
   "@type": "FAQPage",
+  "speakable": {
+    "@type": "SpeakableSpecification",
+    "cssSelector": [".aeo-question-title", ".aeo-answer-capsule"]
+  },
   "mainEntity": [
     @foreach($faqs as [$q, $a])
     {
@@ -54,8 +58,8 @@ $faqs = [
         <div class="space-y-4">
             @foreach($faqs as [$question, $answer])
             <details class="bg-white rounded-xl border border-gray-200 p-5" @if($loop->first) open @endif>
-                <summary class="font-semibold text-gray-900 cursor-pointer">{{ $question }}</summary>
-                <p class="text-gray-700 mt-3">{!! $answer !!}</p>
+                <summary class="aeo-question-title font-semibold text-gray-900 cursor-pointer">{{ $question }}</summary>
+                <p class="aeo-answer-capsule text-gray-700 mt-3">{!! $answer !!}</p>
             </details>
             @endforeach
         </div>

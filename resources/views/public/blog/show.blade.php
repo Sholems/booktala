@@ -43,6 +43,10 @@
     "@type": "WebPage",
     "@id": "{{ url()->current() }}"
   },
+  "speakable": {
+    "@type": "SpeakableSpecification",
+    "cssSelector": [".blog-headline", ".blog-summary"]
+  },
   "author": {
     "@type": "Person",
     "name": "{{ $blog->author->name ?? 'BookTala Editorial' }}"
@@ -69,7 +73,7 @@
             <span class="mx-2">/</span>
             <span class="text-white">{{ $blog->title }}</span>
         </nav>
-        <h1 class="text-4xl font-bold">{{ $blog->title }}</h1>
+        <h1 class="blog-headline text-4xl font-bold">{{ $blog->title }}</h1>
     </div>
 </section>
 

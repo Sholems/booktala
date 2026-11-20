@@ -73,6 +73,34 @@
         ,{ "@type": "LocationFeatureSpecification", "name": "{{ $amenity->name }}", "value": true }
         @endforeach
       ]
+      @if($property->review_count > 0)
+      ,"aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": "{{ number_format($property->average_rating, 1) }}",
+        "reviewCount": {{ $property->review_count }},
+        "bestRating": "5",
+        "worstRating": "1"
+      }
+      @if($property->reviews && $property->reviews->where('is_published', true)->count() > 0)
+      ,"review": [
+        @foreach($property->reviews->where('is_published', true)->take(5) as $rev)
+        {
+          "@type": "Review",
+          "reviewRating": {
+            "@type": "Rating",
+            "ratingValue": "{{ $rev->overall_rating ?? 5 }}",
+            "bestRating": "5"
+          },
+          "author": {
+            "@type": "Person",
+            "name": "{{ $rev->user->name ?? 'Verified Guest' }}"
+          },
+          "reviewBody": {{ json_encode($rev->comment ?? '') }}
+        }@if(!$loop->last),@endif
+        @endforeach
+      ]
+      @endif
+      @endif
     },
     {
       "@type": "BreadcrumbList",

@@ -1,6 +1,41 @@
 @extends('layouts.app')
 
-@section('title', 'Blog - BookTala')
+@php
+    $blogMetaTitle = 'Travel Guides & Shortlet Living in Lagos - BookTala Blog';
+    $blogMetaDesc = 'Discover local neighborhood guides, serviced shortlet insights, and executive travel tips across Lekki Phase 1, Victoria Island, and Ikoyi with BookTala.';
+@endphp
+
+@section('title', $blogMetaTitle)
+@section('meta_description', $blogMetaDesc)
+
+@section('og_title', $blogMetaTitle)
+@section('og_description', $blogMetaDesc)
+@section('og_type', 'website')
+
+@push('schema')
+<script type="application/ld+json">
+{
+  "@@context": "https://schema.org",
+  "@type": "CollectionPage",
+  "name": {{ json_encode($blogMetaTitle) }},
+  "description": {{ json_encode($blogMetaDesc) }},
+  "url": "{{ url()->current() }}",
+  "mainEntity": {
+    "@type": "ItemList",
+    "itemListElement": [
+      @foreach($blogs as $idx => $b)
+      {
+        "@type": "ListItem",
+        "position": {{ $idx + 1 }},
+        "url": "{{ route('blog.show', $b->slug ?: $b->id) }}",
+        "name": {{ json_encode($b->title) }}
+      }@if(!$loop->last),@endif
+      @endforeach
+    ]
+  }
+}
+</script>
+@endpush
 
 @section('content')
 <section class="py-12 bg-primary text-white">

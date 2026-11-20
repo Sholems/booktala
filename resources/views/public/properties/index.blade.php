@@ -1,6 +1,57 @@
 @extends('layouts.app')
 
-@section('title', 'Our Apartments - BookTala')
+@php
+    $filterCity = request('city');
+    $filterType = request('property_type');
+    
+    if ($filterCity && $filterType) {
+        $pageTitle = 'Luxury ' . ucfirst($filterType) . 's in ' . ucfirst($filterCity) . ' - BookTala';
+        $pageDesc = 'Explore premium, fully serviced ' . strtolower($filterType) . 's in ' . ucfirst($filterCity) . ', Lagos with 24/7 power, fiber WiFi, and dedicated concierge.';
+    } elseif ($filterCity) {
+        $pageTitle = 'Serviced Apartments & Shortlets in ' . ucfirst($filterCity) . ' - BookTala';
+        $pageDesc = 'Discover luxury serviced shortlets in ' . ucfirst($filterCity) . ', Lagos. Guaranteed 24/7 power, hotel-grade housekeeping, and prime residential locations.';
+    } elseif ($filterType) {
+        $pageTitle = 'Luxury ' . ucfirst($filterType) . 's in Lagos - BookTala Shortlets';
+        $pageDesc = 'Book exclusive ' . strtolower($filterType) . ' accommodations across prime Lagos locations: Lekki Phase 1, Victoria Island, and Ikoyi.';
+    } else {
+        $pageTitle = 'Luxury Serviced Apartments & Shortlets in Lagos - BookTala';
+        $pageDesc = 'Browse BookTala\'s portfolio of luxury serviced apartments and shortlets in Lekki Phase 1, Victoria Island, and Ikoyi with 24/7 power and executive concierge.';
+    }
+@endphp
+
+@section('title', $pageTitle)
+@section('meta_description', $pageDesc)
+
+@section('og_title', $pageTitle)
+@section('og_description', $pageDesc)
+@section('og_type', 'website')
+
+@push('schema')
+<script type="application/ld+json">
+{
+  "@@context": "https://schema.org",
+  "@type": "CollectionPage",
+  "name": {{ json_encode($pageTitle) }},
+  "description": {{ json_encode($pageDesc) }},
+  "url": "{{ url()->current() }}",
+  "mainEntity": {
+    "@type": "ItemList",
+    "numberOfItems": {{ $properties->total() }},
+    "itemListElement": [
+      @foreach($properties as $index => $prop)
+      {
+        "@type": "ListItem",
+        "position": {{ $properties->firstItem() ? ($properties->firstItem() + $index) : ($index + 1) }},
+        "url": "{{ route('properties.show', $prop->slug ?: $prop->id) }}",
+        "name": {{ json_encode($prop->title) }},
+        "image": "{{ $prop->primaryImage ? $prop->primaryImage->image_path : asset('images/og-default.jpg') }}"
+      }@if(!$loop->last),@endif
+      @endforeach
+    ]
+  }
+}
+</script>
+@endpush
 
 @push('styles')
 <style>
