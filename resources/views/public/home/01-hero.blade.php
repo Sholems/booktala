@@ -23,8 +23,8 @@
 @endphp
 <section class="hero relative overflow-hidden bg-primary text-white">
     <div class="hero-bg absolute inset-0 bg-cover bg-center" style="background-image: url('{{ $hero->image ?? 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80' }}')"></div>
-    {{-- Uniform solid color overlay with 60% opacity (no gradient) --}}
-    <div class="absolute inset-0 bg-primary/60" style="background-color: rgba(11, 45, 91, 0.60);"></div>
+    {{-- Uniform solid color overlay with 90% opacity (no gradient) --}}
+    <div class="absolute inset-0 bg-primary/90" style="background-color: rgba(11, 45, 91, 0.90);"></div>
     <div class="hidden lg:block absolute -right-24 -top-24 w-96 h-96 rounded-full border border-accent/30"></div>
     <div class="hidden lg:block absolute -right-10 -top-10 w-72 h-72 rounded-full border border-accent/20"></div>
 
