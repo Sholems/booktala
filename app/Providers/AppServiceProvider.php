@@ -28,6 +28,10 @@ class AppServiceProvider extends ServiceProvider
     {
         Schema::defaultStringLength(191);
 
+        if ($this->app->environment('production') || str_starts_with((string) config('app.url'), 'https://')) {
+            \Illuminate\Support\Facades\URL::forceScheme('https');
+        }
+
         // Super admins may do everything; everyone else is checked against their role's permissions.
         Gate::before(
             fn ($user) => method_exists($user, 'hasRole') && $user->hasRole('super_admin') ? true : null
