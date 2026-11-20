@@ -142,6 +142,8 @@ class SeoGeoAeoTest extends TestCase
         $this->assertStringContainsString('"@type": "SearchAction"', $content);
         $this->assertStringContainsString('"@type": "LodgingBusiness"', $content);
         $this->assertStringContainsString('G-Briel Property Ltd', $content);
+        $this->assertStringContainsString('<meta name="geo.region" content="NG-LA">', $content);
+        $this->assertStringContainsString('<meta name="ICBM" content="6.4474, 3.4723">', $content);
     }
 
     public function test_apartment_page_contains_accommodation_schema_breadcrumbs_and_og_tags(): void

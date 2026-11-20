@@ -38,6 +38,11 @@ $socialLinks = array_filter([
     <meta name="twitter:image" content="@yield('twitter_image', asset('images/og-default.jpg'))">
     @yield('extra_meta')
     
+    <meta name="geo.region" content="NG-LA">
+    <meta name="geo.placename" content="Lekki Phase 1, Lagos">
+    <meta name="geo.position" content="6.4474;3.4723">
+    <meta name="ICBM" content="6.4474, 3.4723">
+    
     <link rel="canonical" href="{{ url()->current() }}">
     @if($favicon)
     <link rel="icon" type="image/x-icon" href="{{ url('media/' . ltrim($favicon, '/')) }}">

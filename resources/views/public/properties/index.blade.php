@@ -192,7 +192,7 @@
                     <article class="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow">
                         <div class="relative h-44 md:h-52">
                             @if($property->primaryImage)
-                            <img src="{{ $property->primaryImage->image_path }}" alt="{{ $property->title }}" class="w-full h-full object-cover">
+                            <img src="{{ $property->primaryImage->image_path }}" alt="{{ $property->title }}" class="w-full h-full object-cover" loading="lazy" decoding="async">
                             @else
                             <div class="w-full h-full bg-gray-200 flex items-center justify-center">
                                 <i class="fas fa-home text-4xl text-gray-400"></i>

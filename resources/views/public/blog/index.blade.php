@@ -53,7 +53,7 @@
             <div class="bg-white rounded-lg shadow overflow-hidden hover:shadow-lg transition">
                 <div class="h-48 bg-gray-300">
                     @if($blog->image)
-                    <img src="{{ \Illuminate\Support\Str::startsWith($blog->image, ['http://', 'https://']) ? $blog->image : url('media/' . ltrim($blog->image, '/')) }}" alt="{{ $blog->title }}" class="w-full h-full object-cover">
+                    <img src="{{ \Illuminate\Support\Str::startsWith($blog->image, ['http://', 'https://']) ? $blog->image : url('media/' . ltrim($blog->image, '/')) }}" alt="{{ $blog->title }}" class="w-full h-full object-cover" loading="lazy" decoding="async">
                     @endif
                 </div>
                 <div class="p-6">
