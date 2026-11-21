@@ -448,4 +448,31 @@ class AffiliateSystemTest extends TestCase
         $this->assertEquals('NIP-WIRE-987654321', $payout->transfer_reference);
         $this->assertNotNull($payout->paid_at);
     }
+
+    public function test_affiliate_can_view_and_download_flyer_with_qr_code(): void
+    {
+        $partnerUser = User::factory()->create();
+        $affiliate = Affiliate::create([
+            'user_id' => $partnerUser->id,
+            'code' => 'FLYERTEST',
+            'commission_rate' => 5.00,
+            'status' => 'active',
+        ]);
+
+        // A4 flyer view
+        $flyerResponse = $this->actingAs($partnerUser)->get(route('affiliate.flyer', ['layout' => 'flyer']));
+        $flyerResponse->assertOk();
+        $flyerResponse->assertSee('FLYERTEST');
+        $flyerResponse->assertSee('data:image/png;base64,', false);
+
+        // Table tent view
+        $tentResponse = $this->actingAs($partnerUser)->get(route('affiliate.flyer', ['layout' => 'tent']));
+        $tentResponse->assertOk();
+        $tentResponse->assertSee('FOLD HERE');
+
+        // PDF download
+        $pdfResponse = $this->actingAs($partnerUser)->get(route('affiliate.flyer.download', ['layout' => 'flyer']));
+        $pdfResponse->assertOk();
+        $this->assertStringContainsString('application/pdf', (string) $pdfResponse->headers->get('content-type'));
+    }
 }

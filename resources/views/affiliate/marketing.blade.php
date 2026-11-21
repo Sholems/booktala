@@ -77,6 +77,9 @@ Book directly here:
             </div>
 
             <div class="flex flex-col sm:flex-row gap-2.5 w-full md:w-auto shrink-0">
+                <a href="{{ route('affiliate.flyer') }}" class="px-5 py-3 bg-amber-400 hover:bg-amber-300 text-gray-900 rounded-xl text-xs font-bold transition flex items-center justify-center gap-2 shadow-sm">
+                    <i class="fas fa-print"></i> <span>Print Flyer / Table Tent</span>
+                </a>
                 <button type="button" onclick="downloadMarketingQr()" class="px-5 py-3 bg-primary hover:bg-primary/90 text-white rounded-xl text-xs font-bold transition flex items-center justify-center gap-2 shadow-sm">
                     <i class="fas fa-download"></i> <span>Download QR (PNG)</span>
                 </button>

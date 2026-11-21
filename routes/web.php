@@ -88,6 +88,8 @@ Route::prefix('affiliate')->middleware(['auth'])->group(function () {
     Route::post('/payouts/request', [AffiliatePortalController::class, 'requestPayout'])->name('affiliate.payouts.request');
     Route::post('/bank/update', [AffiliatePortalController::class, 'updateBank'])->name('affiliate.bank.update');
     Route::get('/marketing', [AffiliatePortalController::class, 'marketing'])->name('affiliate.marketing');
+    Route::get('/flyer', [AffiliatePortalController::class, 'flyer'])->name('affiliate.flyer');
+    Route::get('/flyer/download', [AffiliatePortalController::class, 'downloadFlyerPdf'])->name('affiliate.flyer.download');
 });
 
 require __DIR__.'/admin.php';

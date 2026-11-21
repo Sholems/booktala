@@ -122,6 +122,9 @@
                 <a href="https://api.whatsapp.com/send?text={{ urlencode("Looking for luxury shortlet apartments in Lagos with guaranteed 24/7 power? Browse BookTala's verified residences here: " . $affiliate->referral_url) }}" target="_blank" rel="noopener noreferrer" class="w-full py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-sm">
                     <i class="fab fa-whatsapp"></i> <span>WhatsApp</span>
                 </a>
+                <a href="{{ route('affiliate.flyer') }}" class="col-span-2 py-2 bg-gray-100 hover:bg-gray-200 text-gray-800 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 border border-gray-200">
+                    <i class="fas fa-print text-primary"></i> <span>Print Flyer &amp; Table-Tent Card</span>
+                </a>
             </div>
         </div>
 

@@ -194,6 +194,39 @@ class AffiliatePortalController extends Controller
         return view('affiliate.marketing', compact('affiliate', 'properties'));
     }
 
+    public function flyer(Request $request)
+    {
+        $affiliate = $this->getAffiliate();
+        if (! $affiliate) {
+            return redirect()->route('affiliate.dashboard');
+        }
+
+        $layout = $request->query('layout', 'flyer'); // 'flyer' or 'tent'
+        $qrService = app(\App\Services\QrCodeService::class);
+        $qrDataUri = $qrService->generateReferralQrDataUri($affiliate->referral_url);
+
+        return view('affiliate.flyer', compact('affiliate', 'qrDataUri', 'layout'));
+    }
+
+    public function downloadFlyerPdf(Request $request)
+    {
+        $affiliate = $this->getAffiliate();
+        if (! $affiliate) {
+            return redirect()->route('affiliate.dashboard');
+        }
+
+        $layout = $request->query('layout', 'flyer'); // 'flyer' or 'tent'
+        $qrService = app(\App\Services\QrCodeService::class);
+        $qrDataUri = $qrService->generateReferralQrDataUri($affiliate->referral_url);
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('affiliate.flyer-pdf', compact('affiliate', 'qrDataUri', 'layout'));
+        $pdf->setPaper('a4', $layout === 'tent' ? 'landscape' : 'portrait');
+
+        $filename = 'booktala-' . $layout . '-' . strtolower($affiliate->code) . '.pdf';
+
+        return $pdf->download($filename);
+    }
+
     private function getAffiliate(): ?Affiliate
     {
         return Auth::user()?->affiliate;
