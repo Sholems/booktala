@@ -11,7 +11,7 @@ use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Collection;
 
-class MarketingCampaignMail extends Mailable implements ShouldQueue
+class MarketingCampaignMail extends Mailable
 {
     use Queueable, SerializesModels;
 

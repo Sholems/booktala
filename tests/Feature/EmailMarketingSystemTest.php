@@ -161,7 +161,7 @@ class EmailMarketingSystemTest extends TestCase
         ]);
 
         $response->assertRedirect();
-        Mail::assertQueued(MarketingCampaignMail::class, function ($mail) {
+        Mail::assertSent(MarketingCampaignMail::class, function ($mail) {
             return $mail->hasTo('test-admin@booktala.com');
         });
     }
