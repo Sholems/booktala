@@ -22,6 +22,9 @@
                 <button onclick="copyMasterLink()" class="px-3.5 py-2 bg-amber-400 text-gray-900 rounded-lg text-xs font-bold hover:bg-amber-300 transition flex items-center gap-1.5 shrink-0 shadow">
                     <i class="fas fa-copy"></i> <span id="copyBtnText">Copy</span>
                 </button>
+                <a href="#partnerQrSection" class="px-3 py-2 bg-white/20 hover:bg-white/30 text-white rounded-lg text-xs font-bold transition flex items-center gap-1.5 shrink-0" title="View & Download QR Code">
+                    <i class="fas fa-qrcode text-amber-300"></i> <span>QR</span>
+                </a>
             </div>
             <div class="mt-2 flex items-center justify-between text-[11px] text-gray-300">
                 <span>Partner Code: <strong class="text-amber-300 font-mono">{{ $affiliate->code }}</strong></span>
@@ -84,29 +87,80 @@
         </div>
     </div>
 
-    <!-- Deep Link Generator Box -->
-    <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200">
-        <h3 class="font-bold text-lg text-primary mb-1 flex items-center gap-2">
-            <i class="fas fa-link text-accent"></i> Apartment Deep-Link Generator
-        </h3>
-        <p class="text-xs text-gray-600 mb-4">Promoting a specific penthouse or luxury apartment? Select it below to generate a direct tracked link for your followers.</p>
+    <!-- Share Tools: QR Code & Deep Link Generator Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+        <!-- QR Code Card (5 cols) -->
+        <div id="partnerQrSection" class="lg:col-span-5 bg-white p-6 rounded-2xl shadow-sm border border-gray-200 flex flex-col justify-between">
+            <div>
+                <div class="flex items-center justify-between mb-2">
+                    <h3 class="font-bold text-lg text-primary flex items-center gap-2">
+                        <i class="fas fa-qrcode text-amber-500"></i> Partner Referral QR Code
+                    </h3>
+                    <span class="text-[10px] font-bold uppercase tracking-wider bg-primary/10 text-primary px-2 py-0.5 rounded font-mono">
+                        {{ $affiliate->code }}
+                    </span>
+                </div>
+                <p class="text-xs text-gray-600 mb-4">
+                    Have clients scan this code with their smartphone camera to open BookTala with your 5% attribution locked in for 30 days.
+                </p>
 
-        <div class="grid grid-cols-1 md:grid-cols-12 gap-3 items-center">
-            <div class="md:col-span-6">
-                <select id="apartmentSelector" onchange="generateApartmentLink()" class="w-full px-3.5 py-2.5 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-primary focus:outline-none">
-                    <option value="">-- Select an Apartment --</option>
-                    @foreach($properties as $prop)
-                    <option value="{{ route('properties.show', $prop->slug ?: $prop->id) }}">
-                        {{ $prop->title }} (&#8358;{{ number_format($prop->price_per_night) }}/night)
-                    </option>
-                    @endforeach
-                </select>
+                <div class="flex flex-col sm:flex-row items-center gap-4 bg-gray-50 p-4 rounded-xl border border-gray-100 mb-4">
+                    <div class="bg-white p-2.5 rounded-xl shadow-sm border border-gray-200 shrink-0 flex items-center justify-center">
+                        <canvas class="js-qr block" data-url="{{ $affiliate->referral_url }}" width="140" height="140"></canvas>
+                    </div>
+                    <div class="text-xs text-gray-600 space-y-1.5 text-center sm:text-left">
+                        <p><strong class="text-gray-900 block">30-Day Cookie Lock</strong> Any booking made within 30 days is credited to you.</p>
+                        <p class="text-[11px] text-gray-500">Ideal for business cards, brochures, WhatsApp status, and client meetings.</p>
+                    </div>
+                </div>
             </div>
-            <div class="md:col-span-6 flex gap-2">
-                <input type="text" id="customApartmentLink" readonly placeholder="Select an apartment to generate link" class="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-xs font-mono text-gray-700">
-                <button onclick="copyApartmentLink()" class="px-4 py-2.5 bg-primary text-white rounded-xl text-xs font-bold hover:bg-primary/90 shrink-0">
-                    Copy
+
+            <div class="grid grid-cols-2 gap-2 pt-2 border-t border-gray-100">
+                <button type="button" onclick="downloadQrCode()" class="w-full py-2 bg-primary hover:bg-primary/90 text-white rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-sm">
+                    <i class="fas fa-download"></i> <span>Download PNG</span>
                 </button>
+                <a href="https://api.whatsapp.com/send?text={{ urlencode("Looking for luxury shortlet apartments in Lagos with guaranteed 24/7 power? Browse BookTala's verified residences here: " . $affiliate->referral_url) }}" target="_blank" rel="noopener noreferrer" class="w-full py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-sm">
+                    <i class="fab fa-whatsapp"></i> <span>WhatsApp</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- Apartment Deep-Link Generator Box (7 cols) -->
+        <div class="lg:col-span-7 bg-white p-6 rounded-2xl shadow-sm border border-gray-200 flex flex-col justify-between">
+            <div>
+                <h3 class="font-bold text-lg text-primary mb-1 flex items-center gap-2">
+                    <i class="fas fa-link text-accent"></i> Apartment Deep-Link Generator
+                </h3>
+                <p class="text-xs text-gray-600 mb-4">Promoting a specific penthouse or luxury apartment? Select it below to generate a direct tracked link for your followers.</p>
+
+                <div class="space-y-3">
+                    <div>
+                        <label class="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-1">Select Property</label>
+                        <select id="apartmentSelector" onchange="generateApartmentLink()" class="w-full px-3.5 py-2.5 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-primary focus:outline-none">
+                            <option value="">-- Select an Apartment --</option>
+                            @foreach($properties as $prop)
+                            <option value="{{ route('properties.show', $prop->slug ?: $prop->id) }}">
+                                {{ $prop->title }} (&#8358;{{ number_format($prop->price_per_night) }}/night)
+                            </option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-1">Your Custom Tracked Link</label>
+                        <div class="flex gap-2">
+                            <input type="text" id="customApartmentLink" readonly placeholder="Select an apartment to generate link" class="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-xs font-mono text-gray-700">
+                            <button onclick="copyApartmentLink()" class="px-5 py-2.5 bg-primary text-white rounded-xl text-xs font-bold hover:bg-primary/90 shrink-0">
+                                Copy
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="p-3 bg-amber-50 rounded-xl border border-amber-200 text-[11px] text-amber-800 flex items-center gap-2 mt-4">
+                <i class="fas fa-lightbulb text-amber-600"></i>
+                <span>Tip: Guests landing on any single apartment still have your 30-day cookie applied across the entire site!</span>
             </div>
         </div>
     </div>
@@ -194,6 +248,18 @@
         setTimeout(() => {
             document.getElementById('copyBtnText').innerText = 'Copy';
         }, 2000);
+    }
+
+    function downloadQrCode() {
+        const canvas = document.querySelector('canvas.js-qr');
+        if (!canvas) {
+            alert('QR code is still rendering. Please try again in a moment.');
+            return;
+        }
+        const link = document.createElement('a');
+        link.download = 'BookTala-Affiliate-{{ $affiliate->code }}-QR.png';
+        link.href = canvas.toDataURL('image/png');
+        link.click();
     }
 
     function generateApartmentLink() {

@@ -58,6 +58,32 @@ Book directly here:
         </div>
     </div>
 
+    <!-- QR Code & Marketing Assets Box -->
+    <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200">
+        <div class="flex flex-col md:flex-row items-center justify-between gap-6">
+            <div class="flex items-center gap-5">
+                <div class="bg-gray-50 p-3 rounded-2xl border border-gray-200 shadow-sm shrink-0">
+                    <canvas class="js-qr block" data-url="{{ $affiliate->referral_url }}" width="150" height="150"></canvas>
+                </div>
+                <div>
+                    <span class="inline-block px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800 text-[10px] font-bold uppercase tracking-wider mb-1.5">
+                        Print & Digital Asset
+                    </span>
+                    <h3 class="font-bold text-lg text-gray-900">Your Master Referral QR Code</h3>
+                    <p class="text-xs text-gray-600 max-w-lg mt-1 leading-relaxed">
+                        Save this QR code to print on your business cards, table tents, roll-up banners, and brochures, or upload it to WhatsApp Status and Instagram stories for instant mobile scanning.
+                    </p>
+                </div>
+            </div>
+
+            <div class="flex flex-col sm:flex-row gap-2.5 w-full md:w-auto shrink-0">
+                <button type="button" onclick="downloadMarketingQr()" class="px-5 py-3 bg-primary hover:bg-primary/90 text-white rounded-xl text-xs font-bold transition flex items-center justify-center gap-2 shadow-sm">
+                    <i class="fas fa-download"></i> <span>Download QR (PNG)</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Top Featured Apartments Grid for Sharing -->
     <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200">
         <h3 class="font-bold text-lg text-gray-900 mb-1 flex items-center gap-2">
@@ -125,6 +151,18 @@ Book directly here:
     function copyCustomUrl(url) {
         navigator.clipboard.writeText(url);
         alert('Apartment referral link copied to clipboard!');
+    }
+
+    function downloadMarketingQr() {
+        const canvas = document.querySelector('canvas.js-qr');
+        if (!canvas) {
+            alert('QR code is still rendering. Please try again in a moment.');
+            return;
+        }
+        const link = document.createElement('a');
+        link.download = 'BookTala-Affiliate-{{ $affiliate->code }}-QR.png';
+        link.href = canvas.toDataURL('image/png');
+        link.click();
     }
 </script>
 @endpush
