@@ -47,6 +47,11 @@ return [
         'sender_id' => env('TERMII_SENDER_ID', 'BookTala'),
     ],
 
+    'brevo' => [
+        'api_key' => env('BREVO_API_KEY'),
+        'list_id' => env('BREVO_LIST_ID'),
+    ],
+
     'google' => [
         'client_id' => env('GOOGLE_CLIENT_ID'),
         'client_secret' => env('GOOGLE_CLIENT_SECRET'),

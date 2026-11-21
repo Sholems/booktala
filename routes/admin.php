@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\AttendanceController as AdminAttendanceController;
 use App\Http\Controllers\Admin\AffiliateManagementController;
+use App\Http\Controllers\Admin\MarketingCampaignController;
 use App\Http\Controllers\Admin\BlogController;
 use App\Http\Controllers\Admin\ChannelManagerController;
 use App\Http\Controllers\Admin\CustomerController;
@@ -309,4 +310,23 @@ Route::prefix('admin')->middleware(['auth', 'role:super_admin|admin'])->group(fu
     Route::post('/affiliates/payouts/{payout}/reject', [AffiliateManagementController::class, 'rejectPayout'])->name('admin.affiliates.payouts.reject');
     Route::get('/affiliates/{affiliate}', [AffiliateManagementController::class, 'show'])->name('admin.affiliates.show');
     Route::put('/affiliates/{affiliate}', [AffiliateManagementController::class, 'update'])->name('admin.affiliates.update');
+
+    // Email Marketing & Campaign Suite
+    Route::prefix('marketing')->name('admin.marketing.')->group(function () {
+        Route::get('/subscribers', [MarketingCampaignController::class, 'subscribers'])->name('subscribers.index');
+        Route::post('/subscribers', [MarketingCampaignController::class, 'storeSubscriber'])->name('subscribers.store');
+        Route::patch('/subscribers/{subscriber}/toggle', [MarketingCampaignController::class, 'toggleSubscriber'])->name('subscribers.toggle');
+        Route::delete('/subscribers/{subscriber}', [MarketingCampaignController::class, 'destroySubscriber'])->name('subscribers.destroy');
+
+        Route::get('/campaigns', [MarketingCampaignController::class, 'index'])->name('campaigns.index');
+        Route::get('/campaigns/create', [MarketingCampaignController::class, 'create'])->name('campaigns.create');
+        Route::post('/campaigns', [MarketingCampaignController::class, 'store'])->name('campaigns.store');
+        Route::get('/campaigns/{campaign}', [MarketingCampaignController::class, 'show'])->name('campaigns.show');
+        Route::get('/campaigns/{campaign}/edit', [MarketingCampaignController::class, 'edit'])->name('campaigns.edit');
+        Route::put('/campaigns/{campaign}', [MarketingCampaignController::class, 'update'])->name('campaigns.update');
+        Route::delete('/campaigns/{campaign}', [MarketingCampaignController::class, 'destroy'])->name('campaigns.destroy');
+        Route::get('/campaigns/{campaign}/preview', [MarketingCampaignController::class, 'preview'])->name('campaigns.preview');
+        Route::post('/campaigns/{campaign}/test', [MarketingCampaignController::class, 'sendTest'])->name('campaigns.test');
+        Route::post('/campaigns/{campaign}/dispatch', [MarketingCampaignController::class, 'dispatchCampaign'])->name('campaigns.dispatch');
+    });
 });

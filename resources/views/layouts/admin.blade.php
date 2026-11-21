@@ -155,8 +155,10 @@ $logoMarkUrl = asset('images/booktala-mark.png');
 
                 <!-- Content & Marketing -->
                 <div>
-                    <p class="text-[11px] font-bold text-slate-500 uppercase tracking-widest px-3 mb-3">Content</p>
+                    <p class="text-[11px] font-bold text-slate-500 uppercase tracking-widest px-3 mb-3">Marketing & Content</p>
                     <div class="space-y-1">
+                        <x-nav-link route="admin.marketing.campaigns.index" active="admin.marketing.campaigns.*" icon="fa-paper-plane">Email Campaigns</x-nav-link>
+                        <x-nav-link route="admin.marketing.subscribers.index" active="admin.marketing.subscribers.*" icon="fa-envelope-open-text">Subscribers</x-nav-link>
                         <x-nav-link route="admin.blogs.index" active="admin.blogs.*" icon="fa-pen-nib">Blog</x-nav-link>
                         <x-nav-link route="admin.pages.index" active="admin.pages.*" icon="fa-file-alt">Pages</x-nav-link>
                         <x-nav-link route="admin.homepage-sections.index" active="admin.homepage-sections.*" icon="fa-th-large">Homepage Settings</x-nav-link>
