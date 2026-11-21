@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Affiliate\AffiliatePortalController;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Auth\PasswordController;
 use App\Http\Controllers\AvailabilityController;
@@ -74,6 +75,19 @@ Route::post('/newsletter/subscribe', [NewsletterController::class, 'subscribe'])
 Route::get('/sitemap.xml', [PageController::class, 'sitemap'])->name('sitemap');
 Route::get('/robots.txt', [PageController::class, 'robots'])->name('robots');
 Route::get('/llms.txt', [PageController::class, 'llmsTxt'])->name('llms.txt');
+
+// Affiliate Partner Portal
+Route::get('/affiliate/join', [AffiliatePortalController::class, 'join'])->name('affiliate.join');
+Route::post('/affiliate/join', [AffiliatePortalController::class, 'storeJoin'])->name('affiliate.join.store')->middleware('auth');
+
+Route::prefix('affiliate')->middleware(['auth'])->group(function () {
+    Route::get('/dashboard', [AffiliatePortalController::class, 'dashboard'])->name('affiliate.dashboard');
+    Route::get('/referrals', [AffiliatePortalController::class, 'referrals'])->name('affiliate.referrals');
+    Route::get('/payouts', [AffiliatePortalController::class, 'payouts'])->name('affiliate.payouts');
+    Route::post('/payouts/request', [AffiliatePortalController::class, 'requestPayout'])->name('affiliate.payouts.request');
+    Route::post('/bank/update', [AffiliatePortalController::class, 'updateBank'])->name('affiliate.bank.update');
+    Route::get('/marketing', [AffiliatePortalController::class, 'marketing'])->name('affiliate.marketing');
+});
 
 require __DIR__.'/admin.php';
 require __DIR__.'/staff.php';

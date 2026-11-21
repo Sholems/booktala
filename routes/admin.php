@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\AttendanceController as AdminAttendanceController;
+use App\Http\Controllers\Admin\AffiliateManagementController;
 use App\Http\Controllers\Admin\BlogController;
 use App\Http\Controllers\Admin\ChannelManagerController;
 use App\Http\Controllers\Admin\CustomerController;
@@ -299,4 +300,13 @@ Route::prefix('admin')->middleware(['auth', 'role:super_admin|admin'])->group(fu
     Route::get('/event-spaces/{space}/edit', [EventBookingController::class, 'editSpace'])->name('admin.event-spaces.edit')->middleware('can:property.view');
     Route::patch('/event-spaces/{space}', [EventBookingController::class, 'updateSpace'])->name('admin.event-spaces.update')->middleware('can:property.edit');
     Route::delete('/event-spaces/{space}', [EventBookingController::class, 'destroySpace'])->name('admin.event-spaces.destroy')->middleware('can:property.edit');
+
+    // Affiliate & Partner Management
+    Route::get('/affiliates', [AffiliateManagementController::class, 'index'])->name('admin.affiliates.index');
+    Route::get('/affiliates/referrals', [AffiliateManagementController::class, 'referrals'])->name('admin.affiliates.referrals');
+    Route::get('/affiliates/payouts', [AffiliateManagementController::class, 'payouts'])->name('admin.affiliates.payouts');
+    Route::post('/affiliates/payouts/{payout}/complete', [AffiliateManagementController::class, 'completePayout'])->name('admin.affiliates.payouts.complete');
+    Route::post('/affiliates/payouts/{payout}/reject', [AffiliateManagementController::class, 'rejectPayout'])->name('admin.affiliates.payouts.reject');
+    Route::get('/affiliates/{affiliate}', [AffiliateManagementController::class, 'show'])->name('admin.affiliates.show');
+    Route::put('/affiliates/{affiliate}', [AffiliateManagementController::class, 'update'])->name('admin.affiliates.update');
 });

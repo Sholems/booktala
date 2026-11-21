@@ -57,7 +57,7 @@ class ReservationLifecycle
 
     public function confirmAfterPayment(Reservation $reservation): Reservation
     {
-        return $this->transition($reservation, 'confirmed', null, fn (Reservation $locked) => [
+        $confirmed = $this->transition($reservation, 'confirmed', null, fn (Reservation $locked) => [
             'confirmed_by' => null,
             'confirmed_at' => now(),
             'hold_expires_at' => null,
@@ -65,6 +65,14 @@ class ReservationLifecycle
                 ? 'held'
                 : $locked->caution_fee_status,
         ]);
+
+        try {
+            app(\App\Services\AffiliateCommissionService::class)->recordReferral($confirmed);
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::warning('Failed to record affiliate referral: ' . $e->getMessage());
+        }
+
+        return $confirmed;
     }
 
     /**
@@ -162,7 +170,7 @@ class ReservationLifecycle
 
     public function cancel(Reservation $reservation, User $actor, ?string $reason = null): Reservation
     {
-        return $this->transition($reservation, 'cancelled', $actor, function (Reservation $locked) use ($actor, $reason) {
+        $cancelled = $this->transition($reservation, 'cancelled', $actor, function (Reservation $locked) use ($actor, $reason) {
             $isGuest = $locked->user_id === $actor->id && ! $this->isAdmin($actor);
             if ($isGuest && ! $locked->check_in->isAfter(today())) {
                 throw new InvalidReservationTransition('Bookings can only be cancelled online before the check-in date. Please contact us to make changes.');
@@ -178,6 +186,14 @@ class ReservationLifecycle
                 'caution_fee_status' => $locked->caution_fee_status === 'held' ? 'refund_pending' : $locked->caution_fee_status,
             ];
         });
+
+        try {
+            app(\App\Services\AffiliateCommissionService::class)->voidReferral($cancelled, $reason ?: 'Reservation cancelled');
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::warning('Failed to void affiliate referral: ' . $e->getMessage());
+        }
+
+        return $cancelled;
     }
 
     /**

@@ -98,6 +98,7 @@ $logoMarkUrl = asset('images/booktala-mark.png');
                         <x-nav-link route="admin.statements.index" active="admin.statements.*" icon="fa-file-invoice-dollar">Owner Statements</x-nav-link>
                         <x-nav-link route="admin.finance.ledger.index" active="admin.finance.ledger.*" icon="fa-book-open">General Ledger</x-nav-link>
                         <x-nav-link route="admin.finance.tax.index" active="admin.finance.tax.*" icon="fa-landmark">Tax & WHT Reports</x-nav-link>
+                        <x-nav-link route="admin.affiliates.index" active="admin.affiliates.*" icon="fa-handshake">Affiliate Partners</x-nav-link>
                         @endcan
                         @can('payroll.manage')
                         <x-nav-link route="admin.payroll.index" active="admin.payroll.*" icon="fa-money-check-alt">Payroll</x-nav-link>

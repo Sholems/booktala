@@ -81,6 +81,11 @@ class User extends Authenticatable implements HasMedia, MustVerifyEmail
         return $this->hasOne(Staff::class);
     }
 
+    public function affiliate(): HasOne
+    {
+        return $this->hasOne(Affiliate::class);
+    }
+
     public function isActive(): bool
     {
         return $this->status === 'active';

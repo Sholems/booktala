@@ -205,6 +205,11 @@ class Reservation extends Model
         return $this->hasOne(Review::class);
     }
 
+    public function affiliateReferral(): HasOne
+    {
+        return $this->hasOne(AffiliateReferral::class);
+    }
+
     public function invoice(): HasMany
     {
         return $this->hasMany(Invoice::class);

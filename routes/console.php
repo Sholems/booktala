@@ -18,6 +18,9 @@ Schedule::command('bookings:expire-holds')->everyMinute()->withoutOverlapping();
 // Two-way synchronization with Airbnb, Booking.com, VRBO calendars
 Schedule::command('ota:sync')->everyFifteenMinutes()->withoutOverlapping();
 
+// Mature affiliate commissions 24 hours post-stay
+Schedule::command('affiliates:mature-commissions')->hourly()->withoutOverlapping();
+
 // Shared hosting (cPanel) has no long-running queue worker. Run one cron entry,
 //   * * * * * cd /path/to/app && php artisan schedule:run >> /dev/null 2>&1
 // and this drains queued emails and notifications every minute.
