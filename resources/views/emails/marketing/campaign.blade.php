@@ -4,7 +4,7 @@
 <!-- Optional Hero Image -->
 @if(!empty($campaign->hero_image_url))
 <div style="margin: -36px -32px 28px; text-align: center;">
-    <img src="{{ $campaign->hero_image_url }}" alt="BookTala" style="width: 100%; max-width: 600px; height: auto; display: block;" />
+    <img src="{{ $campaign->hero_image_url }}" alt="BookTala Stays" style="width: 100%; max-width: 600px; height: auto; display: block;" />
 </div>
 @endif
 
@@ -43,7 +43,7 @@
 <!-- Featured Apartments Section -->
 @if(!empty($properties) && count($properties) > 0)
 <div style="margin: 32px 0 24px;">
-    <h3 style="font-size: 16px; font-weight: 700; color: #0B2D5B; text-transform: uppercase; letter-spacing: 1px; margin: 0 0 16px; text-align: center;">
+    <h3 style="font-size: 15px; font-weight: 800; color: #0B2D5B; text-transform: uppercase; letter-spacing: 1px; margin: 0 0 16px; text-align: center;">
         Handpicked Residences For You
     </h3>
 
@@ -52,7 +52,14 @@
         <tr>
             <td width="35%" style="vertical-align: top; background-color: #e2e8f0;">
                 @php
-                    $imageUrl = $property->primary_image ? asset('storage/' . $property->primary_image) : 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=400&q=80';
+                    $localImagePath = $property->primary_image ? public_path('storage/' . $property->primary_image) : null;
+                    if ($localImagePath && file_exists($localImagePath) && isset($message)) {
+                        $imageUrl = $message->embed($localImagePath);
+                    } elseif ($property->primary_image) {
+                        $imageUrl = asset('storage/' . $property->primary_image);
+                    } else {
+                        $imageUrl = 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=400&q=80';
+                    }
                 @endphp
                 <img src="{{ $imageUrl }}" alt="{{ $property->name }}" style="width: 100%; height: 110px; object-fit: cover; display: block;" />
             </td>

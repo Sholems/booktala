@@ -16,7 +16,7 @@ return [
 
     // Placeholders until the organisation's details are provided.
     'phone' => env('BRAND_PHONE', '+234 814 000 8252'),
-    'email' => env('BRAND_EMAIL', 'concierge@booktala.com'),
+    'email' => env('BRAND_EMAIL', 'booking@booktala.com'),
     'address' => env('BRAND_ADDRESS', 'Plot 14, Admiralty Way, Lekki Phase 1, Lagos, Nigeria'),
     'city' => env('BRAND_CITY', 'Lagos, Nigeria'),
     'google_profile' => env('BRAND_GOOGLE_PROFILE'),

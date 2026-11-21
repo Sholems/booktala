@@ -198,7 +198,7 @@
                     @csrf
                     <div>
                         <label class="block text-[11px] font-bold text-gray-600 mb-1">Destination Address</label>
-                        <input type="email" name="test_email" value="{{ auth()->user()->email }}" required class="w-full px-3.5 py-2 text-xs border border-gray-300 rounded-lg focus:ring-1 focus:ring-primary focus:outline-none">
+                        <input type="email" name="test_email" value="{{ str_ends_with(auth()->user()->email ?? '', '.test') ? 'booking@booktala.com' : (auth()->user()->email ?? 'booking@booktala.com') }}" required class="w-full px-3.5 py-2 text-xs border border-gray-300 rounded-lg focus:ring-1 focus:ring-primary focus:outline-none">
                     </div>
                     <button type="submit" class="w-full py-2 bg-gray-900 hover:bg-black text-white rounded-lg text-xs font-bold transition shadow-sm flex items-center justify-center gap-1.5">
                         <i class="fas fa-paper-plane text-amber-400"></i> Dispatch Test to Inbox

@@ -30,23 +30,17 @@
 
     <center class="wrapper">
         <table class="main" width="100%" cellpadding="0" cellspacing="0">
-            <!-- Header Banner -->
+            <!-- Header Banner with Official BookTala Brand Logo -->
             <tr>
-                <td style="background-color: #0B2D5B; padding: 28px 32px; text-align: center;">
-                    <a href="{{ config('app.url') }}" target="_blank" style="text-decoration: none;">
-                        <table cellpadding="0" cellspacing="0" border="0" style="margin: 0 auto;">
-                            <tr>
-                                <td style="vertical-align: middle; padding-right: 12px;">
-                                    <div style="background-color: #ffffff; width: 40px; height: 40px; border-radius: 8px; text-align: center; line-height: 40px; font-weight: 900; color: #0B2D5B; font-size: 20px; font-family: serif;">
-                                        BT
-                                    </div>
-                                </td>
-                                <td style="vertical-align: middle; text-align: left;">
-                                    <span style="font-size: 22px; font-weight: 800; letter-spacing: 1px; color: #ffffff; display: block; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">BOOK<span style="color: #DC2626;">TALA</span></span>
-                                    <span style="font-size: 11px; text-transform: uppercase; letter-spacing: 2px; color: #94a3b8; display: block;">Luxury Stays · Serviced Living</span>
-                                </td>
-                            </tr>
-                        </table>
+                <td style="background-color: #0B2D5B; padding: 26px 32px; text-align: center;">
+                    <a href="{{ config('app.url') }}" target="_blank" style="text-decoration: none; display: inline-block;">
+                        @php
+                            $whiteLogoPath = public_path('images/booktala-logo-white.png');
+                            $logoSrc = (isset($message) && file_exists($whiteLogoPath)) 
+                                ? $message->embed($whiteLogoPath) 
+                                : asset('images/booktala-logo-white.png');
+                        @endphp
+                        <img src="{{ $logoSrc }}" alt="BookTala - Stays · Travels · Better Living" width="220" style="width: 220px; max-width: 100%; height: auto; display: block; margin: 0 auto; border: 0;" />
                     </a>
                 </td>
             </tr>
@@ -64,18 +58,18 @@
                     <table width="100%" cellpadding="0" cellspacing="0" border="0">
                         <tr>
                             <td class="column" width="33%" style="text-align: center; padding: 8px;">
-                                <span style="font-size: 16px;">⚡</span>
-                                <div style="font-size: 12px; font-weight: 700; color: #0B2D5B; margin-top: 4px;">24/7 Guaranteed Power</div>
+                                <div style="font-size: 20px; margin-bottom: 4px;">⚡</div>
+                                <div style="font-size: 12px; font-weight: 700; color: #0B2D5B;">24/7 Guaranteed Power</div>
                                 <div style="font-size: 11px; color: #64748b;">Zero downtime</div>
                             </td>
                             <td class="column" width="33%" style="text-align: center; padding: 8px;">
-                                <span style="font-size: 16px;">🛡️</span>
-                                <div style="font-size: 12px; font-weight: 700; color: #0B2D5B; margin-top: 4px;">Verified Clean & Safe</div>
+                                <div style="font-size: 20px; margin-bottom: 4px;">🛡️</div>
+                                <div style="font-size: 12px; font-weight: 700; color: #0B2D5B;">Verified Clean & Safe</div>
                                 <div style="font-size: 11px; color: #64748b;">Hospitality grade</div>
                             </td>
                             <td class="column" width="33%" style="text-align: center; padding: 8px;">
-                                <span style="font-size: 16px;">🛎️</span>
-                                <div style="font-size: 12px; font-weight: 700; color: #0B2D5B; margin-top: 4px;">Personal Concierge</div>
+                                <div style="font-size: 20px; margin-bottom: 4px;">🛎️</div>
+                                <div style="font-size: 12px; font-weight: 700; color: #0B2D5B;">Personal Concierge</div>
                                 <div style="font-size: 11px; color: #64748b;">Always on call</div>
                             </td>
                         </tr>
@@ -85,17 +79,21 @@
 
             <!-- Footer -->
             <tr>
-                <td style="background-color: #0f172a; padding: 32px; text-align: center; color: #94a3b8; font-size: 12px; line-height: 1.6;">
-                    <p style="margin: 0 0 12px; font-weight: 700; color: #e2e8f0; font-size: 14px;">
-                        BookTala Luxury Stays
+                <td style="background-color: #0f172a; padding: 32px 24px; text-align: center; color: #94a3b8; font-size: 12px; line-height: 1.6;">
+                    <p style="margin: 0 0 10px; font-weight: 700; color: #e2e8f0; font-size: 14px; letter-spacing: 0.5px;">
+                        BookTala · Stays · Travels · Better Living
                     </p>
-                    <p style="margin: 0 0 16px; color: #64748b;">
-                        Furnished Apartments & Serviced Residences · Lagos & Abuja, Nigeria
+                    <p style="margin: 0 0 12px; color: #cbd5e1; font-size: 12px;">
+                        Direct Concierge & Reservations: 
+                        <a href="mailto:booking@booktala.com" style="color: #ffffff; font-weight: 700; text-decoration: underline;">booking@booktala.com</a>
+                    </p>
+                    <p style="margin: 0 0 16px; color: #64748b; font-size: 11px;">
+                        Plot 14, Admiralty Way, Lekki Phase 1, Lagos, Nigeria
                     </p>
                     <p style="margin: 0 0 16px;">
                         <a href="{{ config('app.url') }}" style="color: #94a3b8; text-decoration: underline; margin: 0 8px;">Browse Stays</a> |
                         <a href="{{ config('app.url') }}/affiliate" style="color: #94a3b8; text-decoration: underline; margin: 0 8px;">Affiliate Portal</a> |
-                        <a href="{{ config('app.url') }}/contact" style="color: #94a3b8; text-decoration: underline; margin: 0 8px;">Concierge Support</a>
+                        <a href="mailto:booking@booktala.com" style="color: #94a3b8; text-decoration: underline; margin: 0 8px;">Contact Support</a>
                     </p>
                     <hr style="border: 0; border-top: 1px solid #1e293b; margin: 20px 0;" />
                     <p style="margin: 0 0 8px; font-size: 11px; color: #475569;">
