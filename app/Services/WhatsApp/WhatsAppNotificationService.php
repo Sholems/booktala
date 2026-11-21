@@ -178,12 +178,25 @@ class WhatsAppNotificationService
     protected function dispatchMessage(string $rawPhone, string $message, string $template, ?User $user = null, ?Reservation $reservation = null, ?string $recipientName = null): WhatsAppMessageLog
     {
         $formattedPhone = $this->formatPhoneNumber($rawPhone);
-        $gateway = config('services.whatsapp.gateway', 'simulation');
+        $gateway = config('services.whatsapp.gateway', 'sendchamp');
         $status = 'sent';
         $gatewayReference = 'WA-'.uniqid();
         $errorMessage = null;
 
-        if ($gateway === 'termii' && config('services.termii.api_key')) {
+        /** @var \App\Services\SendchampService $sendchamp */
+        $sendchamp = app(\App\Services\SendchampService::class);
+
+        if (($gateway === 'sendchamp' || $gateway === 'auto') && $sendchamp->isConfigured()) {
+            $gateway = 'sendchamp';
+            $result = $sendchamp->sendWhatsApp($formattedPhone, $message);
+            if ($result['success']) {
+                $status = 'sent';
+                $gatewayReference = $result['reference'] ?? $gatewayReference;
+            } else {
+                $status = 'failed';
+                $errorMessage = $result['error'] ?? 'Sendchamp WhatsApp delivery failed';
+            }
+        } elseif ($gateway === 'termii' && config('services.termii.api_key')) {
             try {
                 $response = Http::timeout(10)->post('https://api.ng.termii.com/api/send-message', [
                     'to' => ltrim($formattedPhone, '+'),

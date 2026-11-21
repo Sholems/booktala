@@ -7,40 +7,52 @@ use Illuminate\Support\Facades\Log;
 
 class SmsService
 {
-    private $apiKey;
+    private ?string $termiiKey;
+    private string $termiiFrom;
+    private SendchampService $sendchamp;
 
-    private $from;
-
-    public function __construct()
+    public function __construct(SendchampService $sendchamp)
     {
-        $this->apiKey = config('services.termii.key');
-        $this->from = config('services.termii.from', 'BOOKTALA');
+        $this->sendchamp = $sendchamp;
+        $this->termiiKey = config('services.termii.key');
+        $this->termiiFrom = config('services.termii.from', 'BOOKTALA');
     }
 
     public function sendSms($to, $message)
     {
-        if (empty($this->apiKey)) {
-            Log::warning('Termii API key not configured. SMS not sent.');
-
-            return false;
+        // 1. Sendchamp (Unified engine for SMS)
+        if ($this->sendchamp->isConfigured()) {
+            $result = $this->sendchamp->sendSms($to, $message);
+            if ($result['success']) {
+                return true;
+            }
+            Log::warning('Sendchamp SMS dispatch unsuccessful, falling back to Termii if available: ' . ($result['error'] ?? 'Unknown error'));
         }
 
-        $to = $this->formatPhoneNumber($to);
+        // 2. Termii Fallback
+        if (!empty($this->termiiKey)) {
+            $to = $this->formatPhoneNumber($to);
 
-        try {
-            $response = Http::post('https://api.termii.com/api/sms/send', [
-                'api_key' => $this->apiKey,
-                'to' => $to,
-                'from' => $this->from,
-                'sms' => $message,
-            ]);
+            try {
+                $response = Http::post('https://api.termii.com/api/sms/send', [
+                    'api_key' => $this->termiiKey,
+                    'to' => $to,
+                    'from' => $this->termiiFrom,
+                    'sms' => $message,
+                ]);
 
-            return $response->successful();
-        } catch (\Exception $e) {
-            Log::error('SMS sending failed: '.$e->getMessage());
-
-            return false;
+                return $response->successful();
+            } catch (\Exception $e) {
+                Log::error('Termii SMS fallback failed: ' . $e->getMessage());
+                return false;
+            }
         }
+
+        if (!$this->sendchamp->isConfigured()) {
+            Log::warning('Neither Sendchamp nor Termii is configured. SMS not sent.');
+        }
+
+        return false;
     }
 
     public function sendBookingConfirmation($phone, $name, $bookingRef, $property, $checkIn, $checkOut)

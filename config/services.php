@@ -47,11 +47,6 @@ return [
         'sender_id' => env('TERMII_SENDER_ID', 'BookTala'),
     ],
 
-    'brevo' => [
-        'api_key' => env('BREVO_API_KEY'),
-        'list_id' => env('BREVO_LIST_ID'),
-    ],
-
     'google' => [
         'client_id' => env('GOOGLE_CLIENT_ID'),
         'client_secret' => env('GOOGLE_CLIENT_SECRET'),
@@ -60,6 +55,19 @@ return [
 
     'brevo' => [
         'key' => env('BREVO_API_KEY'),
+        'list_id' => env('BREVO_LIST_ID'),
+    ],
+
+    'sendchamp' => [
+        'public_key' => env('SENDCHAMP_PUBLIC_KEY'),
+        'mode' => env('SENDCHAMP_MODE', 'live'),
+        'sms_sender_id' => env('SENDCHAMP_SMS_SENDER_ID', 'BookTala'),
+        'whatsapp_phone_number_id' => env('SENDCHAMP_WHATSAPP_PHONE_NUMBER_ID', env('SENDCHAMP_WHATSAPP_SENDER')),
+        'route' => env('SENDCHAMP_ROUTE', 'dnd'),
+    ],
+
+    'whatsapp' => [
+        'gateway' => env('WHATSAPP_GATEWAY', 'sendchamp'),
     ],
 
 ];
