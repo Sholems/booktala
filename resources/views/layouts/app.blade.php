@@ -188,9 +188,24 @@ $socialLinks = array_filter([
                 <div class="lg:col-span-3">
                     <h4 class="font-bold mb-3 md:mb-4 text-sm md:text-base text-white">Contact &amp; Concierge</h4>
                     <ul class="space-y-2 text-sm text-gray-300">
-                        <li><i class="fas fa-map-marker-alt mr-2 text-accent"></i> <span>{{ $siteAddress }}</span></li>
-                        <li class="pt-1"><i class="fas fa-phone mr-2 text-accent"></i> <a href="tel:{{ preg_replace('/[^0-9+]/', '', $sitePhone) }}" class="hover:text-accent">{{ $sitePhone }}</a></li>
-                        <li><i class="fas fa-envelope mr-2 text-accent"></i> <a href="mailto:{{ $siteEmail }}" class="hover:text-accent break-all">{{ $siteEmail }}</a></li>
+                        <li class="flex items-start gap-2.5">
+                            <i class="fas fa-map-marker-alt text-accent mt-1 shrink-0"></i> 
+                            <span>{{ $siteAddress }}</span>
+                        </li>
+                        <li class="pt-1 flex items-center gap-2.5">
+                            <i class="fas fa-phone-alt text-accent shrink-0"></i> 
+                            <a href="tel:{{ preg_replace('/[^0-9+]/', '', $sitePhone) }}" class="hover:text-accent font-medium">{{ $sitePhone }}</a>
+                        </li>
+                        <li class="flex items-center gap-2.5">
+                            <i class="fab fa-whatsapp text-emerald-400 text-base shrink-0"></i> 
+                            <a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', $sitePhone) }}?text=Hello%20BookTala%20Concierge,%20I%20have%20an%20inquiry%20about%20a%20stay." target="_blank" rel="noopener noreferrer" class="text-emerald-400 hover:text-emerald-300 font-semibold">
+                                WhatsApp: {{ $sitePhone }}
+                            </a>
+                        </li>
+                        <li class="pt-1 flex items-center gap-2.5">
+                            <i class="fas fa-envelope text-accent shrink-0"></i> 
+                            <a href="mailto:{{ $siteEmail }}" class="hover:text-accent break-all font-medium">{{ $siteEmail }}</a>
+                        </li>
                     </ul>
                     @if($googleProfile)
                     <a href="{{ $googleProfile }}" target="_blank" rel="noopener" class="inline-flex items-center gap-2 mt-3 text-sm text-gray-300 hover:text-accent">

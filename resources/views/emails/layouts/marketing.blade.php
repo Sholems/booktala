@@ -83,15 +83,20 @@
                     <p style="margin: 0 0 10px; font-weight: 700; color: #e2e8f0; font-size: 14px; letter-spacing: 0.5px;">
                         BookTala · Stays · Travels · Better Living
                     </p>
-                    <p style="margin: 0 0 12px; color: #cbd5e1; font-size: 12px;">
+                    <p style="margin: 0 0 8px; color: #cbd5e1; font-size: 12px;">
                         Direct Concierge & Reservations: 
                         <a href="mailto:booking@booktala.com" style="color: #ffffff; font-weight: 700; text-decoration: underline;">booking@booktala.com</a>
                     </p>
-                    <p style="margin: 0 0 16px; color: #64748b; font-size: 11px;">
-                        Plot 14, Admiralty Way, Lekki Phase 1, Lagos, Nigeria
+                    <p style="margin: 0 0 12px; color: #cbd5e1; font-size: 12px;">
+                        Call & WhatsApp: 
+                        <a href="https://wa.me/2349116110242?text=Hello%20BookTala%20Concierge" style="color: #4ade80; font-weight: 700; text-decoration: underline;">+234 911 611 0242</a>
+                    </p>
+                    <p style="margin: 0 0 16px; color: #94a3b8; font-size: 11px;">
+                        27 Adetayo Osho Street, Akoka, Lagos, Nigeria
                     </p>
                     <p style="margin: 0 0 16px;">
                         <a href="{{ config('app.url') }}" style="color: #94a3b8; text-decoration: underline; margin: 0 8px;">Browse Stays</a> |
+                        <a href="https://wa.me/2349116110242?text=Hello%20BookTala%20Concierge" style="color: #4ade80; text-decoration: underline; margin: 0 8px;">WhatsApp Concierge</a> |
                         <a href="{{ config('app.url') }}/affiliate" style="color: #94a3b8; text-decoration: underline; margin: 0 8px;">Affiliate Portal</a> |
                         <a href="mailto:booking@booktala.com" style="color: #94a3b8; text-decoration: underline; margin: 0 8px;">Contact Support</a>
                     </p>

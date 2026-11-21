@@ -15,10 +15,10 @@ return [
     'description' => env('BRAND_DESCRIPTION', 'BookTala makes it simple to find, book and enjoy comfortable, fully furnished short-let stays. Every apartment is managed by G-Briel Property Ltd, with secure online payment and a team on hand from check-in to check-out.'),
 
     // Placeholders until the organisation's details are provided.
-    'phone' => env('BRAND_PHONE', '+234 814 000 8252'),
+    'phone' => env('BRAND_PHONE', '+234 911 611 0242'),
     'email' => env('BRAND_EMAIL', 'booking@booktala.com'),
-    'address' => env('BRAND_ADDRESS', 'Plot 14, Admiralty Way, Lekki Phase 1, Lagos, Nigeria'),
-    'city' => env('BRAND_CITY', 'Lagos, Nigeria'),
+    'address' => env('BRAND_ADDRESS', '27 Adetayo Osho Street, Akoka, Lagos, Nigeria'),
+    'city' => env('BRAND_CITY', 'Akoka, Lagos, Nigeria'),
     'google_profile' => env('BRAND_GOOGLE_PROFILE'),
 
     'social' => [
