@@ -24,12 +24,56 @@ class AffiliateSystemTest extends TestCase
         $response = $this->get(route('affiliate.join'));
         $response->assertOk();
         $response->assertSeeText('Earn 5% Commission on Every Shortlet Booking');
-        $response->assertSee(route('register'));
+        $response->assertSee(route('affiliate.join.store'));
         $response->assertSee(route('login'));
 
         $aliasResponse = $this->get('/affiliate');
         $aliasResponse->assertOk();
         $aliasResponse->assertSeeText('Earn 5% Commission on Every Shortlet Booking');
+    }
+
+    public function test_guest_can_register_directly_from_affiliate_landing_page_and_land_on_dashboard(): void
+    {
+        $response = $this->post(route('affiliate.join.store'), [
+            'name' => 'Chioma Okonkwo',
+            'email' => 'chioma@example.com',
+            'phone' => '08098765432',
+            'password' => 'SecurePass123!',
+            'password_confirmation' => 'SecurePass123!',
+            'code' => 'CHIOMA5',
+            'bank_name' => 'Zenith Bank',
+            'account_number' => '2012345678',
+            'account_name' => 'Chioma Okonkwo',
+        ]);
+
+        $response->assertRedirect(route('affiliate.dashboard'));
+        $this->assertAuthenticated();
+
+        $this->assertDatabaseHas('affiliates', [
+            'code' => 'CHIOMA5',
+            'bank_name' => 'Zenith Bank',
+            'account_number' => '2012345678',
+            'status' => 'active',
+        ]);
+
+        $dashboardResponse = $this->get(route('affiliate.dashboard'));
+        $dashboardResponse->assertOk();
+        $dashboardResponse->assertSeeText('CHIOMA5');
+    }
+
+    public function test_authenticated_customer_auto_provisions_affiliate_when_visiting_affiliate_dashboard(): void
+    {
+        $customer = User::factory()->create(['name' => 'Emeka Obi']);
+        $customer->assignRole('customer');
+
+        $this->assertNull($customer->affiliate);
+
+        $response = $this->actingAs($customer)->get(route('affiliate.dashboard'));
+        $response->assertOk();
+
+        $customer->refresh();
+        $this->assertNotNull($customer->affiliate);
+        $this->assertEquals('active', $customer->affiliate->status);
     }
 
     public function test_user_can_view_affiliate_join_page_and_register_as_partner(): void

@@ -54,5 +54,27 @@
         <a href="{{ route('properties.index') }}" class="mt-4 inline-block rounded-lg bg-accent px-6 py-3 font-semibold text-white hover:bg-accent/90">Find an apartment</a>
     </div>
     @endif
+
+    <!-- Affiliate Partner Banner -->
+    <div class="mt-8 rounded-2xl text-white p-6 md:p-8 shadow-lg flex flex-col md:flex-row items-center justify-between gap-6" style="background-color: #0B2D5B; background: linear-gradient(135deg, #0B2D5B 0%, #123E7A 100%);">
+        <div class="flex items-center gap-4 text-center md:text-left">
+            <div class="w-14 h-14 rounded-2xl bg-amber-400 text-gray-900 flex items-center justify-center text-2xl font-black shrink-0 shadow">
+                <i class="fas fa-handshake"></i>
+            </div>
+            <div>
+                <span class="inline-block px-2.5 py-0.5 rounded-full bg-white/10 text-amber-300 text-[11px] font-bold uppercase tracking-wider mb-1 border border-white/15">
+                    Earn 5% Direct Payout
+                </span>
+                <h3 class="text-xl md:text-2xl font-black text-white">BookTala Affiliate Partner Portal</h3>
+                <p class="text-xs md:text-sm text-gray-200 mt-1 max-w-xl">
+                    Share your personalized link with travelers and corporate clients. Earn 5% cash commission on every booked stay, paid straight to your Nigerian bank account.
+                </p>
+            </div>
+        </div>
+        <a href="{{ route('affiliate.dashboard') }}" class="w-full md:w-auto px-7 py-3.5 bg-amber-400 hover:bg-amber-300 text-gray-900 font-bold rounded-xl text-sm transition shadow-md shrink-0 text-center flex items-center justify-center gap-2">
+            <span>Open Partner Portal</span>
+            <i class="fas fa-arrow-right text-xs"></i>
+        </a>
+    </div>
 </div>
 @endsection

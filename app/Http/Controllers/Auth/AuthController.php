@@ -74,6 +74,25 @@ class AuthController extends Controller
 
         Auth::login($user);
 
+        // If registering specifically as an affiliate partner:
+        if ($request->input('role') === 'affiliate' || $request->input('intent') === 'affiliate' || $request->session()->pull('affiliate_intent')) {
+            if (! $user->affiliate) {
+                $code = \App\Models\Affiliate::generateUniqueCode($user->name);
+                \App\Models\Affiliate::create([
+                    'user_id' => $user->id,
+                    'code' => $code,
+                    'commission_rate' => \App\Services\AffiliateCommissionService::DEFAULT_COMMISSION_PERCENT,
+                    'status' => 'active',
+                ]);
+            }
+
+            return redirect()->route('affiliate.dashboard')->with('success', 'Welcome to the BookTala Affiliate Program! Your partner dashboard is active.');
+        }
+
+        if ($request->has('redirect') && filter_var($request->input('redirect'), FILTER_VALIDATE_URL) === false) {
+            return redirect($request->input('redirect'));
+        }
+
         return redirect()->route('customer.dashboard');
     }
 

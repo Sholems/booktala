@@ -221,31 +221,94 @@
                 </form>
             </div>
         @else
-            <!-- Guest Call to Action Box -->
-            <div class="max-w-xl mx-auto bg-white p-8 rounded-2xl shadow-lg border border-gray-200 text-center">
-                <div class="w-16 h-16 bg-primary/10 text-primary rounded-2xl flex items-center justify-center text-2xl mx-auto mb-4">
-                    <i class="fas fa-handshake"></i>
-                </div>
-                <h3 class="text-2xl font-black text-gray-900 mb-2">Create Your Partner Account</h3>
-                <p class="text-sm text-gray-600 mb-6 leading-relaxed">
-                    Sign in or create a free BookTala account to pick your personal referral code and get instant access to your marketing dashboard.
-                </p>
-
-                <div class="flex flex-col sm:flex-row gap-3 justify-center mb-6">
-                    <a href="{{ route('register') }}" class="px-6 py-3.5 bg-accent hover:bg-accent/90 text-white font-bold rounded-xl shadow transition flex items-center justify-center gap-2">
-                        <i class="fas fa-user-plus"></i>
-                        <span>Register as Partner</span>
-                    </a>
-                    <a href="{{ route('login') }}" class="px-6 py-3.5 border border-gray-300 hover:bg-gray-50 text-gray-800 font-bold rounded-xl transition flex items-center justify-center gap-2">
-                        <i class="fas fa-sign-in-alt"></i>
-                        <span>Sign In</span>
-                    </a>
+            <!-- Guest Direct Registration Box -->
+            <div class="max-w-xl mx-auto bg-white p-8 rounded-2xl shadow-lg border border-gray-200">
+                <div class="text-center mb-6 pb-4 border-b border-gray-100">
+                    <span class="inline-block px-3 py-1 bg-amber-100 text-amber-800 text-xs font-bold uppercase tracking-wider rounded-full mb-2">
+                        Instant Partner Signup
+                    </span>
+                    <h3 class="text-2xl font-black text-gray-900">Create Your Affiliate Account</h3>
+                    <p class="text-xs text-gray-500 mt-1">Join in under 60 seconds and start earning 5% commission on every shortlet stay.</p>
                 </div>
 
-                <div class="p-3 bg-gray-50 rounded-xl text-xs text-gray-500 border border-gray-200 flex items-center justify-center gap-2">
-                    <i class="fas fa-shield-alt text-emerald-600"></i>
-                    <span>100% Free · No upfront fee · 30-Day Cookie Tracking</span>
-                </div>
+                <form action="{{ route('affiliate.join.store') }}" method="POST">
+                    @csrf
+                    <!-- User Account Fields -->
+                    <div class="space-y-4 mb-5">
+                        <div>
+                            <label class="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-1.5">
+                                Full Name <span class="text-red-500">*</span>
+                            </label>
+                            <input type="text" name="name" value="{{ old('name') }}" required placeholder="e.g. Babatunde Adeleke" class="w-full px-4 py-2.5 text-sm border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary focus:outline-none">
+                            @error('name')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-1.5">
+                                    Email Address <span class="text-red-500">*</span>
+                                </label>
+                                <input type="email" name="email" value="{{ old('email') }}" required placeholder="you@example.com" class="w-full px-4 py-2.5 text-sm border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary focus:outline-none">
+                                @error('email')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-1.5">
+                                    Phone Number
+                                </label>
+                                <input type="tel" name="phone" value="{{ old('phone') }}" placeholder="08012345678" class="w-full px-4 py-2.5 text-sm border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary focus:outline-none">
+                                @error('phone')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-1.5">
+                                    Password <span class="text-red-500">*</span>
+                                </label>
+                                <input type="password" name="password" required placeholder="Min 8 characters" class="w-full px-4 py-2.5 text-sm border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary focus:outline-none">
+                                @error('password')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-1.5">
+                                    Confirm Password <span class="text-red-500">*</span>
+                                </label>
+                                <input type="password" name="password_confirmation" required placeholder="Repeat password" class="w-full px-4 py-2.5 text-sm border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary focus:outline-none">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Vanity Affiliate Code Field -->
+                    <div class="mb-5 pt-4 border-t border-gray-100">
+                        <label class="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-1.5">
+                            Preferred Referral Code <span class="text-red-500">*</span>
+                        </label>
+                        <div class="flex items-center">
+                            <span class="px-3 py-2.5 bg-gray-100 border border-r-0 border-gray-300 text-gray-500 text-xs rounded-l-xl font-mono">
+                                booktala.com?ref=
+                            </span>
+                            <input type="text" name="code" value="{{ old('code', $defaultCode) }}" required class="w-full px-4 py-2.5 border border-gray-300 rounded-r-xl font-mono font-bold uppercase text-primary focus:ring-2 focus:ring-primary focus:outline-none" placeholder="e.g. VIPLODGE">
+                        </div>
+                        @error('code')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
+                    </div>
+
+                    <!-- Bank Details Optional -->
+                    <div class="border-t border-gray-100 pt-4 mb-6">
+                        <h4 class="text-xs font-bold uppercase tracking-wider text-gray-700 mb-2">Nigerian Bank Details (Optional for now)</h4>
+                        <div class="grid grid-cols-1 gap-2.5">
+                            <input type="text" name="bank_name" value="{{ old('bank_name') }}" placeholder="Bank Name (e.g. GTBank, Zenith, Access)" class="w-full px-4 py-2 text-sm border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary focus:outline-none">
+                            <input type="text" name="account_number" value="{{ old('account_number') }}" placeholder="10-digit NUBAN Account Number" maxlength="10" class="w-full px-4 py-2 text-sm border border-gray-300 rounded-xl font-mono focus:ring-2 focus:ring-primary focus:outline-none">
+                            <input type="text" name="account_name" value="{{ old('account_name') }}" placeholder="Account Name (as registered with bank)" class="w-full px-4 py-2 text-sm border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary focus:outline-none">
+                        </div>
+                    </div>
+
+                    <button type="submit" class="w-full py-3.5 bg-primary text-white font-bold rounded-xl shadow-lg hover:bg-primary/90 transition flex items-center justify-center gap-2">
+                        <i class="fas fa-check-circle text-amber-400"></i> Create Partner Account &amp; Access Dashboard
+                    </button>
+
+                    <p class="text-center text-xs text-gray-500 mt-4">
+                        Already have an account? <a href="{{ route('login') }}" class="text-primary font-bold hover:underline">Sign in here</a>
+                    </p>
+                </form>
             </div>
         @endif
     </div>

@@ -79,7 +79,7 @@ Route::get('/llms.txt', [PageController::class, 'llmsTxt'])->name('llms.txt');
 // Affiliate Partner Portal
 Route::get('/affiliate', [AffiliatePortalController::class, 'join'])->name('affiliate.landing');
 Route::get('/affiliate/join', [AffiliatePortalController::class, 'join'])->name('affiliate.join');
-Route::post('/affiliate/join', [AffiliatePortalController::class, 'storeJoin'])->name('affiliate.join.store')->middleware('auth');
+Route::post('/affiliate/join', [AffiliatePortalController::class, 'storeJoin'])->name('affiliate.join.store');
 
 Route::prefix('affiliate')->middleware(['auth'])->group(function () {
     Route::get('/dashboard', [AffiliatePortalController::class, 'dashboard'])->name('affiliate.dashboard');

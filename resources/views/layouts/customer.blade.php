@@ -63,6 +63,20 @@ $logoMarkUrl = asset('images/booktala-mark.png');
                     </div>
                 </div>
 
+                <!-- Partner Program -->
+                <div>
+                    <p class="text-[11px] font-bold text-slate-500 uppercase tracking-widest px-3 mb-3">Partner Program</p>
+                    <div class="space-y-1">
+                        <a href="{{ route('affiliate.dashboard') }}" class="flex items-center justify-between gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group text-amber-400 hover:bg-slate-800/50 hover:text-amber-300">
+                            <div class="flex items-center gap-3">
+                                <i class="fas fa-handshake w-5 text-sm"></i>
+                                <span class="text-sm font-semibold">Affiliate Portal</span>
+                            </div>
+                            <span class="px-1.5 py-0.5 text-[10px] font-extrabold uppercase rounded bg-amber-400/20 text-amber-300 border border-amber-400/30">5%</span>
+                        </a>
+                    </div>
+                </div>
+
                 <!-- Shortcuts -->
                 <div>
                     <p class="text-[11px] font-bold text-slate-500 uppercase tracking-widest px-3 mb-3">Links</p>

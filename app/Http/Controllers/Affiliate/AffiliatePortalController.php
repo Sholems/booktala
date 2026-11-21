@@ -28,16 +28,40 @@ class AffiliatePortalController extends Controller
     public function storeJoin(Request $request)
     {
         $user = Auth::user();
-        if ($user->affiliate) {
-            return redirect()->route('affiliate.dashboard');
-        }
 
-        $validated = $request->validate([
-            'code' => ['required', 'string', 'min:3', 'max:20', 'alpha_num', 'unique:affiliates,code'],
-            'bank_name' => ['nullable', 'string', 'max:100'],
-            'account_number' => ['nullable', 'string', 'max:20'],
-            'account_name' => ['nullable', 'string', 'max:150'],
-        ]);
+        if (! $user) {
+            $validated = $request->validate([
+                'name' => ['required', 'string', 'max:255'],
+                'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
+                'phone' => ['nullable', 'string', 'max:25'],
+                'password' => ['required', 'string', 'min:8', 'confirmed'],
+                'code' => ['required', 'string', 'min:3', 'max:20', 'alpha_num', 'unique:affiliates,code'],
+                'bank_name' => ['nullable', 'string', 'max:100'],
+                'account_number' => ['nullable', 'string', 'max:20'],
+                'account_name' => ['nullable', 'string', 'max:150'],
+            ]);
+
+            $user = \App\Models\User::create([
+                'name' => $validated['name'],
+                'email' => $validated['email'],
+                'phone' => $validated['phone'] ?? null,
+                'password' => \Illuminate\Support\Facades\Hash::make($validated['password']),
+                'status' => 'active',
+            ]);
+            $user->assignRole('customer');
+            Auth::login($user);
+        } else {
+            if ($user->affiliate) {
+                return redirect()->route('affiliate.dashboard');
+            }
+
+            $validated = $request->validate([
+                'code' => ['required', 'string', 'min:3', 'max:20', 'alpha_num', 'unique:affiliates,code'],
+                'bank_name' => ['nullable', 'string', 'max:100'],
+                'account_number' => ['nullable', 'string', 'max:20'],
+                'account_name' => ['nullable', 'string', 'max:150'],
+            ]);
+        }
 
         $affiliate = Affiliate::create([
             'user_id' => $user->id,
@@ -56,7 +80,18 @@ class AffiliatePortalController extends Controller
     {
         $affiliate = $this->getAffiliate();
         if (! $affiliate) {
-            return redirect()->route('affiliate.join');
+            $user = Auth::user();
+            if ($user) {
+                $code = Affiliate::generateUniqueCode($user->name);
+                $affiliate = Affiliate::create([
+                    'user_id' => $user->id,
+                    'code' => $code,
+                    'commission_rate' => AffiliateCommissionService::DEFAULT_COMMISSION_PERCENT,
+                    'status' => 'active',
+                ]);
+            } else {
+                return redirect()->route('affiliate.join');
+            }
         }
 
         $properties = Property::active()->select('id', 'title', 'slug', 'price_per_night')->get();
