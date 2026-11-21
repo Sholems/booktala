@@ -60,5 +60,22 @@
                 </div>
             </div>
         </div>
+
+        <!-- Affiliate Partner Callout Strip -->
+        <div class="mt-10 p-5 md:p-6 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 flex flex-col md:flex-row items-center justify-between gap-4">
+            <div class="flex items-center gap-4 text-center md:text-left">
+                <div class="w-12 h-12 rounded-xl bg-amber-400 text-gray-900 flex items-center justify-center text-xl font-black shrink-0">
+                    <i class="fas fa-handshake"></i>
+                </div>
+                <div>
+                    <h3 class="font-bold text-base md:text-lg text-white">Not a property owner? Earn 5% as an Affiliate Partner</h3>
+                    <p class="text-xs md:text-sm text-gray-300">Refer travelers, diaspora visitors, and corporate clients to BookTala and earn 5% direct commission on every booked stay.</p>
+                </div>
+            </div>
+            <a href="{{ route('affiliate.join') }}" class="w-full md:w-auto px-6 py-2.5 bg-amber-400 hover:bg-amber-300 text-gray-900 font-bold rounded-xl text-xs md:text-sm transition shadow shrink-0 text-center flex items-center justify-center gap-2">
+                <span>Join Affiliate Program</span>
+                <i class="fas fa-arrow-right text-xs"></i>
+            </a>
+        </div>
     </div>
 </section>

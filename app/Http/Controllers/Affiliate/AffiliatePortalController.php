@@ -18,18 +18,11 @@ class AffiliatePortalController extends Controller
 
     public function join()
     {
-        if (! Auth::check()) {
-            return redirect()->guest(route('login'))->with('info', 'Please sign in or create an account to join the BookTala Affiliate Program.');
-        }
+        $user = Auth::user();
+        $affiliate = $user?->affiliate;
+        $defaultCode = $user ? Affiliate::generateUniqueCode($user->name) : 'PARTNER' . strtoupper(substr(uniqid(), -4));
 
-        $affiliate = Auth::user()->affiliate;
-        if ($affiliate) {
-            return redirect()->route('affiliate.dashboard');
-        }
-
-        $defaultCode = Affiliate::generateUniqueCode(Auth::user()->name);
-
-        return view('affiliate.join', compact('defaultCode'));
+        return view('affiliate.join', compact('defaultCode', 'affiliate', 'user'));
     }
 
     public function storeJoin(Request $request)

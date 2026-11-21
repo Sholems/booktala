@@ -81,6 +81,7 @@ $socialLinks = array_filter([
                     <a href="{{ route('blog.index') }}" class="text-gray-700 hover:text-primary transition text-sm lg:text-base">Blog</a>
                     <a href="{{ route('pages.contact') }}" class="text-gray-700 hover:text-primary transition text-sm lg:text-base">Contact</a>
                     <a href="{{ route('pages.faq') }}" class="text-gray-700 hover:text-primary transition text-sm lg:text-base">FAQ</a>
+                    <a href="{{ route('affiliate.join') }}" class="text-gray-700 hover:text-primary transition text-sm lg:text-base flex items-center gap-1.5"><span class="px-1.5 py-0.5 text-[10px] font-black uppercase rounded bg-amber-100 text-amber-800 border border-amber-200">5%</span> Affiliate</a>
                 </div>
                 
                 <div class="flex items-center gap-2 md:space-x-4">
@@ -123,6 +124,7 @@ $socialLinks = array_filter([
             <a href="{{ route('blog.index') }}" class="nav-link" onclick="toggleMobileMenu()">Blog</a>
             <a href="{{ route('pages.contact') }}" class="nav-link" onclick="toggleMobileMenu()">Contact</a>
             <a href="{{ route('pages.faq') }}" class="nav-link" onclick="toggleMobileMenu()">FAQ</a>
+            <a href="{{ route('affiliate.join') }}" class="nav-link flex items-center justify-between" onclick="toggleMobileMenu()"><span>Affiliate Partner Program</span><span class="px-2 py-0.5 text-xs font-bold rounded-full bg-amber-100 text-amber-800">Earn 5%</span></a>
 
             <div class="mt-6 pt-6 border-t border-gray-100 space-y-3">
                 @auth

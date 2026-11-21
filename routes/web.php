@@ -77,6 +77,7 @@ Route::get('/robots.txt', [PageController::class, 'robots'])->name('robots');
 Route::get('/llms.txt', [PageController::class, 'llmsTxt'])->name('llms.txt');
 
 // Affiliate Partner Portal
+Route::get('/affiliate', [AffiliatePortalController::class, 'join'])->name('affiliate.landing');
 Route::get('/affiliate/join', [AffiliatePortalController::class, 'join'])->name('affiliate.join');
 Route::post('/affiliate/join', [AffiliatePortalController::class, 'storeJoin'])->name('affiliate.join.store')->middleware('auth');
 

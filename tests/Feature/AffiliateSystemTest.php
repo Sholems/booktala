@@ -19,6 +19,19 @@ class AffiliateSystemTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_guest_can_view_public_affiliate_landing_page(): void
+    {
+        $response = $this->get(route('affiliate.join'));
+        $response->assertOk();
+        $response->assertSeeText('Earn 5% Commission on Every Shortlet Booking');
+        $response->assertSee(route('register'));
+        $response->assertSee(route('login'));
+
+        $aliasResponse = $this->get('/affiliate');
+        $aliasResponse->assertOk();
+        $aliasResponse->assertSeeText('Earn 5% Commission on Every Shortlet Booking');
+    }
+
     public function test_user_can_view_affiliate_join_page_and_register_as_partner(): void
     {
         $user = User::factory()->create(['name' => 'Babatunde Adeleke']);
