@@ -186,7 +186,7 @@ class WhatsAppNotificationService
         /** @var \App\Services\SendchampService $sendchamp */
         $sendchamp = app(\App\Services\SendchampService::class);
 
-        if (($gateway === 'sendchamp' || $gateway === 'auto') && $sendchamp->isConfigured()) {
+        if (! app()->environment('testing') && ($gateway === 'sendchamp' || $gateway === 'auto') && $sendchamp->isConfigured()) {
             $gateway = 'sendchamp';
             $result = $sendchamp->sendWhatsApp($formattedPhone, $message);
             if ($result['success']) {
