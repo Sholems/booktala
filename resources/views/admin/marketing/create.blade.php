@@ -101,7 +101,7 @@
                     <div class="flex items-start justify-between">
                         <div>
                             <span class="font-bold text-xs text-gray-900 block">Active Affiliates</span>
-                            <span class="text-[11px] text-gray-500">5% partner network</span>
+                            <span class="text-[11px] text-gray-500">{{ (int) \App\Services\AffiliateCommissionService::getDefaultCommissionRate() }}% partner network</span>
                         </div>
                         <input type="radio" name="target_segment" value="active_affiliates" {{ old('target_segment') === 'active_affiliates' ? 'checked' : '' }} class="mt-1 text-primary">
                     </div>

@@ -7,7 +7,7 @@
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
             <h1 class="text-2xl font-bold text-gray-900">Affiliate & Partner Program</h1>
-            <p class="text-xs text-gray-500">Manage 5% direct commission affiliates, track performance, and approve payouts.</p>
+            <p class="text-xs text-gray-500">Manage direct commission affiliates (Default: {{ number_format($defaultCommissionRate, 1) }}%), track performance, and approve payouts.</p>
         </div>
         <div class="flex items-center gap-2">
             <a href="{{ route('admin.affiliates.referrals') }}" class="px-3.5 py-2 bg-white border border-gray-200 text-gray-700 rounded-xl text-xs font-bold hover:bg-gray-50 transition">
@@ -17,6 +17,40 @@
                 <i class="fas fa-wallet mr-1 text-amber-400"></i> Payout Queue
             </a>
         </div>
+    </div>
+
+    <!-- Commission Rate Configuration Box -->
+    <div class="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-xl p-4 sm:p-5 shadow-sm">
+        <form action="{{ route('admin.affiliates.default-rate') }}" method="POST" class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            @csrf
+            <div>
+                <div class="flex items-center gap-2">
+                    <span class="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-amber-500 text-white text-xs font-bold shadow-sm">
+                        <i class="fas fa-percentage"></i>
+                    </span>
+                    <h3 class="text-sm font-bold text-gray-900">Default Affiliate Commission Rate</h3>
+                    <span class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-amber-200/60 text-amber-900">Currently {{ number_format($defaultCommissionRate, 1) }}%</span>
+                </div>
+                <p class="text-xs text-gray-600 mt-1">
+                    Set the baseline commission percentage awarded to partners on net accommodation bookings. Admin can also customize individual rates per partner in their profile.
+                </p>
+            </div>
+            <div class="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+                <div class="flex items-center gap-2">
+                    <div class="relative w-28">
+                        <input type="number" step="0.5" min="0.5" max="50" name="commission_rate" value="{{ old('commission_rate', $defaultCommissionRate) }}" required class="w-full pl-3 pr-7 py-2 text-sm font-black text-gray-900 border border-amber-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:outline-none bg-white">
+                        <span class="absolute right-3 top-2.5 text-xs font-bold text-gray-500">%</span>
+                    </div>
+                    <button type="submit" class="px-4 py-2 bg-gray-900 hover:bg-black text-white text-xs font-bold rounded-lg transition shadow-sm whitespace-nowrap">
+                        Update Rate
+                    </button>
+                </div>
+                <label class="flex items-center gap-1.5 text-[11px] text-gray-600 cursor-pointer select-none">
+                    <input type="checkbox" name="update_existing" value="1" class="rounded border-amber-300 text-amber-600 focus:ring-amber-500">
+                    Apply to all existing partners
+                </label>
+            </div>
+        </form>
     </div>
 
     <!-- Metric Cards -->

@@ -23,13 +23,13 @@ class AffiliateSystemTest extends TestCase
     {
         $response = $this->get(route('affiliate.join'));
         $response->assertOk();
-        $response->assertSeeText('Earn 5% Commission on Every Shortlet Booking');
+        $response->assertSeeText('Earn 10% Commission on Every Shortlet Booking');
         $response->assertSee(route('affiliate.join.store'));
         $response->assertSee(route('login'));
 
         $aliasResponse = $this->get('/affiliate');
         $aliasResponse->assertOk();
-        $aliasResponse->assertSeeText('Earn 5% Commission on Every Shortlet Booking');
+        $aliasResponse->assertSeeText('Earn 10% Commission on Every Shortlet Booking');
     }
 
     public function test_guest_can_register_directly_from_affiliate_landing_page_and_land_on_dashboard(): void
@@ -82,7 +82,7 @@ class AffiliateSystemTest extends TestCase
 
         $response = $this->actingAs($user)->get(route('affiliate.join'));
         $response->assertOk();
-        $response->assertSeeText('Earn 5% Commission on Every Shortlet Booking');
+        $response->assertSeeText('Earn 10% Commission on Every Shortlet Booking');
 
         $postResponse = $this->actingAs($user)->post(route('affiliate.join.store'), [
             'code' => 'ADELEKE5',
@@ -96,7 +96,7 @@ class AffiliateSystemTest extends TestCase
         $this->assertDatabaseHas('affiliates', [
             'user_id' => $user->id,
             'code' => 'ADELEKE5',
-            'commission_rate' => 5.00,
+            'commission_rate' => 10.00,
             'bank_name' => 'Guaranty Trust Bank',
             'account_number' => '0123456789',
             'status' => 'active',
@@ -474,5 +474,27 @@ class AffiliateSystemTest extends TestCase
         $pdfResponse = $this->actingAs($partnerUser)->get(route('affiliate.flyer.download', ['layout' => 'flyer']));
         $pdfResponse->assertOk();
         $this->assertStringContainsString('application/pdf', (string) $pdfResponse->headers->get('content-type'));
+    }
+
+    public function test_admin_can_update_default_affiliate_commission_rate_and_apply_to_existing_partners(): void
+    {
+        $admin = User::factory()->create();
+        $admin->assignRole('super_admin');
+
+        $affiliate = Affiliate::create([
+            'user_id' => User::factory()->create()->id,
+            'code' => 'RATEUPDATE',
+            'commission_rate' => 10.00,
+            'status' => 'active',
+        ]);
+
+        $response = $this->actingAs($admin)->post(route('admin.affiliates.default-rate'), [
+            'commission_rate' => 12.5,
+            'update_existing' => 1,
+        ]);
+
+        $response->assertSessionHas('success');
+        $this->assertEquals(12.5, \App\Services\AffiliateCommissionService::getDefaultCommissionRate());
+        $this->assertEquals(12.5, (float) $affiliate->fresh()->commission_rate);
     }
 }

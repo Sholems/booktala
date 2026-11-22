@@ -8,10 +8,10 @@
     <div class="bg-gradient-to-r from-[#0B2D5B] to-[#123E7A] text-white p-6 md:p-8 rounded-2xl shadow-lg flex flex-col md:flex-row items-center justify-between gap-6">
         <div>
             <span class="text-xs uppercase font-bold tracking-wider text-amber-400 bg-white/10 px-3 py-1 rounded-full border border-white/15 inline-block mb-2">
-                5% Direct Partner
+                {{ (int) ($affiliate->commission_rate ?: ($defaultRate ?? 10)) }}% Direct Partner
             </span>
             <h1 class="text-2xl md:text-3xl font-black">Welcome back, {{ auth()->user()->name }}</h1>
-            <p class="text-sm text-gray-200 mt-1">Share your link with your network and track your 5% commissions in real time.</p>
+            <p class="text-sm text-gray-200 mt-1">Share your link with your network and track your {{ (int) ($affiliate->commission_rate ?: ($defaultRate ?? 10)) }}% commissions in real time.</p>
         </div>
 
         <!-- Quick Copy Box -->
@@ -101,7 +101,7 @@
                     </span>
                 </div>
                 <p class="text-xs text-gray-600 mb-4">
-                    Have clients scan this code with their smartphone camera to open BookTala with your 5% attribution locked in for 30 days.
+                    Have clients scan this code with their smartphone camera to open BookTala with your {{ (int) ($affiliate->commission_rate ?: ($defaultRate ?? 10)) }}% attribution locked in for 30 days.
                 </p>
 
                 <div class="flex flex-col sm:flex-row items-center gap-4 bg-gray-50 p-4 rounded-xl border border-gray-100 mb-4">
@@ -187,7 +187,7 @@
                         <th class="p-4">Stay Dates</th>
                         <th class="p-4">Apartment</th>
                         <th class="p-4">Room Base</th>
-                        <th class="p-4">Your 5% Commission</th>
+                        <th class="p-4">Your {{ (int) ($affiliate->commission_rate ?: ($defaultRate ?? 10)) }}% Commission</th>
                         <th class="p-4">Status</th>
                     </tr>
                 </thead>

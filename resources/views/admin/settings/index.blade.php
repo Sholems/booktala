@@ -106,6 +106,11 @@ $isHotelMode = \App\Models\SystemSetting::get('hotel_mode', false);
                 <label class="block text-sm font-medium mb-2">VAT Rate (%)</label>
                 <input type="number" name="vat_rate" value="{{ \App\Models\Setting::get('vat_rate', 7.5) }}" step="0.1" class="w-full border rounded px-3 py-2">
             </div>
+            <div class="mb-4">
+                <label class="block text-sm font-medium mb-2">Default Affiliate Commission Rate (%)</label>
+                <input type="number" name="affiliate_commission_rate" value="{{ \App\Models\Setting::get('affiliate_commission_rate', 10.0) }}" step="0.5" min="0.5" max="50" class="w-full border rounded px-3 py-2">
+                <p class="text-xs text-gray-500 mt-1">Default percentage awarded to affiliates on confirmed net room stays (Default: 10%).</p>
+            </div>
             <button type="submit" class="bg-primary text-white px-4 py-2 rounded">Save Settings</button>
         </form>
     </div>

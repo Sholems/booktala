@@ -18,6 +18,7 @@ class SettingsUpdateRequest extends FormRequest
     {
         return [
             'vat_rate' => 'nullable|numeric|min:0|max:100',
+            'affiliate_commission_rate' => 'nullable|numeric|min:0.5|max:50',
             'email' => 'nullable|email|max:255',
             'mail_from_address' => 'nullable|email|max:255',
             'mail_port' => 'nullable|integer|min:1|max:65535',

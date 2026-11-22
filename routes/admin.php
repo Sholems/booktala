@@ -304,6 +304,7 @@ Route::prefix('admin')->middleware(['auth', 'role:super_admin|admin'])->group(fu
 
     // Affiliate & Partner Management
     Route::get('/affiliates', [AffiliateManagementController::class, 'index'])->name('admin.affiliates.index');
+    Route::post('/affiliates/default-rate', [AffiliateManagementController::class, 'updateDefaultRate'])->name('admin.affiliates.default-rate');
     Route::get('/affiliates/referrals', [AffiliateManagementController::class, 'referrals'])->name('admin.affiliates.referrals');
     Route::get('/affiliates/payouts', [AffiliateManagementController::class, 'payouts'])->name('admin.affiliates.payouts');
     Route::post('/affiliates/payouts/{payout}/complete', [AffiliateManagementController::class, 'completePayout'])->name('admin.affiliates.payouts.complete');

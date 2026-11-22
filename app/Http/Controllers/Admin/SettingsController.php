@@ -30,7 +30,7 @@ class SettingsController extends Controller
         $request->validated();
 
         $fields = [
-            'site_name', 'email', 'phone', 'vat_rate',
+            'site_name', 'email', 'phone', 'vat_rate', 'affiliate_commission_rate',
             'paystack_public_key', 'paystack_secret_key', 'paystack_merchant_email',
             'mail_driver', 'mail_host', 'mail_port', 'mail_username', 'mail_password',
             'mail_encryption', 'mail_from_address', 'mail_from_name',

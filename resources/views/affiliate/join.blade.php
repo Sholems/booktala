@@ -1,6 +1,12 @@
 @extends('layouts.app')
 
-@section('title', 'BookTala Affiliate & Partner Program — Earn 5% Flat Commission')
+@php
+    $rate = $defaultRate ?? \App\Services\AffiliateCommissionService::getDefaultCommissionRate();
+    $rateInt = (int) $rate;
+    $rateFormatted = ($rate == $rateInt) ? $rateInt : number_format($rate, 1);
+@endphp
+
+@section('title', "BookTala Affiliate & Partner Program — Earn {$rateFormatted}% Flat Commission")
 
 @section('content')
 <!-- Hero Section -->
@@ -13,7 +19,7 @@
             <i class="fas fa-handshake"></i> BookTala Partner &amp; Affiliate Program
         </span>
         <h1 class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black tracking-tight mb-5 leading-tight">
-            Earn <span class="text-amber-400 underline decoration-amber-400/40 underline-offset-8">5% Commission</span> on Every Shortlet Booking
+            Earn <span class="text-amber-400 underline decoration-amber-400/40 underline-offset-8">{{ $rateFormatted }}% Commission</span> on Every Shortlet Booking
         </h1>
         <p class="text-base sm:text-lg md:text-xl text-gray-200 max-w-2xl mx-auto leading-relaxed mb-8">
             Turn your real estate network, diaspora audience, and corporate connections into reliable monthly income. Zero signup fees, 30-day cookie tracking, and direct bank payouts.
@@ -80,9 +86,9 @@
                 <div class="w-14 h-14 bg-emerald-600 text-white rounded-2xl flex items-center justify-center text-xl font-black mx-auto mb-5 shadow-sm">
                     3
                 </div>
-                <h3 class="font-bold text-lg mb-2 text-gray-900">Receive 5% Direct Payout</h3>
+                <h3 class="font-bold text-lg mb-2 text-gray-900">Receive {{ $rateFormatted }}% Direct Payout</h3>
                 <p class="text-sm text-gray-600 leading-relaxed">
-                    Earn a flat 5% on the net room accommodation base. Request automated bank transfers to any Nigerian bank once your balance reaches ₦20,000.
+                    Earn a flat {{ $rateFormatted }}% on the net room accommodation base. Request automated bank transfers to any Nigerian bank once your balance reaches ₦20,000.
                 </p>
             </div>
         </div>
@@ -97,7 +103,7 @@
                 Real Earning Scenarios
             </span>
             <h2 class="text-2xl sm:text-3xl md:text-4xl font-extrabold text-gray-900">How Much Can You Earn?</h2>
-            <p class="text-sm md:text-base text-gray-600 mt-2">Here is what a flat 5% net accommodation commission looks like on typical BookTala bookings:</p>
+            <p class="text-sm md:text-base text-gray-600 mt-2">Here is what a flat {{ $rateFormatted }}% net accommodation commission looks like on typical BookTala bookings:</p>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -107,8 +113,8 @@
                 <h3 class="text-xl font-black text-gray-900 mb-2">3 Nights in Lekki Phase 1</h3>
                 <p class="text-xs text-gray-500 mb-4">₦100,000 / night · Total Net Stay: ₦300,000</p>
                 <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-4">
-                    <span class="text-xs text-emerald-700 font-bold uppercase tracking-wider block">Your 5% Commission</span>
-                    <span class="text-3xl font-black text-emerald-600">&#8358;15,000</span>
+                    <span class="text-xs text-emerald-700 font-bold uppercase tracking-wider block">Your {{ $rateFormatted }}% Commission</span>
+                    <span class="text-3xl font-black text-emerald-600">&#8358;{{ number_format(300000 * ($rate / 100)) }}</span>
                 </div>
             </div>
 
@@ -121,8 +127,8 @@
                 <h3 class="text-xl font-black text-gray-900 mb-2">7 Nights in Ikoyi Luxury Suite</h3>
                 <p class="text-xs text-gray-500 mb-4">₦200,000 / night · Total Net Stay: ₦1,400,000</p>
                 <div class="bg-amber-100/60 border border-amber-300 rounded-xl p-4">
-                    <span class="text-xs text-amber-800 font-bold uppercase tracking-wider block">Your 5% Commission</span>
-                    <span class="text-3xl font-black text-amber-600">&#8358;70,000</span>
+                    <span class="text-xs text-amber-800 font-bold uppercase tracking-wider block">Your {{ $rateFormatted }}% Commission</span>
+                    <span class="text-3xl font-black text-amber-600">&#8358;{{ number_format(1400000 * ($rate / 100)) }}</span>
                 </div>
             </div>
 
@@ -132,8 +138,8 @@
                 <h3 class="text-xl font-black text-gray-900 mb-2">30-Day Executive Residence</h3>
                 <p class="text-xs text-gray-500 mb-4">₦120,000 / night · Total Net Stay: ₦3,600,000</p>
                 <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-4">
-                    <span class="text-xs text-emerald-700 font-bold uppercase tracking-wider block">Your 5% Commission</span>
-                    <span class="text-3xl font-black text-emerald-600">&#8358;180,000</span>
+                    <span class="text-xs text-emerald-700 font-bold uppercase tracking-wider block">Your {{ $rateFormatted }}% Commission</span>
+                    <span class="text-3xl font-black text-emerald-600">&#8358;{{ number_format(3600000 * ($rate / 100)) }}</span>
                 </div>
             </div>
         </div>

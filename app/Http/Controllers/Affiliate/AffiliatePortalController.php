@@ -21,8 +21,9 @@ class AffiliatePortalController extends Controller
         $user = Auth::user();
         $affiliate = $user?->affiliate;
         $defaultCode = $user ? Affiliate::generateUniqueCode($user->name) : 'PARTNER' . strtoupper(substr(uniqid(), -4));
+        $defaultRate = AffiliateCommissionService::getDefaultCommissionRate();
 
-        return view('affiliate.join', compact('defaultCode', 'affiliate', 'user'));
+        return view('affiliate.join', compact('defaultCode', 'affiliate', 'user', 'defaultRate'));
     }
 
     public function storeJoin(Request $request)
@@ -66,7 +67,7 @@ class AffiliatePortalController extends Controller
         $affiliate = Affiliate::create([
             'user_id' => $user->id,
             'code' => strtoupper($validated['code']),
-            'commission_rate' => AffiliateCommissionService::DEFAULT_COMMISSION_PERCENT,
+            'commission_rate' => AffiliateCommissionService::getDefaultCommissionRate(),
             'bank_name' => $validated['bank_name'] ?? null,
             'account_number' => $validated['account_number'] ?? null,
             'account_name' => $validated['account_name'] ?? null,
@@ -86,7 +87,7 @@ class AffiliatePortalController extends Controller
                 $affiliate = Affiliate::create([
                     'user_id' => $user->id,
                     'code' => $code,
-                    'commission_rate' => AffiliateCommissionService::DEFAULT_COMMISSION_PERCENT,
+                    'commission_rate' => AffiliateCommissionService::getDefaultCommissionRate(),
                     'status' => 'active',
                 ]);
             } else {
@@ -100,8 +101,9 @@ class AffiliatePortalController extends Controller
         $clicksCount = $affiliate->clicks()->count();
         $referralsCount = $affiliate->completed_referrals_count;
         $conversionRate = $clicksCount > 0 ? round(($referralsCount / $clicksCount) * 100, 1) : 0.0;
+        $defaultRate = $affiliate->commission_rate ?: AffiliateCommissionService::getDefaultCommissionRate();
 
-        return view('affiliate.dashboard', compact('affiliate', 'properties', 'recentReferrals', 'clicksCount', 'conversionRate'));
+        return view('affiliate.dashboard', compact('affiliate', 'properties', 'recentReferrals', 'clicksCount', 'conversionRate', 'defaultRate'));
     }
 
     public function referrals()

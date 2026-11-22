@@ -170,7 +170,7 @@ $socialLinks = array_filter([
                         <li><a href="{{ route('properties.index') }}" class="text-gray-300 hover:text-accent">Apartments</a></li>
                         <li><a href="{{ route('blog.index') }}" class="text-gray-300 hover:text-accent">Blog &amp; News</a></li>
                         <li><a href="{{ route('pages.faq') }}" class="text-gray-300 hover:text-accent">FAQs</a></li>
-                        <li><a href="{{ route('affiliate.join') }}" class="text-amber-400 font-semibold hover:text-amber-300"><i class="fas fa-handshake mr-1"></i> Affiliate Program (5%)</a></li>
+                        <li><a href="{{ route('affiliate.join') }}" class="text-amber-400 font-semibold hover:text-amber-300"><i class="fas fa-handshake mr-1"></i> Affiliate Program ({{ (int) \App\Services\AffiliateCommissionService::getDefaultCommissionRate() }}%)</a></li>
                         <li><a href="{{ url('/owner-partnership-terms') }}" class="text-gray-300 hover:text-accent">List Your Property</a></li>
                         <li><a href="{{ route('pages.contact') }}" class="text-gray-300 hover:text-accent">Contact Us</a></li>
                     </ul>

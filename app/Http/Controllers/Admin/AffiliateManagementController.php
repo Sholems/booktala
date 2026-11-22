@@ -38,8 +38,33 @@ class AffiliateManagementController extends Controller
         $totalAffiliates = Affiliate::count();
         $totalPaidOut = AffiliatePayout::where('status', 'completed')->sum('amount');
         $totalPendingCommissions = AffiliateReferral::where('status', 'pending')->sum('commission_amount');
+        $defaultCommissionRate = \App\Services\AffiliateCommissionService::getDefaultCommissionRate();
 
-        return view('admin.affiliates.index', compact('affiliates', 'totalAffiliates', 'totalPaidOut', 'totalPendingCommissions'));
+        return view('admin.affiliates.index', compact(
+            'affiliates',
+            'totalAffiliates',
+            'totalPaidOut',
+            'totalPendingCommissions',
+            'defaultCommissionRate'
+        ));
+    }
+
+    public function updateDefaultRate(Request $request)
+    {
+        $validated = $request->validate([
+            'commission_rate' => ['required', 'numeric', 'min:0.5', 'max:50'],
+            'update_existing' => ['nullable', 'boolean'],
+        ]);
+
+        $rate = (float) $validated['commission_rate'];
+        \App\Models\Setting::set('affiliate_commission_rate', $rate);
+
+        if ($request->boolean('update_existing')) {
+            Affiliate::query()->update(['commission_rate' => $rate]);
+            return back()->with('success', "Default affiliate commission rate updated to {$rate}% and applied to all existing affiliates.");
+        }
+
+        return back()->with('success', "Default affiliate commission rate updated to {$rate}% successfully.");
     }
 
     public function show(Affiliate $affiliate)

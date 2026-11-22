@@ -14,7 +14,15 @@ use InvalidArgumentException;
 class AffiliateCommissionService
 {
     public const MINIMUM_PAYOUT_AMOUNT = 20000.00;
-    public const DEFAULT_COMMISSION_PERCENT = 5.00;
+    public const DEFAULT_COMMISSION_PERCENT = 10.00;
+
+    /**
+     * Resolve the active default affiliate commission rate configured by the admin.
+     */
+    public static function getDefaultCommissionRate(): float
+    {
+        return (float) \App\Models\Setting::get('affiliate_commission_rate', self::DEFAULT_COMMISSION_PERCENT);
+    }
 
     /**
      * Attaches an affiliate referral to a confirmed reservation if eligible.
@@ -66,7 +74,7 @@ class AffiliateCommissionService
         $processingFee = (float) ($reservation->processing_fee ?? 0);
         $netBase = max(0.00, $grossTotal - $cautionFee - $processingFee);
 
-        $rate = (float) ($affiliate->commission_rate ?: self::DEFAULT_COMMISSION_PERCENT);
+        $rate = (float) ($affiliate->commission_rate ?: self::getDefaultCommissionRate());
         $commissionAmount = round(($netBase * $rate) / 100, 2);
 
         if ($commissionAmount <= 0) {
