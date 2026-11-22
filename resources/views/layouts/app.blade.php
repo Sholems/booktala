@@ -81,7 +81,7 @@ $socialLinks = array_filter([
                     <a href="{{ route('blog.index') }}" class="text-gray-700 hover:text-primary transition text-sm lg:text-base">Blog</a>
                     <a href="{{ route('pages.contact') }}" class="text-gray-700 hover:text-primary transition text-sm lg:text-base">Contact</a>
                     <a href="{{ route('pages.faq') }}" class="text-gray-700 hover:text-primary transition text-sm lg:text-base">FAQ</a>
-                    <a href="{{ route('affiliate.join') }}" class="text-gray-700 hover:text-primary transition text-sm lg:text-base flex items-center gap-1.5"><span class="px-1.5 py-0.5 text-[10px] font-black uppercase rounded bg-amber-100 text-amber-800 border border-amber-200">5%</span> Affiliate</a>
+                    <a href="{{ route('affiliate.join') }}" class="text-gray-700 hover:text-primary transition text-sm lg:text-base">Affiliate</a>
                 </div>
                 
                 <div class="flex items-center gap-2 md:space-x-4">
@@ -124,7 +124,7 @@ $socialLinks = array_filter([
             <a href="{{ route('blog.index') }}" class="nav-link" onclick="toggleMobileMenu()">Blog</a>
             <a href="{{ route('pages.contact') }}" class="nav-link" onclick="toggleMobileMenu()">Contact</a>
             <a href="{{ route('pages.faq') }}" class="nav-link" onclick="toggleMobileMenu()">FAQ</a>
-            <a href="{{ route('affiliate.join') }}" class="nav-link flex items-center justify-between" onclick="toggleMobileMenu()"><span>Affiliate Partner Program</span><span class="px-2 py-0.5 text-xs font-bold rounded-full bg-amber-100 text-amber-800">Earn 5%</span></a>
+            <a href="{{ route('affiliate.join') }}" class="nav-link" onclick="toggleMobileMenu()">Affiliate Program</a>
 
             <div class="mt-6 pt-6 border-t border-gray-100 space-y-3">
                 @auth
@@ -170,7 +170,7 @@ $socialLinks = array_filter([
                         <li><a href="{{ route('properties.index') }}" class="text-gray-300 hover:text-accent">Apartments</a></li>
                         <li><a href="{{ route('blog.index') }}" class="text-gray-300 hover:text-accent">Blog &amp; News</a></li>
                         <li><a href="{{ route('pages.faq') }}" class="text-gray-300 hover:text-accent">FAQs</a></li>
-                        <li><a href="{{ route('affiliate.join') }}" class="text-amber-400 font-semibold hover:text-amber-300"><i class="fas fa-handshake mr-1"></i> Affiliate Program ({{ (int) \App\Services\AffiliateCommissionService::getDefaultCommissionRate() }}%)</a></li>
+                        <li><a href="{{ route('affiliate.join') }}" class="text-amber-400 font-semibold hover:text-amber-300"><i class="fas fa-handshake mr-1"></i> Affiliate Program</a></li>
                         <li><a href="{{ url('/owner-partnership-terms') }}" class="text-gray-300 hover:text-accent">List Your Property</a></li>
                         <li><a href="{{ route('pages.contact') }}" class="text-gray-300 hover:text-accent">Contact Us</a></li>
                     </ul>

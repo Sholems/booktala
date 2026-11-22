@@ -63,11 +63,11 @@
             </div>
             <div>
                 <span class="inline-block px-2.5 py-0.5 rounded-full bg-white/10 text-amber-300 text-[11px] font-bold uppercase tracking-wider mb-1 border border-white/15">
-                    Earn 5% Direct Payout
+                    Earn {{ (int) \App\Services\AffiliateCommissionService::getDefaultCommissionRate() }}% Direct Payout
                 </span>
                 <h3 class="text-xl md:text-2xl font-black text-white">BookTala Affiliate Partner Portal</h3>
                 <p class="text-xs md:text-sm text-gray-200 mt-1 max-w-xl">
-                    Share your personalized link with travelers and corporate clients. Earn 5% cash commission on every booked stay, paid straight to your Nigerian bank account.
+                    Share your personalized link with travelers and corporate clients. Earn {{ (int) \App\Services\AffiliateCommissionService::getDefaultCommissionRate() }}% cash commission on every booked stay, paid straight to your Nigerian bank account.
                 </p>
             </div>
         </div>

@@ -234,7 +234,7 @@
                         Instant Partner Signup
                     </span>
                     <h3 class="text-2xl font-black text-gray-900">Create Your Affiliate Account</h3>
-                    <p class="text-xs text-gray-500 mt-1">Join in under 60 seconds and start earning 5% commission on every shortlet stay.</p>
+                    <p class="text-xs text-gray-500 mt-1">Join in under 60 seconds and start earning {{ (int) $defaultRate }}% commission on every shortlet stay.</p>
                 </div>
 
                 <form action="{{ route('affiliate.join.store') }}" method="POST">
@@ -335,7 +335,7 @@
             <div class="p-6 rounded-2xl bg-gray-50 border border-gray-200">
                 <div class="flex items-center gap-3 mb-2">
                     <i class="fas fa-percentage text-amber-500 text-lg"></i>
-                    <h4 class="font-bold text-gray-900">5% Net Stay Base Calculation</h4>
+                    <h4 class="font-bold text-gray-900">{{ (int) $defaultRate }}% Net Stay Base Calculation</h4>
                 </div>
                 <p class="text-xs text-gray-600 leading-relaxed">
                     Commissions are computed solely on the room accommodation rate. Refundable caution deposits and processing charges are deducted so you earn pure revenue commissions.
@@ -358,7 +358,7 @@
                     <h4 class="font-bold text-gray-900">30-Day Cookie Attribution</h4>
                 </div>
                 <p class="text-xs text-gray-600 leading-relaxed">
-                    Once a traveler clicks your link, your partner code is saved in their browser for 30 days. Even if they book two weeks later, you receive the full 5% credit.
+                    Once a traveler clicks your link, your partner code is saved in their browser for 30 days. Even if they book two weeks later, you receive the full {{ (int) $defaultRate }}% credit.
                 </p>
             </div>
 

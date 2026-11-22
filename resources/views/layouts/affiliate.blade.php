@@ -87,7 +87,7 @@ $affiliate = auth()->user()?->affiliate;
                         <p class="text-xs font-bold text-white truncate">{{ auth()->user()->name }}</p>
                         @if($affiliate)
                         <span class="inline-block text-[10px] font-mono font-bold bg-amber-400/20 text-amber-300 px-1.5 py-0.5 rounded mt-0.5">
-                            {{ $affiliate->code }} (5%)
+                            {{ $affiliate->code }} ({{ (int) $affiliate->commission_rate }}%)
                         </span>
                         @endif
                     </div>

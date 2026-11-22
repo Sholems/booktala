@@ -124,7 +124,7 @@ Book directly here:
         <h3 class="font-bold text-lg text-gray-900 mb-4">Affiliate Program Rules & Policies</h3>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs text-gray-600">
             <div class="p-3 bg-gray-50 rounded-xl border border-gray-100">
-                <strong class="text-gray-900 block mb-1">5% Net Room Rate Commission</strong>
+                <strong class="text-gray-900 block mb-1">{{ (int) ($affiliate->commission_rate ?? \App\Services\AffiliateCommissionService::getDefaultCommissionRate()) }}% Net Room Rate Commission</strong>
                 Commissions are calculated on net accommodation charges only. Caution deposits, processing fees, and taxes are excluded.
             </div>
             <div class="p-3 bg-gray-50 rounded-xl border border-gray-100">

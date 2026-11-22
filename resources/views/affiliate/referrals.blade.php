@@ -79,7 +79,7 @@
                     <tr>
                         <td colspan="8" class="p-12 text-center text-gray-500">
                             <i class="fas fa-receipt text-4xl text-gray-300 mb-3 block"></i>
-                            No referrals logged yet. Share your link to start receiving 5% commission!
+                            No referrals logged yet. Share your link to start receiving {{ (int) ($affiliate->commission_rate ?? \App\Services\AffiliateCommissionService::getDefaultCommissionRate()) }}% commission!
                         </td>
                     </tr>
                     @endforelse
