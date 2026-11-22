@@ -52,8 +52,9 @@ class ExpenseController extends Controller
         $data = $request->validated();
 
         if ($request->hasFile('receipt')) {
-            // Receipts are private: stored outside the public folder, downloaded through the app.
-            $data['receipt_path'] = $request->file('receipt')->store('receipts', 'local');
+            // Receipts are private: stored on default/r2 storage, downloaded through the app.
+            $disk = config('filesystems.default') === 'r2' ? 'r2' : 'local';
+            $data['receipt_path'] = $request->file('receipt')->store('receipts', $disk);
         }
         unset($data['receipt']);
 
@@ -69,9 +70,14 @@ class ExpenseController extends Controller
 
     public function receipt(Expense $expense)
     {
-        abort_unless($expense->receipt_path && Storage::disk('local')->exists($expense->receipt_path), 404);
+        $disk = config('filesystems.default') === 'r2' ? Storage::disk('r2') : Storage::disk('local');
+        if (! ($expense->receipt_path && $disk->exists($expense->receipt_path))) {
+            $fallback = Storage::disk('local');
+            abort_unless($expense->receipt_path && $fallback->exists($expense->receipt_path), 404);
+            $disk = $fallback;
+        }
 
-        return Storage::disk('local')->download($expense->receipt_path);
+        return $disk->download($expense->receipt_path);
     }
 
     public function destroy(Expense $expense)
@@ -81,6 +87,7 @@ class ExpenseController extends Controller
         }
 
         if ($expense->receipt_path) {
+            Storage::disk('r2')->delete($expense->receipt_path);
             Storage::disk('local')->delete($expense->receipt_path);
         }
         $expense->delete();

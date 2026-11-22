@@ -94,7 +94,8 @@ class SecurityController extends Controller
 
         if ($request->hasFile('photo')) {
             // Evidence photos are private: served only through the app.
-            $data['photo_path'] = $request->file('photo')->store('incidents', 'local');
+            $disk = config('filesystems.default') === 'r2' ? 'r2' : 'local';
+            $data['photo_path'] = $request->file('photo')->store('incidents', $disk);
         }
         unset($data['photo']);
 
@@ -119,9 +120,15 @@ class SecurityController extends Controller
     public function incidentPhoto(Request $request, Incident $incident)
     {
         $this->ensureSees($request->user(), $incident->site_id);
-        abort_unless($incident->photo_path && Storage::disk('local')->exists($incident->photo_path), 404);
+        $disk = config('filesystems.default') === 'r2' ? Storage::disk('r2') : Storage::disk('local');
 
-        return Storage::disk('local')->response($incident->photo_path);
+        if (! ($incident->photo_path && $disk->exists($incident->photo_path))) {
+            $fallback = Storage::disk('local');
+            abort_unless($incident->photo_path && $fallback->exists($incident->photo_path), 404);
+            $disk = $fallback;
+        }
+
+        return $disk->response($incident->photo_path);
     }
 
     public function resolveIncident(SecurityResolveIncidentRequest $request, Incident $incident)
