@@ -125,6 +125,9 @@ $socialLinks = array_filter([
             <a href="{{ route('pages.contact') }}" class="nav-link" onclick="toggleMobileMenu()">Contact</a>
             <a href="{{ route('pages.faq') }}" class="nav-link" onclick="toggleMobileMenu()">FAQ</a>
             <a href="{{ route('affiliate.join') }}" class="nav-link" onclick="toggleMobileMenu()">Affiliate Program</a>
+            <button type="button" class="pwa-install-btn nav-link text-emerald-700 font-semibold flex items-center gap-2 w-full text-left" onclick="toggleMobileMenu()">
+                <i class="fas fa-download text-xs"></i> Install BookTala App
+            </button>
 
             <div class="mt-6 pt-6 border-t border-gray-100 space-y-3">
                 @auth

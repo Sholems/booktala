@@ -8,7 +8,7 @@
  *
  * Bump VERSION whenever this file or the precached files change.
  */
-const VERSION = 'bt-2026-11-19-2';
+const VERSION = 'bt-2026-11-23-1';
 // This release replaces a worker that could leave pages unstyled, so it takes
 // over without waiting for the "new version" prompt. Set back to false next release.
 const ACTIVATE_IMMEDIATELY = true;
@@ -31,12 +31,12 @@ const PRECACHE_URLS = [
     url('icons/favicon-32.png'),
 ];
 // Best-effort: pages worth having offline even before they are visited.
-const WARM_PAGES = ['', 'apartments', 'contact', 'about', 'faq'].map(url);
+const WARM_PAGES = ['', 'apartments', 'contact', 'about', 'faq', 'terms', 'cancellation-policy', 'privacy'].map(url);
 
 const PRIVATE_PREFIXES = [
     'admin', 'staff', 'customer', 'login', 'logout', 'register', 'password',
     'forgot-password', 'reset-password', 'email', 'verify-email', 'auth',
-    'booking', 'api', 'media', 'sanctum', 'owner',
+    'booking', 'api', 'media', 'sanctum', 'owner', 'affiliate', 'front-desk',
 ];
 
 const CDN_HOSTS = [
@@ -96,7 +96,7 @@ self.addEventListener('fetch', (event) => {
     }
 
     if (reqUrl.origin === BASE.origin) {
-        if (isPrivate(reqUrl)) return; // API calls, uploads etc.: straight to the network.
+        if (isPrivate(reqUrl) && request.destination !== 'image') return; // API calls, uploads etc.: straight to the network.
         if (relativePath(reqUrl).startsWith('build/')) {
             // Vite output is content-hashed and never changes: cache first.
             event.respondWith(cacheFirst(request, ASSETS));
@@ -232,3 +232,42 @@ function withTimeout(promise, ms) {
         promise.then((value) => { clearTimeout(timer); resolve(value); }, (err) => { clearTimeout(timer); reject(err); });
     });
 }
+
+// --- Push notifications & background click handling -------------------------
+self.addEventListener('push', (event) => {
+    let data = { title: 'BookTala', body: 'New notification from BookTala', url: './' };
+    try {
+        if (event.data) {
+            data = Object.assign(data, event.data.json());
+        }
+    } catch (e) {
+        if (event.data) data.body = event.data.text();
+    }
+
+    event.waitUntil(
+        self.registration.showNotification(data.title, {
+            body: data.body,
+            icon: url('icons/icon-192.png'),
+            badge: url('icons/favicon-32.png'),
+            data: { url: data.url || './' },
+            vibrate: [100, 50, 100],
+        })
+    );
+});
+
+self.addEventListener('notificationclick', (event) => {
+    event.notification.close();
+    const targetUrl = event.notification.data && event.notification.data.url ? event.notification.data.url : './';
+    event.waitUntil(
+        clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
+            for (const client of clientList) {
+                if (client.url === targetUrl && 'focus' in client) {
+                    return client.focus();
+                }
+            }
+            if (clients.openWindow) {
+                return clients.openWindow(targetUrl);
+            }
+        })
+    );
+});

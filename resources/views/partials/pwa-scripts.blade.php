@@ -115,6 +115,25 @@
         }).catch(function (error) { console.warn('Service worker registration failed:', error); });
     });
 
+    // --- App Badging API ----------------------------------------------------
+    function updateAppBadge() {
+        if (!('setAppBadge' in navigator)) return;
+        var count = 0;
+        var badgeEl = document.querySelector('[data-unread-count]');
+        if (badgeEl) {
+            count = parseInt(badgeEl.getAttribute('data-unread-count') || '0', 10);
+        } else {
+            var match = document.title.match(/^\((\d+)\)/);
+            if (match) count = parseInt(match[1], 10);
+        }
+        if (count > 0) {
+            navigator.setAppBadge(count).catch(function () {});
+        } else {
+            navigator.clearAppBadge().catch(function () {});
+        }
+    }
+    updateAppBadge();
+
     // --- Install prompt (public site only) -----------------------------------------------
     @if(!empty($pwaInstallPrompt))
     var DISMISS_KEY = 'wp-install-dismissed-at';
@@ -126,23 +145,54 @@
         try { localStorage.setItem(DISMISS_KEY, String(Date.now())); } catch (e) {}
     }
 
-    if (!standalone && !recentlyDismissed()) {
+    window.triggerPwaInstall = function() {
+        if (window.deferredPwaPrompt) {
+            window.deferredPwaPrompt.prompt();
+            window.deferredPwaPrompt.userChoice.then(function(choiceResult) {
+                if (choiceResult.outcome === 'accepted') {
+                    document.querySelectorAll('.pwa-install-btn').forEach(function(el) { el.classList.add('hidden'); });
+                }
+                window.deferredPwaPrompt = null;
+            });
+        } else {
+            toast('To install, tap your browser menu and choose "Add to Home Screen" or "Install App".', { duration: 6000 });
+        }
+    };
+
+    document.addEventListener('click', function(e) {
+        var trigger = e.target.closest('.pwa-install-btn, [data-pwa-install]');
+        if (trigger) {
+            e.preventDefault();
+            window.triggerPwaInstall();
+        }
+    });
+
+    if (!standalone) {
         window.addEventListener('beforeinstallprompt', function (event) {
             event.preventDefault();
-            var deferred = event;
-            setTimeout(function () {
-                toast('Install the BookTala app for quick access, even offline.', {
-                    actions: [
-                        { label: 'Install', primary: true, onClick: function () { deferred.prompt(); deferred.userChoice.finally(rememberDismissal); } },
-                        { label: 'Not now', onClick: rememberDismissal }
-                    ]
-                });
-            }, 4000);
+            window.deferredPwaPrompt = event;
+            document.querySelectorAll('.pwa-install-btn').forEach(function(el) {
+                el.classList.remove('hidden');
+            });
+
+            if (!recentlyDismissed()) {
+                setTimeout(function () {
+                    toast('Install the BookTala app for quick access, even offline.', {
+                        actions: [
+                            { label: 'Install', primary: true, onClick: function () { 
+                                event.prompt(); 
+                                event.userChoice.finally(rememberDismissal); 
+                            } },
+                            { label: 'Not now', onClick: rememberDismissal }
+                        ]
+                    });
+                }, 4000);
+            }
         });
 
         // iPhone and iPad have no install prompt: explain how to add it.
         var isIos = /iphone|ipad|ipod/i.test(navigator.userAgent) && !window.MSStream;
-        if (isIos) {
+        if (isIos && !recentlyDismissed()) {
             setTimeout(function () {
                 toast('Install BookTala: tap Share, then "Add to Home Screen".', {
                     actions: [{ label: 'Got it', onClick: rememberDismissal }]

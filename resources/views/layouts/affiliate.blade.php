@@ -12,6 +12,7 @@ $affiliate = auth()->user()?->affiliate;
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'Affiliate Partner Portal') - {{ $siteName }}</title>
+    @include('partials.pwa-head')
     @vite(['resources/css/app.css', 'resources/js/app.js', 'resources/js/qr.js'])
     <style>
         @media (max-width: 1023px) {
@@ -141,5 +142,6 @@ $affiliate = auth()->user()?->affiliate;
         }
     </script>
     @stack('scripts')
+    @include('partials.pwa-scripts', ['pwaInstallPrompt' => true])
 </body>
 </html>

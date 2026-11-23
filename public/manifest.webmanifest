@@ -82,6 +82,17 @@
       ]
     },
     {
+      "name": "Partner portal",
+      "short_name": "Affiliate",
+      "url": "affiliate/dashboard?source=pwa",
+      "icons": [
+        {
+          "src": "icons/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
       "name": "Contact us",
       "short_name": "Contact",
       "url": "contact?source=pwa",

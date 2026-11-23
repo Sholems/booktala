@@ -68,8 +68,11 @@
                     <i class="fas fa-handshake"></i>
                 </div>
                 <div>
-                    <h3 class="font-bold text-base md:text-lg text-white">Not a property owner? Earn 5% as an Affiliate Partner</h3>
-                    <p class="text-xs md:text-sm text-gray-300">Refer travelers, diaspora visitors, and corporate clients to BookTala and earn 5% direct commission on every booked stay.</p>
+                    @php
+                        $affiliateRate = rtrim(rtrim(number_format((float) \App\Models\Setting::get('affiliate_default_commission_rate', 10), 2), '0'), '.');
+                    @endphp
+                    <h3 class="font-bold text-base md:text-lg text-white">Not a property owner? Earn up to {{ $affiliateRate }}% as an Affiliate Partner</h3>
+                    <p class="text-xs md:text-sm text-gray-300">Refer travelers, diaspora visitors, and corporate clients to BookTala and earn up to {{ $affiliateRate }}% direct commission on every booked stay.</p>
                 </div>
             </div>
             <a href="{{ route('affiliate.join') }}" class="w-full md:w-auto px-6 py-2.5 bg-amber-400 hover:bg-amber-300 text-gray-900 font-bold rounded-xl text-xs md:text-sm transition shadow shrink-0 text-center flex items-center justify-center gap-2">
