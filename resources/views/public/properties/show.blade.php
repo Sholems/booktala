@@ -158,19 +158,23 @@
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-8">
             <div class="lg:col-span-2">
                 <div class="mb-4 md:mb-6">
-                    <div class="bg-gray-200 rounded-lg overflow-hidden mb-3 md:mb-4">
+                    <div class="relative bg-gray-200 rounded-2xl overflow-hidden mb-3 md:mb-4 group cursor-pointer" onclick="openGalleryModal(0)">
                         @if($property->images->first())
-                        <img src="{{ $property->images->first()->image_path }}" id="mainImage" alt="{{ $property->title }}" class="w-full h-48 md:h-96 object-cover">
+                        <img src="{{ $property->images->first()->image_path }}" id="mainImage" alt="{{ $property->title }}" class="w-full h-52 md:h-96 object-cover group-hover:scale-[1.02] transition duration-300">
+                        <div class="absolute bottom-3 right-3 bg-black/70 hover:bg-black/90 backdrop-blur-sm text-white text-xs font-semibold px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition">
+                            <i class="fas fa-images"></i>
+                            <span>View all {{ $property->images->count() }} photos</span>
+                        </div>
                         @else
-                        <div class="w-full h-48 md:h-96 bg-gray-300 flex items-center justify-center">
+                        <div class="w-full h-52 md:h-96 bg-gray-300 flex items-center justify-center">
                             <i class="fas fa-home text-4xl md:text-6xl text-gray-400"></i>
                         </div>
                         @endif
                     </div>
-                    <div class="flex gap-2 overflow-x-auto pb-2">
-                        @forelse($property->images as $image)
-                        <img src="{{ $image->image_path }}" onclick="document.getElementById('mainImage').src='{{ $image->image_path }}'" 
-                             class="w-16 md:w-24 h-12 md:h-20 object-cover rounded cursor-pointer thumbnail {{ $image->is_primary ? 'active' : '' }}">
+                    <div class="flex gap-2 overflow-x-auto pb-2 custom-scrollbar">
+                        @forelse($property->images as $idx => $image)
+                        <img src="{{ $image->image_path }}" onclick="setMainImage('{{ $image->image_path }}', {{ $idx }})" 
+                             class="w-16 md:w-24 h-12 md:h-20 object-cover rounded-lg cursor-pointer thumbnail {{ $image->is_primary ? 'active' : '' }}" data-index="{{ $idx }}">
                         @empty
                         @endforelse
                     </div>
@@ -223,19 +227,88 @@
                     </div>
                 </div>
 
-                @if($property->house_rules)
-                <div class="mb-8">
-                    <h2 class="text-2xl font-bold mb-4">House Rules</h2>
-                    <p class="text-gray-700">{{ $property->house_rules }}</p>
+                <!-- House Rules & Stay Requirements -->
+                <div class="mb-8 p-6 rounded-2xl bg-white border border-gray-200 shadow-sm">
+                    <h2 class="text-xl md:text-2xl font-bold mb-4 text-gray-900 flex items-center gap-2.5">
+                        <i class="fas fa-clipboard-list text-primary"></i> House Rules &amp; Stay Requirements
+                    </h2>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 mb-4">
+                        <div class="p-3 rounded-xl bg-gray-50 border border-gray-200/80 flex items-start gap-2.5">
+                            <span class="text-red-500 text-lg mt-0.5"><i class="fas fa-ban-smoking"></i></span>
+                            <div class="text-xs">
+                                <span class="font-bold text-gray-900 block">No Indoor Smoking</span>
+                                <span class="text-gray-500">Balcony smoking only</span>
+                            </div>
+                        </div>
+                        <div class="p-3 rounded-xl bg-gray-50 border border-gray-200/80 flex items-start gap-2.5">
+                            <span class="text-amber-500 text-lg mt-0.5"><i class="fas fa-glass-cheers"></i></span>
+                            <div class="text-xs">
+                                <span class="font-bold text-gray-900 block">No Parties or Events</span>
+                                <span class="text-gray-500">Quiet hours: 10 PM – 7 AM</span>
+                            </div>
+                        </div>
+                        <div class="p-3 rounded-xl bg-gray-50 border border-gray-200/80 flex items-start gap-2.5">
+                            <span class="text-primary text-lg mt-0.5"><i class="fas fa-id-card"></i></span>
+                            <div class="text-xs">
+                                <span class="font-bold text-gray-900 block">Valid ID Required</span>
+                                <span class="text-gray-500">Government ID at check-in</span>
+                            </div>
+                        </div>
+                        <div class="p-3 rounded-xl bg-gray-50 border border-gray-200/80 flex items-start gap-2.5">
+                            <span class="text-primary text-lg mt-0.5"><i class="fas fa-users"></i></span>
+                            <div class="text-xs">
+                                <span class="font-bold text-gray-900 block">Max {{ $property->max_guests }} Guests</span>
+                                <span class="text-gray-500">Occupancy strictly enforced</span>
+                            </div>
+                        </div>
+                        <div class="p-3 rounded-xl bg-gray-50 border border-gray-200/80 flex items-start gap-2.5">
+                            <span class="text-emerald-500 text-lg mt-0.5"><i class="fas fa-clock"></i></span>
+                            <div class="text-xs">
+                                <span class="font-bold text-gray-900 block">Check-in: {{ $property->check_in_time ?? '2:00 PM' }}</span>
+                                <span class="text-gray-500">Check-out: {{ $property->check_out_time ?? '11:00 AM' }}</span>
+                            </div>
+                        </div>
+                        <div class="p-3 rounded-xl bg-gray-50 border border-gray-200/80 flex items-start gap-2.5">
+                            <span class="text-gray-500 text-lg mt-0.5"><i class="fas fa-paw"></i></span>
+                            <div class="text-xs">
+                                <span class="font-bold text-gray-900 block">No Pets</span>
+                                <span class="text-gray-500">Notice required for service dogs</span>
+                            </div>
+                        </div>
+                    </div>
+                    @if($property->house_rules)
+                    <div class="pt-3 border-t border-gray-100 text-sm text-gray-600 whitespace-pre-line leading-relaxed">
+                        {{ $property->house_rules }}
+                    </div>
+                    @endif
                 </div>
-                @endif
 
-                @if($property->cancellation_policy)
-                <div class="mb-8">
-                    <h2 class="text-2xl font-bold mb-4">Cancellation Policy</h2>
-                    <p class="text-gray-700">{{ $property->cancellation_policy }}</p>
+                <!-- Cancellation & Refund Policy -->
+                <div class="mb-8 p-6 rounded-2xl bg-white border border-gray-200 shadow-sm">
+                    <h2 class="text-xl md:text-2xl font-bold mb-4 text-gray-900 flex items-center gap-2.5">
+                        <i class="fas fa-shield-alt text-primary"></i> Cancellation &amp; Refund Policy
+                    </h2>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4 text-xs">
+                        <div class="p-3.5 rounded-xl bg-emerald-50/70 border border-emerald-200">
+                            <span class="font-bold text-emerald-950 block text-sm mb-1">Full Refund</span>
+                            <p class="text-emerald-800">Cancel at least 7 days before check-in for a 100% refund of nightly rate and caution fee.</p>
+                        </div>
+                        <div class="p-3.5 rounded-xl bg-amber-50/70 border border-amber-200">
+                            <span class="font-bold text-amber-950 block text-sm mb-1">50% Refund</span>
+                            <p class="text-amber-800">Cancel between 48 hours and 7 days before check-in for 50% accommodation refund + 100% caution fee.</p>
+                        </div>
+                        <div class="p-3.5 rounded-xl bg-red-50/70 border border-red-200">
+                            <span class="font-bold text-red-950 block text-sm mb-1">Non-Refundable</span>
+                            <p class="text-red-800">Cancellations under 48 hours are non-refundable. Caution fee is refunded in full.</p>
+                        </div>
+                    </div>
+                    <p class="text-xs text-gray-500">Processing fee (₦{{ number_format(config('booking.processing_fee', 2000)) }}) covers payment handling and is non-refundable. Read our full <a href="{{ route('pages.cancellation') }}" target="_blank" class="text-primary font-semibold underline">Cancellation Terms</a>.</p>
+                    @if($property->cancellation_policy)
+                    <div class="mt-3 pt-3 border-t border-gray-100 text-sm text-gray-600 whitespace-pre-line leading-relaxed">
+                        {{ $property->cancellation_policy }}
+                    </div>
+                    @endif
                 </div>
-                @endif
 
                 <div class="mb-8">
                     <h2 class="text-2xl font-bold mb-4">Location</h2>
@@ -366,22 +439,28 @@
                             <span id="tax-amount">₦0</span>
                         </div>
                         <div class="flex justify-between text-sm mb-1">
-                            <span>Processing fee <span class="text-xs text-gray-500">(non-refundable)</span></span>
+                            <span>Processing fee <span class="text-xs text-gray-400 font-normal">(non-refundable)</span></span>
                             <span id="processing-fee">₦{{ number_format((float) config('booking.processing_fee')) }}</span>
                         </div>
                         <div class="flex justify-between text-sm mb-1">
-                            <span>Caution fee <span class="text-xs text-green-600">(refundable)</span></span>
+                            <span>Caution deposit <span class="text-xs text-emerald-600 font-semibold">(100% refundable)</span></span>
                             <span id="caution-fee">₦{{ number_format((float) config('booking.caution_fee')) }}</span>
                         </div>
                         <div class="flex justify-between font-bold text-lg border-t pt-2 mt-2">
                             <span>Total</span>
-                            <span id="total-price">₦0</span>
+                            <span id="total-price" class="text-primary font-black">₦0</span>
                         </div>
                     </div>
 
-                    <button type="button" id="check-availability-btn" class="w-full bg-accent text-white py-3 rounded-lg font-bold hover:bg-accent/90 transition">
-                        Book Now
+                    <button type="button" id="check-availability-btn" class="w-full bg-accent text-white py-3.5 rounded-xl font-bold hover:bg-accent/90 shadow-md shadow-accent/20 transition transform active:scale-[0.99] flex items-center justify-center gap-2">
+                        <span>Book Now</span>
+                        <i class="fas fa-arrow-right text-xs"></i>
                     </button>
+
+                    <a href="https://wa.me/2349116110242?text={{ urlencode('Hi BookTala Concierge, I have an enquiry about ' . $property->title . ':') }}" target="_blank" class="w-full mt-2.5 inline-flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl border border-emerald-500 text-emerald-700 bg-emerald-50/50 hover:bg-emerald-100 font-semibold text-xs md:text-sm transition">
+                        <i class="fab fa-whatsapp text-emerald-600 text-base"></i>
+                        <span>Ask Host on WhatsApp</span>
+                    </a>
 
                     <div class="mt-6 text-sm text-gray-600">
                         <div class="flex justify-between py-2">
@@ -422,6 +501,53 @@
             </div>
         </div>
         @endif
+    </div>
+
+    <!-- Mobile Sticky Bottom Booking Bar -->
+    <div class="lg:hidden fixed bottom-0 inset-x-0 bg-white/95 backdrop-blur-md border-t border-gray-200 px-4 py-3 z-40 flex items-center justify-between shadow-2xl">
+        <div>
+            <span class="text-[11px] text-gray-500 block leading-tight">Price per night</span>
+            <span class="text-base font-black text-primary">₦{{ number_format($property->price_per_night) }}</span>
+        </div>
+        <div class="flex items-center gap-2">
+            <a href="https://wa.me/2349116110242?text={{ urlencode('Hi BookTala Concierge, enquiry for ' . $property->title) }}" target="_blank" class="w-10 h-10 rounded-xl border border-emerald-500 text-emerald-600 bg-emerald-50 flex items-center justify-center text-lg shrink-0" title="Chat on WhatsApp">
+                <i class="fab fa-whatsapp"></i>
+            </a>
+            <button type="button" onclick="document.getElementById('availability-calendar').scrollIntoView({ behavior: 'smooth', block: 'center' })" class="px-5 py-2.5 bg-accent hover:bg-accent/90 text-white font-bold text-sm rounded-xl shadow-md shadow-accent/20 transition">
+                Check Dates
+            </button>
+        </div>
+    </div>
+
+    <!-- Photo Lightbox Modal -->
+    <div id="gallery-lightbox" class="fixed inset-0 z-50 hidden bg-black/95 backdrop-blur-sm flex flex-col justify-between p-4 md:p-6 animate-in fade-in duration-150">
+        <div class="flex items-center justify-between text-white z-10">
+            <div class="flex items-center gap-3">
+                <span class="font-bold text-sm md:text-base">{{ $property->title }}</span>
+                <span id="gallery-counter" class="text-xs bg-white/20 px-2.5 py-1 rounded-full text-white/90"></span>
+            </div>
+            <button type="button" onclick="closeGalleryModal()" class="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center text-lg transition">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <div class="relative flex-1 flex items-center justify-center my-4 overflow-hidden">
+            <button type="button" onclick="prevGalleryImage()" class="absolute left-2 md:left-6 w-11 h-11 rounded-full bg-black/50 hover:bg-black/80 text-white flex items-center justify-center text-lg transition z-10">
+                <i class="fas fa-chevron-left"></i>
+            </button>
+            
+            <img id="lightbox-image" src="" alt="{{ $property->title }}" class="max-h-[75vh] max-w-[90vw] object-contain rounded-xl shadow-2xl transition duration-200">
+            
+            <button type="button" onclick="nextGalleryImage()" class="absolute right-2 md:right-6 w-11 h-11 rounded-full bg-black/50 hover:bg-black/80 text-white flex items-center justify-center text-lg transition z-10">
+                <i class="fas fa-chevron-right"></i>
+            </button>
+        </div>
+
+        <div class="flex justify-center gap-2 overflow-x-auto py-2 max-w-2xl mx-auto custom-scrollbar">
+            @foreach($property->images as $idx => $img)
+            <img src="{{ $img->image_path }}" onclick="showGalleryImage({{ $idx }})" class="lightbox-thumb w-14 h-10 object-cover rounded cursor-pointer border-2 border-transparent opacity-60 hover:opacity-100 transition" data-index="{{ $idx }}">
+            @endforeach
+        </div>
     </div>
 </section>
 
@@ -575,6 +701,67 @@ document.getElementById('check-availability-btn').addEventListener('click', func
 });
 
 renderCalendar();
+
+// Gallery Lightbox
+const propertyImages = @json($property->images->pluck('image_path')->values());
+let currentGalleryIndex = 0;
+
+function setMainImage(src, index) {
+    document.getElementById('mainImage').src = src;
+    document.querySelectorAll('.thumbnail').forEach((thumb, i) => {
+        if (i === index) thumb.classList.add('active');
+        else thumb.classList.remove('active');
+    });
+}
+
+function openGalleryModal(index = 0) {
+    if (!propertyImages || propertyImages.length === 0) return;
+    document.getElementById('gallery-lightbox').classList.remove('hidden');
+    document.body.classList.add('overflow-hidden');
+    showGalleryImage(index);
+}
+
+function closeGalleryModal() {
+    document.getElementById('gallery-lightbox').classList.add('hidden');
+    document.body.classList.remove('overflow-hidden');
+}
+
+function showGalleryImage(index) {
+    if (!propertyImages || propertyImages.length === 0) return;
+    if (index < 0) index = propertyImages.length - 1;
+    if (index >= propertyImages.length) index = 0;
+    currentGalleryIndex = index;
+
+    document.getElementById('lightbox-image').src = propertyImages[currentGalleryIndex];
+    document.getElementById('gallery-counter').textContent = `${currentGalleryIndex + 1} of ${propertyImages.length}`;
+
+    document.querySelectorAll('.lightbox-thumb').forEach((thumb, i) => {
+        if (i === currentGalleryIndex) {
+            thumb.classList.add('border-white', 'opacity-100');
+            thumb.classList.remove('opacity-60', 'border-transparent');
+            thumb.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+        } else {
+            thumb.classList.remove('border-white', 'opacity-100');
+            thumb.classList.add('opacity-60', 'border-transparent');
+        }
+    });
+}
+
+function prevGalleryImage() {
+    showGalleryImage(currentGalleryIndex - 1);
+}
+
+function nextGalleryImage() {
+    showGalleryImage(currentGalleryIndex + 1);
+}
+
+document.addEventListener('keydown', function(e) {
+    const lightbox = document.getElementById('gallery-lightbox');
+    if (!lightbox || lightbox.classList.contains('hidden')) return;
+    if (e.key === 'Escape') closeGalleryModal();
+    if (e.key === 'ArrowLeft') prevGalleryImage();
+    if (e.key === 'ArrowRight') nextGalleryImage();
+});
 </script>
 @endpush
 @endsection

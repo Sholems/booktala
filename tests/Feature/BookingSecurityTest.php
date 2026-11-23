@@ -160,6 +160,7 @@ class BookingSecurityTest extends TestCase
             'check_in' => now()->addDays(5)->toDateString(),
             'check_out' => now()->addDays(7)->toDateString(),
             'guests' => 2,
+            'policy_agreement' => true,
             'guest_name' => 'New Guest',
             'guest_email' => 'newguest@example.com',
             'guest_phone' => '0800',
@@ -211,6 +212,7 @@ class BookingSecurityTest extends TestCase
             'check_out' => now()->addDays(7)->toDateString(),
             'guests' => 2,
             'payment_mode' => 'partial',
+            'policy_agreement' => true,
             'guest_name' => 'Partial Guest',
             'guest_email' => 'partial@example.com',
             'guest_phone' => '0800',
@@ -282,6 +284,52 @@ class BookingSecurityTest extends TestCase
             ->assertOk()
             ->assertSee('Refundable caution fee')
             ->assertSee('Proceed to Payment');
+    }
+
+    public function test_booking_fails_without_policy_agreement(): void
+    {
+        $property = $this->makeProperty();
+
+        $this->postJson('/booking/process', [
+            'property_id' => $property->id,
+            'check_in' => now()->addDays(5)->toDateString(),
+            'check_out' => now()->addDays(7)->toDateString(),
+            'guests' => 2,
+            'guest_name' => 'Test Guest',
+            'guest_email' => 'testguest@example.com',
+            'guest_phone' => '0800',
+            'guest_password' => 'secret123',
+            // Omit policy_agreement
+        ])->assertStatus(422)
+          ->assertJsonValidationErrors(['policy_agreement']);
+    }
+
+    public function test_booking_records_policy_agreement_audit(): void
+    {
+        $property = $this->makeProperty();
+
+        Http::fake([
+            'api.paystack.co/transaction/initialize' => Http::response([
+                'status' => true,
+                'data' => ['authorization_url' => 'https://checkout.paystack.test/policy-test'],
+            ]),
+        ]);
+
+        $this->postJson('/booking/process', [
+            'property_id' => $property->id,
+            'check_in' => now()->addDays(5)->toDateString(),
+            'check_out' => now()->addDays(7)->toDateString(),
+            'guests' => 2,
+            'policy_agreement' => true,
+            'guest_name' => 'Policy Tester',
+            'guest_email' => 'policytester@example.com',
+            'guest_phone' => '0800112233',
+            'guest_password' => 'secret123',
+        ])->assertOk();
+
+        $reservation = Reservation::where('user_id', User::where('email', 'policytester@example.com')->value('id'))->firstOrFail();
+        $this->assertNotNull($reservation->policy_agreed_at);
+        $this->assertNotNull($reservation->policy_agreed_ip);
     }
 
     public function test_underpaid_callback_does_not_confirm(): void

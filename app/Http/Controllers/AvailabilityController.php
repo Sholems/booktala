@@ -20,17 +20,19 @@ class AvailabilityController extends Controller
         $checkIn = Carbon::parse($request->check_in)->startOfDay();
         $checkOut = Carbon::parse($request->check_out)->startOfDay();
         $nights = (int) $checkIn->diffInDays($checkOut);
+        $guests = (int) $request->input('guests', 1);
+        $discountCode = $request->input('discount_code');
 
         if ($request->property_id) {
             $property = Unit::with('images')->active()->findOrFail($request->property_id);
 
-            return response()->json($this->checkPropertyAvailability($property, $checkIn, $checkOut, $nights));
+            return response()->json($this->checkPropertyAvailability($property, $checkIn, $checkOut, $nights, $guests, $discountCode));
         }
 
         $properties = Unit::with('images')
             ->active()
             ->get()
-            ->map(fn ($property) => $this->checkPropertyAvailability($property, $checkIn, $checkOut, $nights))
+            ->map(fn ($property) => $this->checkPropertyAvailability($property, $checkIn, $checkOut, $nights, $guests, $discountCode))
             ->sortByDesc('available')
             ->values();
 
@@ -42,31 +44,42 @@ class AvailabilityController extends Controller
         ]);
     }
 
-    private function checkPropertyAvailability(Unit $property, Carbon $checkIn, Carbon $checkOut, int $nights): array
+    private function checkPropertyAvailability(Unit $property, Carbon $checkIn, Carbon $checkOut, int $nights, int $guests = 1, ?string $discountCode = null): array
     {
         $pricing = null;
+        $errorMessage = null;
 
         try {
-            $pricing = $this->pricingService->calculatePrice($property, $checkIn, $checkOut);
+            $pricing = $this->pricingService->calculatePrice($property, $checkIn, $checkOut, $guests, $discountCode);
             $available = true;
-        } catch (\Exception) {
+        } catch (\Exception $e) {
             $available = false;
+            $errorMessage = $e->getMessage();
         }
+
+        $total = $pricing['total_amount'] ?? null;
+        $partial = $total !== null ? round($total * 0.5, 2) : null;
 
         return [
             'id' => $property->id,
             'name' => $property->title,
             'slug' => $property->slug,
             'available' => $available,
+            'message' => $errorMessage,
             'available_rooms' => $available ? 1 : 0,
             'total_rooms' => 1,
             'price_per_night' => $property->price_per_night,
             'subtotal' => $pricing['subtotal'] ?? (float) $property->price_per_night * $nights,
+            'discount_amount' => $pricing['discount_amount'] ?? 0,
+            'discount_code' => $pricing['discount_code'] ?? null,
+            'discount_applied' => ! empty($pricing['discount_code']) && ($pricing['discount_amount'] ?? 0) > 0,
             'tax_amount' => $pricing['tax_amount'] ?? null,
             'processing_fee' => $pricing['processing_fee'] ?? (float) config('booking.processing_fee'),
             'caution_fee' => $pricing['caution_fee'] ?? (float) config('booking.caution_fee'),
-            'total_price' => $pricing['total_amount'] ?? null,
+            'total_price' => $total,
+            'partial_price' => $partial,
             'nights' => $nights,
+            'guests' => $guests,
             'images' => $property->images->take(3)->map(fn ($img) => $img->image_path)->values(),
         ];
     }

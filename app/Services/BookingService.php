@@ -64,6 +64,8 @@ class BookingService
                     'booking_status' => 'pending',
                     'hold_expires_at' => now()->addMinutes(config('booking.hold_minutes')),
                     'special_requests' => $data['special_requests'] ?? null,
+                    'policy_agreed_at' => $data['policy_agreed_at'] ?? now(),
+                    'policy_agreed_ip' => $data['policy_agreed_ip'] ?? request()?->ip(),
                 ]);
             });
         });

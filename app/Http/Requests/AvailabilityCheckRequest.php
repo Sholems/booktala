@@ -20,6 +20,8 @@ class AvailabilityCheckRequest extends FormRequest
             'check_in' => 'required|date',
             'check_out' => 'required|date|after:check_in',
             'property_id' => 'nullable|exists:properties,id',
+            'guests' => 'nullable|integer|min:1',
+            'discount_code' => 'nullable|string',
         ];
     }
 }
