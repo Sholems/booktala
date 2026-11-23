@@ -20,6 +20,7 @@ class Attendance extends Model
         'clock_in_at', 'clock_in_lat', 'clock_in_lng', 'clock_in_accuracy_m', 'clock_in_distance_m', 'clock_in_location', 'late_minutes',
         'clock_out_at', 'clock_out_lat', 'clock_out_lng', 'clock_out_distance_m', 'clock_out_location',
         'worked_minutes', 'handover_note', 'auto_closed',
+        'handover_acknowledged_by', 'handover_acknowledged_at',
     ];
 
     protected function casts(): array
@@ -27,6 +28,7 @@ class Attendance extends Model
         return [
             'clock_in_at' => 'datetime',
             'clock_out_at' => 'datetime',
+            'handover_acknowledged_at' => 'datetime',
             'auto_closed' => 'boolean',
             'late_minutes' => 'integer',
             'worked_minutes' => 'integer',
@@ -46,6 +48,16 @@ class Attendance extends Model
     public function schedule(): BelongsTo
     {
         return $this->belongsTo(StaffSchedule::class, 'staff_schedule_id');
+    }
+
+    public function handoverAcknowledgedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'handover_acknowledged_by');
+    }
+
+    public function isHandoverAcknowledged(): bool
+    {
+        return $this->handover_acknowledged_at !== null;
     }
 
     public function isOpen(): bool

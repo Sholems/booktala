@@ -12,6 +12,7 @@ use App\Http\Controllers\Staff\PayslipController;
 use App\Http\Controllers\Staff\ProfileController;
 use App\Http\Controllers\Staff\RoomServiceController;
 use App\Http\Controllers\Staff\ScheduleController;
+use App\Http\Controllers\Staff\SiteFeedController;
 use App\Http\Controllers\Staff\TaskController;
 use App\Http\Controllers\Staff\TeamController;
 use Illuminate\Support\Facades\Route;
@@ -59,6 +60,12 @@ Route::prefix('staff')->middleware(['auth', 'role:staff'])->group(function () {
 
     Route::post('/attendance/clock-in', [AttendanceController::class, 'clockIn'])->name('staff.attendance.clock-in')->middleware('throttle:10,1');
     Route::post('/attendance/clock-out', [AttendanceController::class, 'clockOut'])->name('staff.attendance.clock-out')->middleware('throttle:10,1');
+    Route::patch('/attendance/{attendance}/acknowledge-handover', [AttendanceController::class, 'acknowledgeHandover'])->name('staff.attendance.acknowledge-handover');
+
+    // Site Operations Radio / Team Feed
+    Route::get('/team/feed', [SiteFeedController::class, 'index'])->name('staff.team.feed.index');
+    Route::post('/team/feed', [SiteFeedController::class, 'store'])->name('staff.team.feed.store');
+    Route::patch('/team/feed/{message}/pin', [SiteFeedController::class, 'togglePin'])->name('staff.team.feed.pin');
 
     Route::get('/notifications', [NotificationController::class, 'index'])->name('staff.notifications.index');
     Route::get('/notifications/{id}', [NotificationController::class, 'open'])->name('staff.notifications.open');

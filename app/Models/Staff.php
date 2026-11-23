@@ -50,6 +50,11 @@ class Staff extends Model
         return $this->assignments()->active();
     }
 
+    public function activeSites()
+    {
+        return Site::whereIn('id', $this->activeAssignments()->pluck('site_id'));
+    }
+
     public function attendances(): HasMany
     {
         return $this->hasMany(Attendance::class);
@@ -90,5 +95,12 @@ class Staff extends Model
             'is_primary' => $primary,
             'starts_on' => $startsOn ?? today(),
         ]);
+    }
+
+    public function isSupervisorAt(Site|int $site): bool
+    {
+        $siteId = $site instanceof Site ? $site->id : $site;
+
+        return \App\Support\Supervision::supervises($this->user, $siteId);
     }
 }

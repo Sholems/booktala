@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Staff;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Staff\AttendanceClockInRequest;
 use App\Http\Requests\Staff\AttendanceClockOutRequest;
+use App\Models\Attendance;
 use App\Models\Site;
 use App\Services\AttendanceService;
 use Illuminate\Http\Request;
@@ -50,6 +51,21 @@ class AttendanceController extends Controller
         );
 
         return back()->with('success', 'Clocked out. You worked '.$record->workedLabel().' this shift.');
+    }
+
+    public function acknowledgeHandover(Request $request, Attendance $attendance)
+    {
+        $staff = $this->staff($request);
+        $userSiteIds = $staff->activeSites()->pluck('sites.id')->all();
+        abort_unless(in_array((int) $attendance->site_id, $userSiteIds, true), 403, 'You are not assigned to this site.');
+        abort_unless(! empty($attendance->handover_note), 422, 'This attendance record does not contain a handover note.');
+
+        $attendance->update([
+            'handover_acknowledged_by' => $request->user()->id,
+            'handover_acknowledged_at' => now(),
+        ]);
+
+        return back()->with('success', 'Shift handover acknowledged and logged.');
     }
 
     private function staff(Request $request)

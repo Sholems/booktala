@@ -55,13 +55,35 @@
 
     @if($handovers->isNotEmpty())
     <div class="mt-4 border-t pt-3">
-        <div class="text-xs font-semibold text-gray-500 uppercase mb-2">Handover notes (last 24 hours)</div>
-        <ul class="space-y-2">
+        <div class="flex items-center justify-between mb-2">
+            <span class="text-xs font-semibold text-gray-500 uppercase">Shift Handover Notes (last 24 hours)</span>
+            <span class="text-xs text-gray-400">Incoming duty verification</span>
+        </div>
+        <ul class="space-y-3">
             @foreach($handovers as $note)
-            <li class="text-sm">
-                <span class="font-medium">{{ $note->staff->user->name ?? 'Staff' }}</span>
-                <span class="text-gray-500">· {{ $note->site->name }} · {{ $note->clock_out_at->format('D g:i A') }}</span>
-                <p class="text-gray-700 whitespace-pre-line">{{ $note->handover_note }}</p>
+            <li class="text-sm p-3 rounded-lg border {{ $note->isHandoverAcknowledged() ? 'bg-gray-50/70 border-gray-200' : 'bg-amber-50/60 border-amber-200 ring-1 ring-amber-300/50' }}">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 mb-1.5">
+                    <div>
+                        <span class="font-medium text-gray-900">{{ $note->staff->user->name ?? 'Staff' }}</span>
+                        <span class="text-gray-500">· {{ $note->site->name }} · {{ $note->clock_out_at?->format('D g:i A') }}</span>
+                    </div>
+                    <div>
+                        @if($note->isHandoverAcknowledged())
+                            <span class="inline-flex items-center text-xs font-medium text-emerald-700 bg-emerald-100/70 px-2 py-0.5 rounded">
+                                <i class="fas fa-check-double mr-1"></i> Acknowledged by {{ $note->handoverAcknowledgedBy->name ?? 'Staff' }} ({{ $note->handover_acknowledged_at->format('g:i A') }})
+                            </span>
+                        @else
+                            <form method="POST" action="{{ route('staff.attendance.acknowledge-handover', $note) }}" class="inline">
+                                @csrf
+                                @method('PATCH')
+                                <button type="submit" class="inline-flex items-center text-xs font-semibold text-amber-900 bg-amber-200 hover:bg-amber-300 px-2.5 py-1 rounded transition shadow-sm">
+                                    <i class="fas fa-check mr-1.5 text-amber-800"></i> Acknowledge & Accept Shift
+                                </button>
+                            </form>
+                        @endif
+                    </div>
+                </div>
+                <p class="text-gray-800 whitespace-pre-line text-sm bg-white/70 p-2 rounded border border-gray-100">{{ $note->handover_note }}</p>
             </li>
             @endforeach
         </ul>

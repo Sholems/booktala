@@ -60,6 +60,7 @@ $logoMarkUrl = asset('images/booktala-mark.png');
                         <x-nav-link route="staff.checkout.index" active="staff.checkout.*" icon="fa-sign-out-alt">Check-out</x-nav-link>
                         <x-nav-link route="staff.room-service.index" active="staff.room-service.*" icon="fa-concierge-bell">Room Service</x-nav-link>
                         <x-nav-link route="staff.messages.index" active="staff.messages.*" icon="fa-envelope">Guest Messages</x-nav-link>
+                        <x-nav-link route="staff.team.feed.index" active="staff.team.feed.*" icon="fa-broadcast-tower">Site Feed / Radio</x-nav-link>
                         <x-nav-link route="staff.schedule.index" active="staff.schedule.*" icon="fa-calendar-alt">My Schedule</x-nav-link>
                         <x-nav-link route="staff.payslips.index" active="staff.payslips.*" icon="fa-money-check-alt">My Payslips</x-nav-link>
                         <x-nav-link route="staff.maintenance.index" active="staff.maintenance.*" icon="fa-tools">Maintenance</x-nav-link>

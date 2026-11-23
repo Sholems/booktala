@@ -16,6 +16,7 @@ class Conversation extends Model
         'admin_id',
         'property_id',
         'reservation_id',
+        'type',
         'last_message_at',
     ];
 

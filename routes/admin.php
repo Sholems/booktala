@@ -35,6 +35,7 @@ use App\Http\Controllers\Admin\RoomServiceController;
 use App\Http\Controllers\Admin\RoomTypeController;
 use App\Http\Controllers\Admin\SettingsController;
 use App\Http\Controllers\Admin\SiteController;
+use App\Http\Controllers\Admin\SiteFeedController;
 use App\Http\Controllers\Admin\SiteReportController;
 use App\Http\Controllers\Admin\StaffController;
 use App\Http\Controllers\Admin\StaffScheduleController;
@@ -112,8 +113,13 @@ Route::prefix('admin')->middleware(['auth', 'role:super_admin|admin'])->group(fu
     Route::post('/owners/{owner}/portal', [OwnerController::class, 'portalAccess'])->name('admin.owners.portal')->middleware('can:owner.manage');
     Route::patch('/owners/{owner}/portal/revoke', [OwnerController::class, 'revokePortal'])->name('admin.owners.portal.revoke')->middleware('can:owner.manage');
 
-    // Security and inventory across all sites.
+    // Security, operations feed and inventory across all sites.
     Route::middleware('can:site.manage')->group(function () {
+        Route::get('/site-feed', [SiteFeedController::class, 'index'])->name('admin.site-feed.index');
+        Route::post('/site-feed', [SiteFeedController::class, 'store'])->name('admin.site-feed.store');
+        Route::patch('/site-feed/{message}/pin', [SiteFeedController::class, 'togglePin'])->name('admin.site-feed.pin');
+        Route::delete('/site-feed/{message}', [SiteFeedController::class, 'destroy'])->name('admin.site-feed.destroy');
+
         $portal = 'admin';
         require __DIR__.'/site-operations.php';
     });

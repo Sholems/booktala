@@ -132,6 +132,7 @@ $logoMarkUrl = asset('images/booktala-mark.png');
                         <x-nav-link route="admin.staff-schedules.index" active="admin.staff-schedules.*" icon="fa-calendar-alt">Schedules</x-nav-link>
                         <x-nav-link route="admin.attendance.index" active="admin.attendance.*" icon="fa-user-clock">Attendance</x-nav-link>
                         @can('site.manage')
+                        <x-nav-link route="admin.site-feed.index" active="admin.site-feed.*" icon="fa-broadcast-tower">Site Feeds</x-nav-link>
                         <x-nav-link route="admin.security.index" active="admin.security.*" icon="fa-shield-alt">Security</x-nav-link>
                         <x-nav-link route="admin.inventory.index" active="admin.inventory.*" icon="fa-boxes">Inventory</x-nav-link>
                         @endcan

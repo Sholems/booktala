@@ -34,7 +34,11 @@ $logoMarkUrl = asset('images/booktala-mark.png');
                 </a>
             </div>
             <nav class="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
-                @foreach([['owner.dashboard', 'owner.dashboard', 'fa-chart-pie', 'Overview'], ['owner.statements.index', 'owner.statements.*', 'fa-file-invoice-dollar', 'Statements']] as [$route, $pattern, $icon, $label])
+                @foreach([
+                    ['owner.dashboard', 'owner.dashboard', 'fa-chart-pie', 'Overview'],
+                    ['owner.statements.index', 'owner.statements.*', 'fa-file-invoice-dollar', 'Statements'],
+                    ['owner.messages.index', 'owner.messages.*', 'fa-comments', 'Asset Concierge'],
+                ] as [$route, $pattern, $icon, $label])
                 <a href="{{ route($route) }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 {{ request()->routeIs($pattern) ? 'bg-accent/10 text-accent font-semibold' : 'hover:bg-slate-800/50 hover:text-white' }}">
                     <i class="fas {{ $icon }} w-5 text-sm"></i>
                     <span class="text-sm">{{ $label }}</span>

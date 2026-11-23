@@ -7,9 +7,15 @@
             <i class="fas fa-arrow-left"></i> Back to messages
         </a>
         <div class="text-right min-w-0">
-            <p class="font-semibold truncate">{{ $conversation->user->name ?? 'Guest' }}</p>
+            <div class="flex items-center justify-end gap-2">
+                <p class="font-semibold truncate">{{ $conversation->user->name ?? 'Guest' }}</p>
+                @if($conversation->type === 'owner')
+                <span class="text-[10px] px-1.5 py-0.5 rounded font-bold uppercase bg-emerald-100 text-emerald-800 border border-emerald-200">Owner</span>
+                @endif
+            </div>
             <p class="text-sm text-gray-500 truncate">
                 {{ $conversation->user->email ?? '' }}
+                @if($conversation->property) · {{ $conversation->property->title }} @endif
                 @if($conversation->reservation) · {{ $conversation->reservation->booking_ref }} ({{ ucfirst(str_replace('_', ' ', $conversation->reservation->booking_status)) }}) @endif
             </p>
         </div>

@@ -15,7 +15,12 @@
                 </div>
                 <div class="flex-1 min-w-0">
                     <div class="flex justify-between items-center gap-2">
-                        <h3 class="truncate {{ $conversation->unread_count ? 'font-bold' : 'font-semibold' }}">{{ $conversation->user->name ?? 'Guest' }}</h3>
+                        <div class="flex items-center gap-2 truncate">
+                            <h3 class="truncate {{ $conversation->unread_count ? 'font-bold' : 'font-semibold' }}">{{ $conversation->user->name ?? 'Guest' }}</h3>
+                            @if($conversation->type === 'owner')
+                            <span class="px-1.5 py-0.5 text-[10px] font-bold uppercase rounded bg-emerald-100 text-emerald-800 border border-emerald-200 shrink-0">Owner</span>
+                            @endif
+                        </div>
                         <span class="text-xs text-gray-500 shrink-0">{{ optional($conversation->last_message_at)->diffForHumans() }}</span>
                     </div>
                     <p class="text-sm text-gray-500 truncate">
