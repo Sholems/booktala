@@ -60,7 +60,7 @@ class SiteFeedController extends Controller
 
         $pinned = ! empty($validated['pinned']);
 
-        SiteMessage::create([
+        $siteMessage = SiteMessage::create([
             'site_id' => $validated['site_id'],
             'user_id' => $request->user()->id,
             'unit_id' => $validated['unit_id'] ?? null,
@@ -70,6 +70,8 @@ class SiteFeedController extends Controller
             'pinned_at' => $pinned ? now() : null,
             'pinned_by' => $pinned ? $request->user()->id : null,
         ]);
+
+        app(\App\Services\CommunicationAlertService::class)->notifySiteMessage($siteMessage, $request->user());
 
         return back()->with('success', 'Operational update posted to site feed.');
     }

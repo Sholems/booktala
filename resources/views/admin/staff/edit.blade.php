@@ -6,9 +6,45 @@
         <a href="{{ route('admin.staff.index') }}" class="text-sm text-gray-500 hover:text-primary"><i class="fas fa-arrow-left mr-1"></i> Back to staff</a>
         <h2 class="mt-1 text-2xl font-bold">{{ $member->name }}</h2>
     </div>
-    <span class="px-3 py-1 text-sm rounded-full {{ $member->status === 'active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800' }}">
-        {{ ucfirst($member->status) }}
-    </span>
+    <div class="flex items-center gap-3">
+        <button type="button" onclick="document.getElementById('memo-modal').classList.remove('hidden')" class="px-3.5 py-1.5 rounded-lg bg-indigo-50 border border-indigo-200 text-indigo-700 text-sm font-medium hover:bg-indigo-100 flex items-center gap-1.5 shadow-sm">
+            <i class="fas fa-paper-plane text-xs"></i> Direct Message / Memo
+        </button>
+        <span class="px-3 py-1 text-sm rounded-full {{ $member->status === 'active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800' }}">
+            {{ ucfirst($member->status) }}
+        </span>
+    </div>
+</div>
+
+<!-- Direct Message / Memo Modal -->
+<div id="memo-modal" class="hidden fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl shadow-2xl max-w-lg w-full p-6 ring-1 ring-gray-200">
+        <div class="flex items-center justify-between mb-4 border-b pb-3">
+            <h3 class="text-lg font-bold text-gray-900 flex items-center gap-2">
+                <i class="fas fa-envelope-open-text text-indigo-600"></i> Direct Message to {{ $member->name }}
+            </h3>
+            <button type="button" onclick="document.getElementById('memo-modal').classList.add('hidden')" class="text-gray-400 hover:text-gray-600">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <form method="POST" action="{{ route('admin.messages.start-staff') }}" class="space-y-4">
+            @csrf
+            <input type="hidden" name="user_id" value="{{ $member->id }}">
+            <p class="text-xs text-gray-500">
+                This message will be sent privately to {{ $member->name }}'s Head Office Desk and an in-app alert will notify them.
+            </p>
+            <div>
+                <label class="block text-xs font-semibold text-gray-700 uppercase mb-1">Message / Memo Content</label>
+                <textarea name="message" rows="5" maxlength="3000" required placeholder="Type official communication, memo, or query..." class="w-full border rounded-lg px-3 py-2 text-sm focus:ring-primary focus:border-primary"></textarea>
+            </div>
+            <div class="flex justify-end gap-2 pt-2">
+                <button type="button" onclick="document.getElementById('memo-modal').classList.add('hidden')" class="px-4 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-lg">Cancel</button>
+                <button type="submit" class="px-4 py-2 text-sm font-medium bg-slate-900 text-white rounded-lg hover:bg-slate-800 flex items-center gap-1.5 shadow-sm">
+                    <i class="fas fa-paper-plane text-xs"></i> Send Message
+                </button>
+            </div>
+        </form>
+    </div>
 </div>
 
 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">

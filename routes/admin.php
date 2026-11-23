@@ -259,6 +259,7 @@ Route::prefix('admin')->middleware(['auth', 'role:super_admin|admin'])->group(fu
     Route::get('/ical/url', [IcalController::class, 'getIcalUrl'])->name('admin.ical.url')->middleware('can:reservation.view');
 
     Route::get('/messages', [MessageController::class, 'index'])->name('admin.messages.index')->middleware('can:customer.view');
+    Route::post('/messages/start-staff', [MessageController::class, 'startStaffConversation'])->name('admin.messages.start-staff')->middleware('can:staff.manage');
     Route::get('/messages/{conversation}', [MessageController::class, 'show'])->name('admin.messages.show')->middleware('can:customer.view');
     Route::post('/messages/{conversation}/reply', [MessageController::class, 'reply'])->name('admin.messages.reply')->middleware('can:customer.manage');
 

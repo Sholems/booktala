@@ -13,6 +13,7 @@ use App\Http\Controllers\Staff\ProfileController;
 use App\Http\Controllers\Staff\RoomServiceController;
 use App\Http\Controllers\Staff\ScheduleController;
 use App\Http\Controllers\Staff\SiteFeedController;
+use App\Http\Controllers\Staff\SupportController;
 use App\Http\Controllers\Staff\TaskController;
 use App\Http\Controllers\Staff\TeamController;
 use Illuminate\Support\Facades\Route;
@@ -53,6 +54,12 @@ Route::prefix('staff')->middleware(['auth', 'role:staff'])->group(function () {
     Route::patch('/maintenance/{maintenanceReport}', [MaintenanceController::class, 'update'])->name('staff.maintenance.update');
 
     Route::get('/schedule', [ScheduleController::class, 'index'])->name('staff.schedule.index');
+
+    // Head Office & HR Support Desk (Private Staff <-> Management Communication)
+    Route::get('/support', [SupportController::class, 'index'])->name('staff.support.index');
+    Route::post('/support', [SupportController::class, 'store'])->name('staff.support.store');
+    Route::get('/support/{conversation}', [SupportController::class, 'show'])->name('staff.support.show');
+    Route::post('/support/{conversation}/reply', [SupportController::class, 'reply'])->name('staff.support.reply');
 
     Route::get('/messages', [MessageController::class, 'index'])->name('staff.messages.index');
     Route::get('/messages/{conversation}', [MessageController::class, 'show'])->name('staff.messages.show');

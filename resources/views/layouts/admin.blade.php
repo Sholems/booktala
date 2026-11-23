@@ -5,6 +5,12 @@ $siteName = \App\Models\Setting::get('site_name', config('brand.name', 'BookTala
 $logo = \App\Models\Setting::get('logo');
 $logoUrl = $logo ? url('media/' . ltrim($logo, '/')) : asset('images/booktala-logo.png');
 $logoMarkUrl = asset('images/booktala-mark.png');
+
+$alertService = app(\App\Services\CommunicationAlertService::class);
+$adminUnreadMsgCount = auth()->check() ? $alertService->adminUnreadMessagesCount(auth()->user()) : 0;
+$adminUrgentFeedCount = auth()->check() ? $alertService->adminUrgentSiteFeedsCount() : 0;
+$adminUnreadNotifs = auth()->check() ? auth()->user()->unreadNotifications()->count() : 0;
+$totalAlerts = $adminUnreadMsgCount + $adminUnreadNotifs;
 @endphp
 <!DOCTYPE html>
 <html lang="en">
@@ -12,7 +18,7 @@ $logoMarkUrl = asset('images/booktala-mark.png');
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('title', trim($__env->yieldContent('page_title')) ?: 'Admin Dashboard') - BookTala</title>
+    <title>{{ $totalAlerts > 0 ? '(' . $totalAlerts . ') ' : '' }}@yield('title', trim($__env->yieldContent('page_title')) ?: 'Admin Dashboard') - BookTala</title>
     @vite(['resources/css/app.css', 'resources/js/app.js', 'resources/js/admin.js'])
     @include('partials.pwa-head')
     @stack('styles')
@@ -60,7 +66,7 @@ $logoMarkUrl = asset('images/booktala-mark.png');
                         @endcan
                         <x-nav-link route="admin.payments.index" active="admin.payments.*" icon="fa-wallet">Payments</x-nav-link>
                         <x-nav-link route="admin.invoices.index" active="admin.invoices.*" icon="fa-file-invoice">Invoices</x-nav-link>
-                        <x-nav-link route="admin.messages.index" active="admin.messages.*" icon="fa-envelope">Messages</x-nav-link>
+                        <x-nav-link route="admin.messages.index" active="admin.messages.*" icon="fa-envelope" :badge="$adminUnreadMsgCount">Messages</x-nav-link>
                     </div>
                 </div>
 
@@ -132,7 +138,7 @@ $logoMarkUrl = asset('images/booktala-mark.png');
                         <x-nav-link route="admin.staff-schedules.index" active="admin.staff-schedules.*" icon="fa-calendar-alt">Schedules</x-nav-link>
                         <x-nav-link route="admin.attendance.index" active="admin.attendance.*" icon="fa-user-clock">Attendance</x-nav-link>
                         @can('site.manage')
-                        <x-nav-link route="admin.site-feed.index" active="admin.site-feed.*" icon="fa-broadcast-tower">Site Feeds</x-nav-link>
+                        <x-nav-link route="admin.site-feed.index" active="admin.site-feed.*" icon="fa-broadcast-tower" :badge="$adminUrgentFeedCount" badgeColor="bg-amber-500">Site Feeds</x-nav-link>
                         <x-nav-link route="admin.security.index" active="admin.security.*" icon="fa-shield-alt">Security</x-nav-link>
                         <x-nav-link route="admin.inventory.index" active="admin.inventory.*" icon="fa-boxes">Inventory</x-nav-link>
                         @endcan
@@ -214,6 +220,14 @@ $logoMarkUrl = asset('images/booktala-mark.png');
                     <h1 class="text-lg lg:text-xl font-bold truncate">@yield('page_title', 'Dashboard')</h1>
                 </div>
                 <div class="flex items-center gap-2 lg:space-x-4">
+                    <a href="{{ route('admin.messages.index') }}" class="relative p-2 text-gray-500 hover:text-primary transition" title="Direct Messages">
+                        <i class="fas fa-comment-dots text-lg"></i>
+                        @if($adminUnreadMsgCount > 0)
+                        <span class="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 rounded-full bg-red-600 text-white text-[10px] font-bold flex items-center justify-center shadow-sm animate-pulse">
+                            {{ $adminUnreadMsgCount > 99 ? '99+' : $adminUnreadMsgCount }}
+                        </span>
+                        @endif
+                    </a>
                     @include('partials.notification-bell', ['portal' => 'admin'])
                     <a href="{{ route('admin.profile.edit') }}" class="flex items-center gap-2.5 p-1 rounded-lg hover:bg-gray-100 transition group" title="My Profile">
                         @if(auth()->user()->avatar_url)

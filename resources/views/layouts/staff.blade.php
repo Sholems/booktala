@@ -3,6 +3,13 @@ $siteName = \App\Models\Setting::get('site_name', config('brand.name', 'BookTala
 $logo = \App\Models\Setting::get('logo');
 $logoUrl = $logo ? url('media/' . ltrim($logo, '/')) : asset('images/booktala-logo.png');
 $logoMarkUrl = asset('images/booktala-mark.png');
+
+$alertService = app(\App\Services\CommunicationAlertService::class);
+$staffDeskCount = auth()->check() ? $alertService->staffUnreadDeskCount(auth()->user()) : 0;
+$staffFeedCount = auth()->check() ? $alertService->staffSiteFeedCount(auth()->user()) : 0;
+$staffGuestMsgCount = auth()->check() ? $alertService->staffUnreadGuestMessagesCount(auth()->user()) : 0;
+$staffUnreadNotifs = auth()->check() ? auth()->user()->unreadNotifications()->count() : 0;
+$totalStaffAlerts = $staffDeskCount + $staffFeedCount + $staffUnreadNotifs;
 @endphp
 <!DOCTYPE html>
 <html lang="en">
@@ -10,7 +17,7 @@ $logoMarkUrl = asset('images/booktala-mark.png');
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('title', trim($__env->yieldContent('page_title')) ?: 'Staff Dashboard') - BookTala</title>
+    <title>{{ $totalStaffAlerts > 0 ? '(' . $totalStaffAlerts . ') ' : '' }}@yield('title', trim($__env->yieldContent('page_title')) ?: 'Staff Dashboard') - BookTala</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @include('partials.pwa-head')
     @stack('styles')
@@ -59,8 +66,9 @@ $logoMarkUrl = asset('images/booktala-mark.png');
                         @endcan
                         <x-nav-link route="staff.checkout.index" active="staff.checkout.*" icon="fa-sign-out-alt">Check-out</x-nav-link>
                         <x-nav-link route="staff.room-service.index" active="staff.room-service.*" icon="fa-concierge-bell">Room Service</x-nav-link>
-                        <x-nav-link route="staff.messages.index" active="staff.messages.*" icon="fa-envelope">Guest Messages</x-nav-link>
-                        <x-nav-link route="staff.team.feed.index" active="staff.team.feed.*" icon="fa-broadcast-tower">Site Feed / Radio</x-nav-link>
+                        <x-nav-link route="staff.support.index" active="staff.support.*" icon="fa-headset" :badge="$staffDeskCount">Head Office Desk</x-nav-link>
+                        <x-nav-link route="staff.team.feed.index" active="staff.team.feed.*" icon="fa-broadcast-tower" :badge="$staffFeedCount" badgeColor="bg-blue-600">Site Feed / Radio</x-nav-link>
+                        <x-nav-link route="staff.messages.index" active="staff.messages.*" icon="fa-envelope" :badge="$staffGuestMsgCount">Guest Messages</x-nav-link>
                         <x-nav-link route="staff.schedule.index" active="staff.schedule.*" icon="fa-calendar-alt">My Schedule</x-nav-link>
                         <x-nav-link route="staff.payslips.index" active="staff.payslips.*" icon="fa-money-check-alt">My Payslips</x-nav-link>
                         <x-nav-link route="staff.maintenance.index" active="staff.maintenance.*" icon="fa-tools">Maintenance</x-nav-link>
@@ -136,6 +144,14 @@ $logoMarkUrl = asset('images/booktala-mark.png');
                 </div>
                 <div class="flex items-center gap-3">
                     <span class="text-sm text-gray-500 hidden sm:block">{{ now()->format('l, F j, Y') }}</span>
+                    <a href="{{ route('staff.support.index') }}" class="relative p-2 text-gray-500 hover:text-primary transition" title="Head Office Desk">
+                        <i class="fas fa-headset text-lg"></i>
+                        @if($staffDeskCount > 0)
+                        <span class="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 rounded-full bg-red-600 text-white text-[10px] font-bold flex items-center justify-center shadow-sm animate-pulse">
+                            {{ $staffDeskCount > 99 ? '99+' : $staffDeskCount }}
+                        </span>
+                        @endif
+                    </a>
                     @include('partials.notification-bell', ['portal' => 'staff'])
                     <a href="{{ route('staff.profile.edit') }}" class="flex items-center gap-2 p-1 rounded-lg hover:bg-gray-100 transition" title="My Profile">
                         @if(auth()->user()->avatar_url)

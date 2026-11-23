@@ -343,4 +343,131 @@ class InternalCommunicationTest extends TestCase
 
         $this->assertDatabaseMissing('site_messages', ['id' => $msg->id]);
     }
+
+    public function test_staff_can_send_private_inquiry_to_head_office_and_admin_is_notified(): void
+    {
+        $admin = $this->makeUser('admin');
+        $site = $this->makeSite('Ikeja GRA Site');
+        $staffUser = $this->makeUser('staff');
+        $this->makeStaff($staffUser, $site);
+
+        $response = $this->actingAs($staffUser)->get(route('staff.support.index'));
+        $response->assertOk();
+        $response->assertSee('Head Office & HR Desk');
+
+        $storeResponse = $this->actingAs($staffUser)->post(route('staff.support.store'), [
+            'category' => 'payroll',
+            'message' => 'Discrepancy in my October overtime allowance.',
+        ]);
+
+        $conversation = Conversation::where('user_id', $staffUser->id)->where('type', 'staff')->first();
+        $this->assertNotNull($conversation);
+        $storeResponse->assertRedirect(route('staff.support.show', $conversation));
+
+        // Admin received an in-app notification
+        $this->assertTrue($admin->notifications()->exists());
+        $notif = $admin->notifications()->first();
+        $this->assertStringContainsString('Staff Inquiry', $notif->data['title']);
+
+        // Admin replies to staff
+        $admin->givePermissionTo('customer.manage');
+        $this->actingAs($admin)->post(route('admin.messages.reply', $conversation), [
+            'message' => 'We are reviewing your timesheet with payroll right now.',
+        ])->assertRedirect();
+
+        // Staff received an in-app notification
+        $this->assertTrue($staffUser->notifications()->exists());
+        $staffNotif = $staffUser->notifications()->first();
+        $this->assertStringContainsString('Management Reply', $staffNotif->data['title']);
+    }
+
+    public function test_admin_can_send_direct_memo_to_staff_member(): void
+    {
+        $admin = $this->makeUser('admin');
+        $admin->givePermissionTo('staff.manage');
+        $site = $this->makeSite('Victoria Island Site');
+        $staffUser = $this->makeUser('staff');
+        $this->makeStaff($staffUser, $site);
+
+        $response = $this->actingAs($admin)->post(route('admin.messages.start-staff'), [
+            'user_id' => $staffUser->id,
+            'message' => 'Commendation: Outstanding guest review received for flat 204.',
+        ]);
+
+        $conversation = Conversation::where('user_id', $staffUser->id)->where('type', 'staff')->first();
+        $this->assertNotNull($conversation);
+        $response->assertRedirect(route('admin.messages.show', $conversation));
+
+        // Staff received notification
+        $this->assertTrue($staffUser->notifications()->exists());
+        $staffNotif = $staffUser->notifications()->first();
+        $this->assertStringContainsString('Management Reply', $staffNotif->data['title']);
+    }
+
+    public function test_site_feed_posts_trigger_in_app_notifications_to_assigned_staff(): void
+    {
+        $site = $this->makeSite('Ikoyi Towers');
+        $staffUser = $this->makeUser('staff');
+        $this->makeStaff($staffUser, $site);
+
+        $admin = $this->makeUser('admin');
+        $admin->givePermissionTo('site.manage');
+
+        // Admin posts broadcast
+        $this->actingAs($admin)->post(route('admin.site-feed.store'), [
+            'site_id' => $site->id,
+            'category' => 'urgent',
+            'message' => 'Public water outage in the district. Switch to backup tank immediately.',
+        ])->assertRedirect();
+
+        // Staff assigned to this site received in-app alert
+        $this->assertTrue($staffUser->notifications()->exists());
+        $notif = $staffUser->notifications()->first();
+        $this->assertStringContainsString('Ikoyi Towers', $notif->data['title']);
+    }
+
+    public function test_alert_badge_counts_reflect_unread_communications(): void
+    {
+        $site = $this->makeSite('Badore Site');
+        $staffUser = $this->makeUser('staff');
+        $this->makeStaff($staffUser, $site);
+
+        $admin = $this->makeUser('admin');
+
+        $alertService = app(\App\Services\CommunicationAlertService::class);
+
+        // Initially zero
+        $this->assertEquals(0, $alertService->staffUnreadDeskCount($staffUser));
+
+        // Create conversation and unread message from Admin to Staff
+        $conversation = Conversation::create([
+            'user_id' => $staffUser->id,
+            'type' => 'staff',
+            'last_message_at' => now(),
+        ]);
+        Message::create([
+            'conversation_id' => $conversation->id,
+            'sender_id' => $admin->id,
+            'receiver_id' => $staffUser->id,
+            'message' => 'Please confirm your roster for tomorrow.',
+            'read' => false,
+        ]);
+
+        // Now staff has 1 unread message
+        $this->assertEquals(1, $alertService->staffUnreadDeskCount($staffUser));
+
+        // Admin has unread messages count check
+        $this->assertEquals(0, $alertService->adminUnreadMessagesCount($admin));
+
+        // Staff replies back
+        Message::create([
+            'conversation_id' => $conversation->id,
+            'sender_id' => $staffUser->id,
+            'receiver_id' => null,
+            'message' => 'Confirmed, I will be on duty.',
+            'read' => false,
+        ]);
+
+        $this->assertEquals(1, $alertService->adminUnreadMessagesCount($admin));
+    }
 }

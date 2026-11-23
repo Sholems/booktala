@@ -56,7 +56,7 @@ class MessageController extends Controller
             'reservation_id' => $validated['reservation_id'] ?? null,
         ]);
 
-        Message::create([
+        $message = Message::create([
             'conversation_id' => $conversation->id,
             'sender_id' => auth()->id(),
             'receiver_id' => null,
@@ -65,6 +65,8 @@ class MessageController extends Controller
         ]);
 
         $conversation->update(['last_message_at' => now()]);
+
+        app(\App\Services\CommunicationAlertService::class)->notifyDirectMessage($message, $conversation, auth()->user());
 
         return redirect()->route('customer.messages.show', $conversation)->with('success', 'Message sent. Our team will reply here.');
     }
@@ -74,7 +76,7 @@ class MessageController extends Controller
         abort_unless($conversation->user_id === auth()->id(), 403);
         $validated = $request->validated();
 
-        Message::create([
+        $message = Message::create([
             'conversation_id' => $conversation->id,
             'sender_id' => auth()->id(),
             'receiver_id' => null,
@@ -83,6 +85,8 @@ class MessageController extends Controller
         ]);
 
         $conversation->update(['last_message_at' => now()]);
+
+        app(\App\Services\CommunicationAlertService::class)->notifyDirectMessage($message, $conversation, auth()->user());
 
         return back()->with('success', 'Reply sent');
     }

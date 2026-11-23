@@ -52,4 +52,32 @@ class MessageController extends Controller
 
         return back()->with('success', 'Conversation started');
     }
+
+    public function startStaffConversation(\Illuminate\Http\Request $request)
+    {
+        $validated = $request->validate([
+            'user_id' => 'required|exists:users,id',
+            'message' => 'required|string|max:3000',
+        ]);
+
+        $conversation = Conversation::firstOrCreate([
+            'user_id' => $validated['user_id'],
+            'type' => 'staff',
+        ]);
+
+        $message = Message::create([
+            'conversation_id' => $conversation->id,
+            'sender_id' => auth()->id(),
+            'receiver_id' => $validated['user_id'],
+            'message' => trim($validated['message']),
+            'read' => false,
+        ]);
+
+        $conversation->update(['last_message_at' => now()]);
+
+        app(\App\Services\CommunicationAlertService::class)->notifyDirectMessage($message, $conversation, auth()->user());
+
+        return redirect()->route('admin.messages.show', $conversation)
+            ->with('success', 'Official memo sent directly to employee.');
+    }
 }

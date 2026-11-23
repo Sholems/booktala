@@ -11,6 +11,10 @@
                 <p class="font-semibold truncate">{{ $conversation->user->name ?? 'Guest' }}</p>
                 @if($conversation->type === 'owner')
                 <span class="text-[10px] px-1.5 py-0.5 rounded font-bold uppercase bg-emerald-100 text-emerald-800 border border-emerald-200">Owner</span>
+                @elseif($conversation->type === 'staff')
+                <span class="text-[10px] px-1.5 py-0.5 rounded font-bold uppercase bg-indigo-100 text-indigo-800 border border-indigo-200">Staff Member</span>
+                @else
+                <span class="text-[10px] px-1.5 py-0.5 rounded font-bold uppercase bg-blue-100 text-blue-800 border border-blue-200">Guest</span>
                 @endif
             </div>
             <p class="text-sm text-gray-500 truncate">

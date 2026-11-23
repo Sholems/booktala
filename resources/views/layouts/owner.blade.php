@@ -3,6 +3,9 @@ $siteName = \App\Models\Setting::get('site_name', config('brand.name', 'BookTala
 $logo = \App\Models\Setting::get('logo');
 $logoUrl = $logo ? url('media/' . ltrim($logo, '/')) : asset('images/booktala-logo.png');
 $logoMarkUrl = asset('images/booktala-mark.png');
+
+$alertService = app(\App\Services\CommunicationAlertService::class);
+$ownerUnreadCount = auth()->check() ? $alertService->ownerUnreadMessagesCount(auth()->user()) : 0;
 @endphp
 <!DOCTYPE html>
 <html lang="en">
@@ -10,7 +13,7 @@ $logoMarkUrl = asset('images/booktala-mark.png');
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('title', trim($__env->yieldContent('page_title')) ?: 'Owner Portal') - BookTala</title>
+    <title>{{ $ownerUnreadCount > 0 ? '(' . $ownerUnreadCount . ') ' : '' }}@yield('title', trim($__env->yieldContent('page_title')) ?: 'Owner Portal') - BookTala</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @include('partials.pwa-head')
 </head>
@@ -35,13 +38,20 @@ $logoMarkUrl = asset('images/booktala-mark.png');
             </div>
             <nav class="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
                 @foreach([
-                    ['owner.dashboard', 'owner.dashboard', 'fa-chart-pie', 'Overview'],
-                    ['owner.statements.index', 'owner.statements.*', 'fa-file-invoice-dollar', 'Statements'],
-                    ['owner.messages.index', 'owner.messages.*', 'fa-comments', 'Asset Concierge'],
-                ] as [$route, $pattern, $icon, $label])
-                <a href="{{ route($route) }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 {{ request()->routeIs($pattern) ? 'bg-accent/10 text-accent font-semibold' : 'hover:bg-slate-800/50 hover:text-white' }}">
-                    <i class="fas {{ $icon }} w-5 text-sm"></i>
-                    <span class="text-sm">{{ $label }}</span>
+                    ['owner.dashboard', 'owner.dashboard', 'fa-chart-pie', 'Overview', 0],
+                    ['owner.statements.index', 'owner.statements.*', 'fa-file-invoice-dollar', 'Statements', 0],
+                    ['owner.messages.index', 'owner.messages.*', 'fa-comments', 'Asset Concierge', $ownerUnreadCount],
+                ] as [$route, $pattern, $icon, $label, $badge])
+                <a href="{{ route($route) }}" class="flex items-center justify-between px-3 py-2.5 rounded-lg transition-all duration-200 {{ request()->routeIs($pattern) ? 'bg-accent/10 text-accent font-semibold' : 'hover:bg-slate-800/50 hover:text-white' }}">
+                    <div class="flex items-center gap-3">
+                        <i class="fas {{ $icon }} w-5 text-sm"></i>
+                        <span class="text-sm">{{ $label }}</span>
+                    </div>
+                    @if($badge > 0)
+                    <span class="inline-flex items-center justify-center px-2 py-0.5 text-[11px] font-bold text-white bg-emerald-500 rounded-full shrink-0 shadow-sm animate-pulse">
+                        {{ $badge }}
+                    </span>
+                    @endif
                 </a>
                 @endforeach
             </nav>

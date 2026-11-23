@@ -71,13 +71,15 @@ class MessageController extends Controller
             'last_message_at' => now(),
         ]);
 
-        Message::create([
+        $message = Message::create([
             'conversation_id' => $conversation->id,
             'sender_id' => $request->user()->id,
             'receiver_id' => null,
             'message' => trim($validated['message']),
             'read' => false,
         ]);
+
+        app(\App\Services\CommunicationAlertService::class)->notifyDirectMessage($message, $conversation, $request->user());
 
         return redirect()->route('owner.messages.show', $conversation)
             ->with('success', 'Your inquiry has been submitted to Asset Management. We will reply shortly.');
@@ -92,7 +94,7 @@ class MessageController extends Controller
             'message' => 'required|string|max:3000',
         ]);
 
-        Message::create([
+        $message = Message::create([
             'conversation_id' => $conversation->id,
             'sender_id' => $request->user()->id,
             'receiver_id' => null,
@@ -101,6 +103,8 @@ class MessageController extends Controller
         ]);
 
         $conversation->update(['last_message_at' => now()]);
+
+        app(\App\Services\CommunicationAlertService::class)->notifyDirectMessage($message, $conversation, $request->user());
 
         return back()->with('success', 'Reply sent to Asset Management.');
     }
