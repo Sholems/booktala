@@ -8,6 +8,8 @@ use App\Http\Requests\Admin\HousekeepingInspectionRejectRequest;
 use App\Http\Requests\Admin\HousekeepingInspectionStoreRequest;
 use App\Models\HousekeepingInspection;
 use App\Models\Unit;
+use App\Support\PrivateStorage;
+use App\Support\PropertyAccess;
 use Illuminate\Http\Request;
 
 class HousekeepingInspectionController extends Controller
@@ -41,6 +43,18 @@ class HousekeepingInspectionController extends Controller
         return view('admin.inspections.show', compact('inspection'));
     }
 
+    public function photo(HousekeepingInspection $inspection, string $collection, int $index)
+    {
+        PropertyAccess::authorize(auth()->user(), $inspection->unit_id);
+        abort_unless(in_array($collection, ['before', 'after'], true), 404);
+
+        $photos = $collection === 'before' ? $inspection->before_photos : $inspection->after_photos;
+        $path = $photos[$index] ?? null;
+        abort_unless(is_string($path) && ! str_starts_with($path, 'http'), 404);
+
+        return PrivateStorage::response(ltrim(str_replace('/storage/', '', $path), '/'));
+    }
+
     public function approve(HousekeepingInspectionApproveRequest $request, HousekeepingInspection $inspection)
     {
         $validated = $request->validated();
@@ -69,15 +83,13 @@ class HousekeepingInspectionController extends Controller
         // Handle uploaded image files
         if ($request->hasFile('before_images')) {
             foreach ($request->file('before_images') as $file) {
-                $path = $file->store('housekeeping_inspections', 'public');
-                $beforePhotos[] = '/storage/'.$path;
+                $beforePhotos[] = $file->store('housekeeping_inspections', PrivateStorage::disk());
             }
         }
 
         if ($request->hasFile('after_images')) {
             foreach ($request->file('after_images') as $file) {
-                $path = $file->store('housekeeping_inspections', 'public');
-                $afterPhotos[] = '/storage/'.$path;
+                $afterPhotos[] = $file->store('housekeeping_inspections', PrivateStorage::disk());
             }
         }
 

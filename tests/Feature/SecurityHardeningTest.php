@@ -79,6 +79,24 @@ class SecurityHardeningTest extends TestCase
         $this->assertSame('scan', Storage::disk('local')->get('id-documents/old.jpg'));
     }
 
+    public function test_private_r2_documents_are_never_served_by_public_media_routes(): void
+    {
+        config(['filesystems.default' => 'r2']);
+        Storage::fake('r2');
+        Storage::fake('public');
+        $guest = $this->makeUser('customer');
+
+        $this->actingAs($guest)->post(route('customer.profile.upload-id'), [
+            'id_document' => UploadedFile::fake()->image('passport.jpg'),
+        ])->assertSessionHas('success');
+
+        $path = $guest->fresh()->id_document;
+        Storage::disk('r2')->assertExists($path);
+        Storage::disk('public')->assertMissing($path);
+        $this->get('/media/'.$path)->assertNotFound();
+        $this->get('/storage/'.$path)->assertNotFound();
+    }
+
     public function test_customer_admin_actions_only_touch_customer_accounts(): void
     {
         $admin = $this->makeUser('admin');
@@ -139,9 +157,15 @@ class SecurityHardeningTest extends TestCase
     {
         Storage::fake('public');
         Storage::disk('public')->put('avatars/me.jpg', 'img');
+        Storage::disk('public')->put('receipts/private.jpg', 'receipt');
+        Storage::disk('public')->put('id-documents/private.jpg', 'identity');
+        Storage::disk('public')->put('housekeeping_inspections/private.jpg', 'inspection');
 
         $this->get('/storage/avatars/me.jpg')->assertOk();
         $this->get('/storage/avatars/missing.jpg')->assertNotFound();
+        $this->get('/storage/receipts/private.jpg')->assertNotFound();
+        $this->get('/storage/id-documents/private.jpg')->assertNotFound();
+        $this->get('/storage/housekeeping_inspections/private.jpg')->assertNotFound();
     }
 
     // --- Rich text ------------------------------------------------------------------------------

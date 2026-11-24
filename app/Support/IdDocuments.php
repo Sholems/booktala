@@ -19,7 +19,7 @@ class IdDocuments
 
     public static function disk(): string
     {
-        return config('filesystems.default') === 'r2' ? 'r2' : self::DISK;
+        return PrivateStorage::disk();
     }
 
     public static function store(UploadedFile $file): string
@@ -41,18 +41,8 @@ class IdDocuments
 
     public static function response(?string $path): Response
     {
-        $disk = self::disk();
-        if ($path && Storage::disk($disk)->exists($path)) {
-            $storageDisk = Storage::disk($disk);
-        } elseif ($path && Storage::disk(self::DISK)->exists($path)) {
-            $storageDisk = Storage::disk(self::DISK);
-        } else {
-            abort(404);
-        }
+        abort_unless($path, 404);
 
-        return $storageDisk->response($path, null, [
-            'Cache-Control' => 'private, no-store',
-            'X-Content-Type-Options' => 'nosniff',
-        ]);
+        return PrivateStorage::response($path);
     }
 }

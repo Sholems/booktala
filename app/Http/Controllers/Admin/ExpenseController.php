@@ -9,6 +9,7 @@ use App\Models\MaintenanceReport;
 use App\Models\Property;
 use App\Services\Finance\LedgerPostingService;
 use App\Support\PropertyAccess;
+use App\Support\PrivateStorage;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -53,7 +54,7 @@ class ExpenseController extends Controller
 
         if ($request->hasFile('receipt')) {
             // Receipts are private: stored on default/r2 storage, downloaded through the app.
-            $disk = config('filesystems.default') === 'r2' ? 'r2' : 'local';
+            $disk = PrivateStorage::disk();
             $data['receipt_path'] = $request->file('receipt')->store('receipts', $disk);
         }
         unset($data['receipt']);
@@ -70,14 +71,9 @@ class ExpenseController extends Controller
 
     public function receipt(Expense $expense)
     {
-        $disk = config('filesystems.default') === 'r2' ? Storage::disk('r2') : Storage::disk('local');
-        if (! ($expense->receipt_path && $disk->exists($expense->receipt_path))) {
-            $fallback = Storage::disk('local');
-            abort_unless($expense->receipt_path && $fallback->exists($expense->receipt_path), 404);
-            $disk = $fallback;
-        }
+        abort_unless($expense->receipt_path, 404);
 
-        return $disk->download($expense->receipt_path);
+        return PrivateStorage::response($expense->receipt_path);
     }
 
     public function destroy(Expense $expense)

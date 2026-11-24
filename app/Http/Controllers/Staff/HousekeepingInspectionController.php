@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Staff\HousekeepingInspectionStoreRequest;
 use App\Models\HousekeepingInspection;
 use App\Models\Task;
+use App\Support\PrivateStorage;
 use Illuminate\Support\Facades\Auth;
 
 class HousekeepingInspectionController extends Controller
@@ -31,8 +32,7 @@ class HousekeepingInspectionController extends Controller
 
         if ($request->hasFile('before_images')) {
             foreach ($request->file('before_images') as $file) {
-                $path = $file->store('housekeeping_inspections', 'public');
-                $beforePhotos[] = '/storage/'.$path;
+                $beforePhotos[] = $file->store('housekeeping_inspections', PrivateStorage::disk());
             }
         }
         if (! empty($validated['before_urls'])) {
@@ -42,8 +42,7 @@ class HousekeepingInspectionController extends Controller
 
         if ($request->hasFile('after_images')) {
             foreach ($request->file('after_images') as $file) {
-                $path = $file->store('housekeeping_inspections', 'public');
-                $afterPhotos[] = '/storage/'.$path;
+                $afterPhotos[] = $file->store('housekeeping_inspections', PrivateStorage::disk());
             }
         }
         if (! empty($validated['after_urls'])) {

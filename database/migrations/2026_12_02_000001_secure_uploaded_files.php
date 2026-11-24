@@ -19,7 +19,8 @@ return new class extends Migration
     public function up(): void
     {
         $public = Storage::disk('public');
-        $private = Storage::disk('local');
+        $privateDisk = config('filesystems.default') === 'r2' ? 'r2' : 'local';
+        $private = Storage::disk($privateDisk);
 
         foreach (DB::table('users')->whereNotNull('id_document')->pluck('id_document') as $path) {
             if ($public->exists($path)) {

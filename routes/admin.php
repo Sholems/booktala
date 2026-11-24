@@ -188,6 +188,7 @@ Route::prefix('admin')->middleware(['auth', 'role:super_admin|admin'])->group(fu
     Route::get('/inspections', [HousekeepingInspectionController::class, 'index'])->name('admin.inspections.index')->middleware('can:task.manage');
     Route::post('/inspections', [HousekeepingInspectionController::class, 'store'])->name('admin.inspections.store')->middleware('can:task.manage');
     Route::get('/inspections/{inspection}', [HousekeepingInspectionController::class, 'show'])->name('admin.inspections.show')->middleware('can:task.manage');
+    Route::get('/inspections/{inspection}/photos/{collection}/{index}', [HousekeepingInspectionController::class, 'photo'])->name('admin.inspections.photo')->middleware('can:task.manage');
     Route::patch('/inspections/{inspection}/approve', [HousekeepingInspectionController::class, 'approve'])->name('admin.inspections.approve')->middleware('can:task.manage');
     Route::patch('/inspections/{inspection}/reject', [HousekeepingInspectionController::class, 'reject'])->name('admin.inspections.reject')->middleware('can:task.manage');
 

@@ -1,5 +1,7 @@
 <?php
 
+$useR2 = env('FILESYSTEM_DISK', 'local') === 'r2';
+
 return [
 
     /*
@@ -42,13 +44,15 @@ return [
             'report' => false,
         ],
 
-        'public' => env('FILESYSTEM_DISK') === 'r2' ? [
+        // Public website assets use a dedicated bucket. Never place guest IDs,
+        // receipts, inspection evidence, or other private uploads in this disk.
+        'public' => $useR2 ? [
             'driver' => 's3',
-            'key' => env('CLOUDFLARE_R2_ACCESS_KEY_ID', env('AWS_ACCESS_KEY_ID')),
-            'secret' => env('CLOUDFLARE_R2_SECRET_ACCESS_KEY', env('AWS_SECRET_ACCESS_KEY')),
+            'key' => env('CLOUDFLARE_R2_PUBLIC_ACCESS_KEY_ID', env('CLOUDFLARE_R2_ACCESS_KEY_ID')),
+            'secret' => env('CLOUDFLARE_R2_PUBLIC_SECRET_ACCESS_KEY', env('CLOUDFLARE_R2_SECRET_ACCESS_KEY')),
             'region' => env('CLOUDFLARE_R2_DEFAULT_REGION', 'auto'),
-            'bucket' => env('CLOUDFLARE_R2_BUCKET', env('AWS_BUCKET')),
-            'url' => env('CLOUDFLARE_R2_URL'),
+            'bucket' => env('CLOUDFLARE_R2_PUBLIC_BUCKET'),
+            'url' => env('CLOUDFLARE_R2_PUBLIC_URL'),
             'endpoint' => env('CLOUDFLARE_R2_ENDPOINT'),
             'use_path_style_endpoint' => env('CLOUDFLARE_R2_USE_PATH_STYLE_ENDPOINT', true),
             'throw' => false,
@@ -77,11 +81,11 @@ return [
 
         'r2' => [
             'driver' => 's3',
-            'key' => env('CLOUDFLARE_R2_ACCESS_KEY_ID', env('AWS_ACCESS_KEY_ID')),
-            'secret' => env('CLOUDFLARE_R2_SECRET_ACCESS_KEY', env('AWS_SECRET_ACCESS_KEY')),
+            'key' => env('CLOUDFLARE_R2_PRIVATE_ACCESS_KEY_ID', env('CLOUDFLARE_R2_ACCESS_KEY_ID')),
+            'secret' => env('CLOUDFLARE_R2_PRIVATE_SECRET_ACCESS_KEY', env('CLOUDFLARE_R2_SECRET_ACCESS_KEY')),
             'region' => env('CLOUDFLARE_R2_DEFAULT_REGION', 'auto'),
-            'bucket' => env('CLOUDFLARE_R2_BUCKET', env('AWS_BUCKET')),
-            'url' => env('CLOUDFLARE_R2_URL'),
+            'bucket' => env('CLOUDFLARE_R2_PRIVATE_BUCKET'),
+            'url' => null,
             'endpoint' => env('CLOUDFLARE_R2_ENDPOINT'),
             'use_path_style_endpoint' => env('CLOUDFLARE_R2_USE_PATH_STYLE_ENDPOINT', true),
             'throw' => false,

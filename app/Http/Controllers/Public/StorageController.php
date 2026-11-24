@@ -8,47 +8,52 @@ use Symfony\Component\HttpFoundation\Response;
 
 class StorageController extends Controller
 {
+    /** @var list<string> */
+    private const PUBLIC_PREFIXES = [
+        'avatars/',
+        'blogs/',
+        'property-images/',
+        'settings/',
+    ];
+
     public function show(string $path): Response
     {
         $path = trim(str_replace('\\', '/', $path), '/');
 
-        if ($path === '' || str_contains($path, '..')) {
+        if ($path === '' || str_contains($path, '..') || ! $this->isPublicPath($path)) {
             abort(404);
         }
 
-        $useR2 = config('filesystems.default') === 'r2' || (! app()->environment('testing') && ! empty(config('filesystems.disks.r2.key')));
-        $primaryDisk = $useR2 ? Storage::disk('r2') : Storage::disk('public');
-        $fallbackDisk = $useR2 ? Storage::disk('public') : Storage::disk('r2');
+        $disk = Storage::disk('public');
 
         try {
-            if ($primaryDisk->exists($path)) {
-                $cdnUrl = config('filesystems.disks.r2.url');
-                if ($useR2 && ! empty($cdnUrl)) {
+            if ($disk->exists($path)) {
+                $cdnUrl = config('filesystems.disks.public.url');
+                if (config('filesystems.disks.public.driver') === 's3' && ! empty($cdnUrl)) {
                     return redirect()->away(rtrim($cdnUrl, '/') . '/' . ltrim($path, '/'), 302);
                 }
 
-                return $primaryDisk->response(
+                return $disk->response(
                     $path,
                     null,
                     ['Cache-Control' => 'public, max-age=86400']
                 );
             }
         } catch (\Throwable $e) {
-            // S3/R2 connectivity issue; continue to fallback disk
-        }
-
-        try {
-            if ($fallbackDisk->exists($path)) {
-                return $fallbackDisk->response(
-                    $path,
-                    null,
-                    ['Cache-Control' => 'public, max-age=86400']
-                );
-            }
-        } catch (\Throwable $e) {
-            // S3/R2 connectivity issue
+            report($e);
         }
 
         abort(404);
+    }
+
+    private function isPublicPath(string $path): bool
+    {
+        foreach (self::PUBLIC_PREFIXES as $prefix) {
+            if (str_starts_with($path, $prefix)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

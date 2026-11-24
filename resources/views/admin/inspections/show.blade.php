@@ -111,9 +111,10 @@
                     </div>
                 @else
                     <div class="grid grid-cols-2 gap-3">
-                        @foreach($inspection->before_photos as $photo)
-                        <a href="{{ $photo }}" target="_blank" class="block aspect-video bg-slate-100 rounded-lg overflow-hidden border border-slate-200 hover:opacity-90 transition relative group">
-                            <img src="{{ $photo }}" alt="Before Cleaning" class="w-full h-full object-cover">
+                        @foreach($inspection->before_photos as $index => $photo)
+                        @php($photoUrl = str_starts_with($photo, 'http') ? $photo : route('admin.inspections.photo', [$inspection, 'before', $index]))
+                        <a href="{{ $photoUrl }}" target="_blank" class="block aspect-video bg-slate-100 rounded-lg overflow-hidden border border-slate-200 hover:opacity-90 transition relative group">
+                            <img src="{{ $photoUrl }}" alt="Before Cleaning" class="w-full h-full object-cover">
                             <span class="absolute bottom-1 right-1 bg-black/60 text-white text-[10px] px-1.5 py-0.5 rounded opacity-0 group-hover:opacity-100 transition">Zoom</span>
                         </a>
                         @endforeach
@@ -137,9 +138,10 @@
                     </div>
                 @else
                     <div class="grid grid-cols-2 gap-3">
-                        @foreach($inspection->after_photos as $photo)
-                        <a href="{{ $photo }}" target="_blank" class="block aspect-video bg-slate-100 rounded-lg overflow-hidden border border-slate-200 hover:opacity-90 transition relative group">
-                            <img src="{{ $photo }}" alt="After Cleaning" class="w-full h-full object-cover">
+                        @foreach($inspection->after_photos as $index => $photo)
+                        @php($photoUrl = str_starts_with($photo, 'http') ? $photo : route('admin.inspections.photo', [$inspection, 'after', $index]))
+                        <a href="{{ $photoUrl }}" target="_blank" class="block aspect-video bg-slate-100 rounded-lg overflow-hidden border border-slate-200 hover:opacity-90 transition relative group">
+                            <img src="{{ $photoUrl }}" alt="After Cleaning" class="w-full h-full object-cover">
                             <span class="absolute bottom-1 right-1 bg-black/60 text-white text-[10px] px-1.5 py-0.5 rounded opacity-0 group-hover:opacity-100 transition">Zoom</span>
                         </a>
                         @endforeach

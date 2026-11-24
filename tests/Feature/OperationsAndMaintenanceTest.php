@@ -104,7 +104,7 @@ class OperationsAndMaintenanceTest extends TestCase
 
     public function test_cleaner_submits_inspection_with_checklist_and_photos(): void
     {
-        Storage::fake('public');
+        Storage::fake('local');
 
         $beforePhoto = UploadedFile::fake()->image('before_bed.jpg');
         $afterPhoto = UploadedFile::fake()->image('after_bed.jpg');
@@ -127,6 +127,13 @@ class OperationsAndMaintenanceTest extends TestCase
         $this->assertSame($this->task->id, $inspection->task_id);
         $this->assertCount(1, $inspection->before_photos);
         $this->assertCount(1, $inspection->after_photos);
+        Storage::disk('local')->assertExists($inspection->before_photos[0]);
+        Storage::disk('local')->assertExists($inspection->after_photos[0]);
+        $this->get('/storage/'.$inspection->before_photos[0])->assertNotFound();
+        $this->actingAs($this->admin)
+            ->get(route('admin.inspections.photo', [$inspection, 'before', 0]))
+            ->assertOk()
+            ->assertHeader('cache-control', 'no-store, private');
 
         // Unit remains in cleaning status until supervisor verifies
         $this->assertSame('cleaning', $this->unit->fresh()->status);
