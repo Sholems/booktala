@@ -3,7 +3,10 @@
 namespace Tests\Feature\Finance;
 
 use App\Models\ManagementAgreement;
+use App\Models\Expense;
 use App\Models\Owner;
+use App\Models\OwnerStatement;
+use App\Models\OwnerStatementLine;
 use App\Models\Position;
 use App\Models\Site;
 use App\Models\Staff;
@@ -13,6 +16,7 @@ use App\Models\User;
 use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\Models\Role;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class ManagementAgreementAdminTest extends TestCase
@@ -144,6 +148,93 @@ class ManagementAgreementAdminTest extends TestCase
 
         $viewResponse = $this->actingAs($scopedStaff)->get(route('admin.agreements.show', $agreementB));
         $viewResponse->assertStatus(404);
+    }
+
+    public function test_site_scoped_finance_admin_cannot_read_or_mutate_another_sites_finances(): void
+    {
+        $adminRole = Role::findByName('admin');
+        $adminRole->revokePermissionTo('portfolio.view_all');
+
+        $scopedAdmin = User::factory()->create();
+        $scopedAdmin->assignRole('admin');
+        $staff = Staff::create([
+            'user_id' => $scopedAdmin->id,
+            'department' => 'finance',
+            'employee_id' => 'FIN-001',
+            'hire_date' => '2026-01-01',
+            'is_active' => true,
+        ]);
+        $position = Position::firstOrCreate(
+            ['name' => 'Site Accountant'],
+            ['department' => 'finance', 'level' => 'manager'],
+        );
+        StaffAssignment::create([
+            'staff_id' => $staff->id,
+            'site_id' => $this->siteA->id,
+            'position_id' => $position->id,
+            'is_primary' => true,
+            'starts_on' => today()->subMonth(),
+        ]);
+
+        $ownerB = Owner::create(['name' => 'Site Beta Owner', 'type' => 'individual', 'is_active' => true]);
+        $this->unitB->update(['owner_id' => $ownerB->id]);
+        Storage::fake('local');
+        Storage::disk('local')->put('receipts/site-beta.jpg', 'private receipt');
+
+        $expenseA = Expense::create([
+            'property_id' => $this->unitA->id,
+            'category' => 'repairs',
+            'description' => 'Alpha repair',
+            'amount' => 1000,
+            'spent_on' => today(),
+            'charge_to' => 'company',
+        ]);
+        $expenseB = Expense::create([
+            'property_id' => $this->unitB->id,
+            'category' => 'repairs',
+            'description' => 'Beta confidential repair',
+            'amount' => 2000,
+            'spent_on' => today(),
+            'charge_to' => 'company',
+            'receipt_path' => 'receipts/site-beta.jpg',
+        ]);
+
+        $expenseIndex = $this->actingAs($scopedAdmin)->get(route('admin.expenses.index', ['month' => today()->format('Y-m')]));
+        $expenseIndex->assertOk()->assertSee($expenseA->description)->assertDontSee($expenseB->description);
+        $this->actingAs($scopedAdmin)->get(route('admin.expenses.receipt', $expenseB))->assertNotFound();
+        $this->actingAs($scopedAdmin)->delete(route('admin.expenses.destroy', $expenseB))->assertNotFound();
+        $this->assertModelExists($expenseB);
+
+        $statementB = OwnerStatement::create([
+            'owner_id' => $ownerB->id,
+            'period_start' => today()->startOfMonth(),
+            'period_end' => today()->endOfMonth(),
+            'gross_revenue' => 10000,
+            'commission_rate' => 20,
+            'commission_amount' => 2000,
+            'expenses_total' => 0,
+            'net_payout' => 8000,
+            'nights_booked' => 1,
+            'status' => 'draft',
+        ]);
+        OwnerStatementLine::create([
+            'owner_statement_id' => $statementB->id,
+            'property_id' => $this->unitB->id,
+            'type' => 'stay',
+            'date' => today(),
+            'description' => 'Beta stay',
+            'nights' => 1,
+            'amount' => 10000,
+        ]);
+
+        $statementIndex = $this->actingAs($scopedAdmin)->get(route('admin.statements.index', ['month' => today()->format('Y-m')]));
+        $statementIndex->assertOk()->assertDontSee($ownerB->name);
+        $this->actingAs($scopedAdmin)->get(route('admin.statements.show', $statementB))->assertNotFound();
+        $this->actingAs($scopedAdmin)->get(route('admin.statements.pdf', $statementB))->assertNotFound();
+        $this->actingAs($scopedAdmin)->patch(route('admin.statements.approve', $statementB))->assertNotFound();
+        $this->actingAs($scopedAdmin)->patch(route('admin.statements.paid', $statementB))->assertNotFound();
+        $this->actingAs($scopedAdmin)->delete(route('admin.statements.destroy', $statementB))->assertNotFound();
+        $this->assertSame('draft', $statementB->fresh()->status);
     }
 
     public function test_review_fails_when_agreement_overlaps_existing_reviewed_period(): void

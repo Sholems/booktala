@@ -22,9 +22,12 @@ class ExpenseController extends Controller
 {
     public function index(Request $request)
     {
+        $user = $request->user();
         $month = CarbonImmutable::parse($request->query('month', now()->format('Y-m')).'-01');
 
-        $expenses = Expense::with(['property.owner', 'statement', 'recordedBy'])
+        $expensesQuery = Expense::with(['property.owner', 'statement', 'recordedBy']);
+        PropertyAccess::scope($expensesQuery, $user);
+        $expenses = $expensesQuery
             ->whereDate('spent_on', '>=', $month->startOfMonth())
             ->whereDate('spent_on', '<=', $month->endOfMonth())
             ->when($request->filled('property_id'), fn ($q) => $q->where('property_id', $request->integer('property_id')))
@@ -32,7 +35,9 @@ class ExpenseController extends Controller
             ->paginate(50)
             ->withQueryString();
 
-        $totals = Expense::whereDate('spent_on', '>=', $month->startOfMonth())
+        $totalsQuery = Expense::query();
+        PropertyAccess::scope($totalsQuery, $user);
+        $totals = $totalsQuery->whereDate('spent_on', '>=', $month->startOfMonth())
             ->whereDate('spent_on', '<=', $month->endOfMonth())
             ->when($request->filled('property_id'), fn ($q) => $q->where('property_id', $request->integer('property_id')))
             ->selectRaw('charge_to, SUM(amount) as total')
@@ -43,14 +48,15 @@ class ExpenseController extends Controller
             'expenses' => $expenses,
             'totals' => $totals,
             'month' => $month,
-            'properties' => Property::with('owner')->orderBy('title')->get(),
-            'repairs' => MaintenanceReport::with('property')->latest()->limit(50)->get(),
+            'properties' => Property::query()->visibleTo($user)->with('owner')->orderBy('title')->get(),
+            'repairs' => PropertyAccess::scope(MaintenanceReport::with('property'), $user)->latest()->limit(50)->get(),
         ]);
     }
 
     public function store(ExpenseStoreRequest $request)
     {
         $data = $request->validated();
+        PropertyAccess::authorize($request->user(), $data['property_id']);
 
         if ($request->hasFile('receipt')) {
             // Receipts are private: stored on default/r2 storage, downloaded through the app.
@@ -58,8 +64,6 @@ class ExpenseController extends Controller
             $data['receipt_path'] = $request->file('receipt')->store('receipts', $disk);
         }
         unset($data['receipt']);
-
-        PropertyAccess::authorize($request->user(), $data['property_id']);
 
         DB::transaction(function () use ($data, $request) {
             $expense = Expense::create($data + ['recorded_by' => $request->user()->id]);
@@ -71,6 +75,7 @@ class ExpenseController extends Controller
 
     public function receipt(Expense $expense)
     {
+        PropertyAccess::authorize(auth()->user(), $expense->property_id);
         abort_unless($expense->receipt_path, 404);
 
         return PrivateStorage::response($expense->receipt_path);
@@ -78,6 +83,8 @@ class ExpenseController extends Controller
 
     public function destroy(Expense $expense)
     {
+        PropertyAccess::authorize(auth()->user(), $expense->property_id);
+
         if ($expense->isLocked()) {
             return back()->with('error', 'This expense is on an approved owner statement and cannot be deleted.');
         }

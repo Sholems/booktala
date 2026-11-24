@@ -3,6 +3,7 @@
 namespace App\Support;
 
 use App\Models\StaffAssignment;
+use App\Models\Owner;
 use App\Models\Unit;
 use App\Models\User;
 use Illuminate\Contracts\Database\Query\Builder as BuilderContract;
@@ -58,6 +59,23 @@ class PropertyAccess
         $id = $property instanceof Unit ? $property->id : $property;
 
         return self::visiblePropertyIds($user)->where('properties.id', $id)->exists();
+    }
+
+    public static function canAccessOwner(?User $user, Owner|int|null $owner): bool
+    {
+        if ($user === null || $owner === null) {
+            return false;
+        }
+
+        if (self::seesAll($user)) {
+            return true;
+        }
+
+        $ownerId = $owner instanceof Owner ? $owner->id : $owner;
+        $ownedUnits = Unit::query()->where('owner_id', $ownerId);
+
+        return (clone $ownedUnits)->exists()
+            && ! (clone $ownedUnits)->whereNotIn('id', self::visiblePropertyIds($user))->exists();
     }
 
     /**

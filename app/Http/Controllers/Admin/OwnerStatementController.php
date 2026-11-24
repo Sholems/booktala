@@ -9,6 +9,7 @@ use App\Models\Expense;
 use App\Models\Owner;
 use App\Models\OwnerStatement;
 use App\Services\OwnerStatementService;
+use App\Support\PropertyAccess;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\Request;
@@ -24,16 +25,24 @@ class OwnerStatementController extends Controller
 
     public function index(Request $request)
     {
+        $user = $request->user();
         // Default to last month: statements are usually prepared after the month closes.
         $month = CarbonImmutable::parse($request->query('month', now()->subMonthNoOverflow()->format('Y-m')).'-01');
 
         $statements = OwnerStatement::with('owner')
             ->whereDate('period_start', $month)
+            ->when(! PropertyAccess::seesAll($user), fn ($query) => $query
+                ->whereHas('owner.properties')
+                ->whereDoesntHave('owner.properties', fn ($properties) => $properties
+                    ->whereNotIn('properties.id', PropertyAccess::visiblePropertyIds($user))))
             ->get()
             ->sortBy('owner.name');
 
         $ownersWithout = Owner::where('is_active', true)
             ->whereHas('properties')
+            ->when(! PropertyAccess::seesAll($user), fn ($query) => $query
+                ->whereDoesntHave('properties', fn ($properties) => $properties
+                    ->whereNotIn('properties.id', PropertyAccess::visiblePropertyIds($user))))
             ->whereNotIn('id', $statements->pluck('owner_id'))
             ->orderBy('name')
             ->get();
@@ -48,11 +57,14 @@ class OwnerStatementController extends Controller
         abort_if($month->isAfter(now()->startOfMonth()), 422, 'Statements cannot be prepared for future months.');
 
         if (! empty($data['owner_id'])) {
-            $statement = $this->statements->generate(Owner::findOrFail($data['owner_id']), $month);
+            $owner = Owner::findOrFail($data['owner_id']);
+            $this->authorizeOwner($owner);
+            $statement = $this->statements->generate($owner, $month);
 
             return redirect()->route('admin.statements.show', $statement)->with('success', 'Statement prepared');
         }
 
+        abort_unless(PropertyAccess::seesAll($request->user()), 404);
         $count = $this->statements->generateForAll($month);
 
         return redirect()->route('admin.statements.index', ['month' => $data['month']])
@@ -61,6 +73,7 @@ class OwnerStatementController extends Controller
 
     public function show(OwnerStatement $statement)
     {
+        $this->authorizeStatement($statement);
         $statement->load(['owner', 'lines.property', 'approvedBy']);
 
         return view('admin.statements.show', compact('statement'));
@@ -68,6 +81,7 @@ class OwnerStatementController extends Controller
 
     public function approve(Request $request, OwnerStatement $statement)
     {
+        $this->authorizeStatement($statement);
         $this->statements->approve($statement, $request->user());
 
         return back()->with('success', 'Statement approved'.($statement->owner->user_id ? ' and visible in the owner portal' : ''));
@@ -75,6 +89,7 @@ class OwnerStatementController extends Controller
 
     public function markPaid(OwnerStatementMarkPaidRequest $request, OwnerStatement $statement)
     {
+        $this->authorizeStatement($statement);
         $data = $request->validated();
         $this->statements->markPaid($statement, $data['payment_reference'] ?? null);
 
@@ -83,6 +98,7 @@ class OwnerStatementController extends Controller
 
     public function destroy(OwnerStatement $statement)
     {
+        $this->authorizeStatement($statement);
         if (! $statement->isDraft()) {
             return back()->with('error', 'Only draft statements can be deleted.');
         }
@@ -95,7 +111,19 @@ class OwnerStatementController extends Controller
 
     public function pdf(OwnerStatement $statement)
     {
+        $this->authorizeStatement($statement);
+
         return self::download($statement);
+    }
+
+    private function authorizeStatement(OwnerStatement $statement): void
+    {
+        $this->authorizeOwner($statement->owner_id);
+    }
+
+    private function authorizeOwner(Owner|int $owner): void
+    {
+        abort_unless(PropertyAccess::canAccessOwner(auth()->user(), $owner), 404);
     }
 
     /** Shared with the owner portal. */
