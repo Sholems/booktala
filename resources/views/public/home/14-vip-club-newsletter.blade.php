@@ -18,13 +18,16 @@
         </div>
         @endif
 
-        <form action="{{ route('newsletter.subscribe') }}" method="POST" class="max-w-lg mx-auto flex flex-col sm:flex-row gap-2.5">
+        <form action="{{ route('newsletter.subscribe') }}" method="POST" class="max-w-lg mx-auto space-y-3">
             @csrf
-            <input type="email" name="email" required placeholder="Enter your email address" class="flex-1 px-5 py-3.5 rounded-xl bg-white/10 border border-white/20 text-white placeholder-gray-400 text-sm focus:outline-none focus:ring-2 focus:ring-accent focus:bg-white/15 transition">
-            <button type="submit" class="px-7 py-3.5 bg-accent hover:bg-accent/90 text-white font-bold text-sm rounded-xl transition shadow-lg shrink-0 flex items-center justify-center gap-2">
-                <span>Claim 10% Off</span>
-                <i class="fas fa-arrow-right text-xs"></i>
-            </button>
+            <div class="flex flex-col sm:flex-row gap-2.5">
+                <input type="email" name="email" required placeholder="Enter your email address" class="flex-1 px-5 py-3.5 rounded-xl bg-white/10 border border-white/20 text-white placeholder-gray-400 text-sm focus:outline-none focus:ring-2 focus:ring-accent focus:bg-white/15 transition">
+                <button type="submit" class="px-7 py-3.5 bg-accent hover:bg-accent/90 text-white font-bold text-sm rounded-xl transition shadow-lg shrink-0 flex items-center justify-center gap-2">
+                    <span>Claim 10% Off</span>
+                    <i class="fas fa-arrow-right text-xs"></i>
+                </button>
+            </div>
+            <x-turnstile action="newsletter_subscribe" />
         </form>
         <p class="text-[11px] text-gray-400 mt-3">We respect your privacy. No spam, ever. Unsubscribe at any time.</p>
     </div>

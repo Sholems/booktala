@@ -200,6 +200,8 @@
 
                 <!-- Payment CTA Card -->
                 <div class="bg-white rounded-2xl shadow-sm border border-gray-200/80 p-6 md:p-7">
+                    <x-turnstile action="booking_process" class="mb-5" />
+
                     <button type="button" id="proceed-to-payment" class="w-full bg-accent hover:bg-accent/90 text-white py-4 rounded-xl font-bold text-base md:text-lg shadow-lg shadow-accent/25 hover:shadow-xl hover:shadow-accent/30 transition transform active:scale-[0.99] flex items-center justify-center gap-3">
                         <span id="btn-spinner" class="hidden"><i class="fas fa-circle-notch fa-spin"></i></span>
                         <span id="btn-text">Proceed to Payment</span>
@@ -665,6 +667,12 @@ document.getElementById('proceed-to-payment').addEventListener('click', function
         return;
     }
 
+    const turnstileToken = document.querySelector('input[name="cf-turnstile-response"]')?.value;
+    if (!turnstileToken) {
+        showError('Please complete the security verification before continuing.');
+        return;
+    }
+
     const submitBtn = document.getElementById('proceed-to-payment');
     const btnSpinner = document.getElementById('btn-spinner');
     const btnText = document.getElementById('btn-text');
@@ -685,6 +693,7 @@ document.getElementById('proceed-to-payment').addEventListener('click', function
     form.append('special_requests', document.querySelector('textarea[name="special_requests"]').value || '');
     form.append('payment_mode', document.querySelector('input[name="payment_mode"]:checked').value);
     form.append('policy_agreement', '1');
+    form.append('cf-turnstile-response', turnstileToken);
 
     @if(!auth()->check())
     const nameEl = document.querySelector('input[name="guest_name"]');
@@ -732,6 +741,7 @@ document.getElementById('proceed-to-payment').addEventListener('click', function
                 const firstErr = Object.values(body.errors)[0];
                 if (Array.isArray(firstErr)) msg = firstErr[0];
             }
+            if (window.turnstile) window.turnstile.reset();
             showError(msg);
         }
     })
@@ -741,6 +751,7 @@ document.getElementById('proceed-to-payment').addEventListener('click', function
         btnSpinner.classList.add('hidden');
         btnLock.classList.remove('hidden');
         btnText.textContent = 'Proceed to Secure Payment';
+        if (window.turnstile) window.turnstile.reset();
         showError('A network or server error occurred. Please check your connection and try again.');
     });
 });

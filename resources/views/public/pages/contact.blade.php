@@ -100,6 +100,8 @@
                             <textarea name="message" rows="6" required class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary">{{ old('message') }}</textarea>
                         </div>
 
+                        <x-turnstile action="contact_submit" />
+
                         <button type="submit" class="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-accent text-white font-semibold hover:bg-accent/90 transition">
                             Send Message
                             <i class="fas fa-paper-plane text-sm"></i>

@@ -221,6 +221,8 @@
                         </div>
                     </div>
 
+                    <x-turnstile action="affiliate_join" class="mb-5" />
+
                     <button type="submit" class="w-full py-3.5 bg-primary text-white font-bold rounded-xl shadow-lg hover:bg-primary/90 transition flex items-center justify-center gap-2">
                         <i class="fas fa-check-circle text-amber-400"></i> Activate Partner Account
                     </button>
@@ -306,6 +308,8 @@
                             <input type="text" name="account_name" value="{{ old('account_name') }}" placeholder="Account Name (as registered with bank)" class="w-full px-4 py-2 text-sm border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary focus:outline-none">
                         </div>
                     </div>
+
+                    <x-turnstile action="affiliate_join" class="mb-5" />
 
                     <button type="submit" class="w-full py-3.5 bg-primary text-white font-bold rounded-xl shadow-lg hover:bg-primary/90 transition flex items-center justify-center gap-2">
                         <i class="fas fa-check-circle text-amber-400"></i> Create Partner Account &amp; Access Dashboard

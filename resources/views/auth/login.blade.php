@@ -50,6 +50,8 @@ $logoUrl = $logo ? url('media/' . ltrim($logo, '/')) : asset('images/booktala-lo
                     </label>
                     <a href="{{ route('password.request') }}" class="text-sm text-primary hover:underline">Forgot password?</a>
                 </div>
+
+                <x-turnstile action="login" class="mb-6" />
                 
                 <button type="submit" class="w-full bg-primary text-white py-3 rounded-lg font-bold hover:bg-primary/90 transition">
                     Sign In

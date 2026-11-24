@@ -6,12 +6,14 @@ use App\Http\Controllers\Controller;
 use App\Models\Affiliate;
 use App\Models\Property;
 use App\Models\User;
+use App\Rules\Turnstile;
 use App\Services\AffiliateCommissionService;
 use App\Services\QrCodeService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rule;
 use InvalidArgumentException;
 
 class AffiliatePortalController extends Controller
@@ -32,6 +34,10 @@ class AffiliatePortalController extends Controller
 
     public function storeJoin(Request $request)
     {
+        $request->validate([
+            'cf-turnstile-response' => [Rule::requiredIf(config('turnstile.enabled')), new Turnstile('affiliate_join')],
+        ]);
+
         $user = Auth::user();
 
         if (! $user) {

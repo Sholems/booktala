@@ -56,6 +56,8 @@ $logoUrl = $logo ? url('media/' . ltrim($logo, '/')) : asset('images/booktala-lo
                         </button>
                     </div>
                 </div>
+
+                <x-turnstile action="register" class="mb-6" />
                 
                 <button type="submit" class="w-full bg-primary text-white py-3 rounded-lg font-bold hover:bg-primary/90 transition">
                     Register

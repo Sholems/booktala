@@ -34,6 +34,20 @@ SESSION_ENCRYPT=true
 SESSION_SECURE_COOKIE=true
 ```
 
+## Cloudflare Turnstile
+
+Configure the production widget credentials as Coolify environment variables. Never commit the secret to the repository.
+
+```dotenv
+TURNSTILE_ENABLED=true
+TURNSTILE_SITE_KEY=<Cloudflare widget site key>
+TURNSTILE_SECRET=<Cloudflare widget secret>
+TURNSTILE_HOSTNAMES=booktala.com
+TURNSTILE_TIMEOUT=10
+```
+
+The Cloudflare widget must include the same production hostname. Keep `localhost` and `127.0.0.1` only for local development.
+
 `TRUSTED_PROXIES=*` is safe only while the application container is reachable through Coolify's proxy rather than directly from the internet. It ensures Laravel sees the original HTTPS scheme and client IP.
 
 Generate `APP_KEY` once with `php artisan key:generate --show`. Never regenerate it after production data exists because encrypted application data depends on it.

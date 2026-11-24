@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Rules\Turnstile;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -29,6 +30,7 @@ class ProcessBookingRequest extends FormRequest
             'guest_email' => [Rule::requiredIf($isGuest), 'nullable', 'email'],
             'guest_phone' => [Rule::requiredIf($isGuest), 'nullable', 'string', 'max:30'],
             'guest_password' => [Rule::requiredIf($isGuest), 'nullable', 'string'],
+            'cf-turnstile-response' => [Rule::requiredIf(config('turnstile.enabled')), new Turnstile('booking_process')],
         ];
     }
 
