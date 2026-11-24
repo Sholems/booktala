@@ -7,6 +7,7 @@ use App\Models\AffiliateClick;
 use App\Models\AffiliatePayout;
 use App\Models\AffiliateReferral;
 use App\Models\Reservation;
+use App\Models\Setting;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
@@ -14,6 +15,7 @@ use InvalidArgumentException;
 class AffiliateCommissionService
 {
     public const MINIMUM_PAYOUT_AMOUNT = 20000.00;
+
     public const DEFAULT_COMMISSION_PERCENT = 10.00;
 
     /**
@@ -21,7 +23,7 @@ class AffiliateCommissionService
      */
     public static function getDefaultCommissionRate(): float
     {
-        return (float) \App\Models\Setting::get('affiliate_commission_rate', self::DEFAULT_COMMISSION_PERCENT);
+        return (float) Setting::get('affiliate_commission_rate', self::DEFAULT_COMMISSION_PERCENT);
     }
 
     /**
@@ -30,8 +32,8 @@ class AffiliateCommissionService
     public function recordReferral(Reservation $reservation, ?string $codeOverride = null): ?AffiliateReferral
     {
         // 1. Resolve referral code
-        $code = $codeOverride 
-            ?: request()?->cookie('bt_affiliate') 
+        $code = $codeOverride
+            ?: request()?->cookie('bt_affiliate')
             ?: request()?->input('affiliate_code')
             ?: request()?->input('ref');
 
@@ -131,6 +133,7 @@ class AffiliateCommissionService
                     'status' => 'void',
                     'void_reason' => 'Reservation cancelled before stay completed',
                 ]);
+
                 continue;
             }
 
@@ -179,7 +182,7 @@ class AffiliateCommissionService
     public function requestPayout(Affiliate $affiliate, float $amount, array $bankDetails): AffiliatePayout
     {
         if ($amount < self::MINIMUM_PAYOUT_AMOUNT) {
-            throw new InvalidArgumentException('Minimum payout amount is ₦' . number_format(self::MINIMUM_PAYOUT_AMOUNT, 2));
+            throw new InvalidArgumentException('Minimum payout amount is ₦'.number_format(self::MINIMUM_PAYOUT_AMOUNT, 2));
         }
 
         if ((float) $affiliate->current_balance < $amount) {

@@ -8,7 +8,6 @@ use App\Models\SiteMessage;
 use App\Models\StaffAssignment;
 use App\Models\User;
 use App\Notifications\OperationsAlert;
-use App\Support\Supervision;
 use Illuminate\Support\Str;
 
 class CommunicationAlertService
@@ -104,7 +103,7 @@ class CommunicationAlertService
                 }
             } else {
                 // Management replied to Owner
-                $title = "💬 Portfolio Management Reply";
+                $title = '💬 Portfolio Management Reply';
                 $body = "{$preview}";
                 $url = route('owner.messages.show', $conversation);
 
@@ -115,7 +114,7 @@ class CommunicationAlertService
             $guestUser = $conversation->user;
             if ($sender->id === ($guestUser?->id)) {
                 // Guest sent a message
-                $title = "🛎️ Guest Message: ".($guestUser->name ?? 'Guest');
+                $title = '🛎️ Guest Message: '.($guestUser->name ?? 'Guest');
                 $body = "{$preview}";
                 $url = route('admin.messages.show', $conversation);
 

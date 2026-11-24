@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Log;
 class BrevoMarketingService
 {
     protected ?string $apiKey;
+
     protected string $baseUrl = 'https://api.brevo.com/v3';
 
     public function __construct()
@@ -19,7 +20,7 @@ class BrevoMarketingService
 
     public function isConfigured(): bool
     {
-        return !empty($this->apiKey) && str_starts_with($this->apiKey, 'xkeysib-');
+        return ! empty($this->apiKey) && str_starts_with($this->apiKey, 'xkeysib-');
     }
 
     /**
@@ -36,14 +37,14 @@ class BrevoMarketingService
             'updateEnabled' => true,
         ];
 
-        if (!empty($attributes)) {
+        if (! empty($attributes)) {
             $payload['attributes'] = $attributes;
         }
 
         $defaultListId = config('services.brevo.list_id');
-        if (!empty($listIds)) {
+        if (! empty($listIds)) {
             $payload['listIds'] = array_map('intval', $listIds);
-        } elseif (!empty($defaultListId)) {
+        } elseif (! empty($defaultListId)) {
             $payload['listIds'] = [(int) $defaultListId];
         }
 
@@ -58,10 +59,12 @@ class BrevoMarketingService
                 return true;
             }
 
-            Log::warning("Brevo contact sync responded with status {$response->status()}: " . $response->body());
+            Log::warning("Brevo contact sync responded with status {$response->status()}: ".$response->body());
+
             return false;
         } catch (\Throwable $e) {
-            Log::warning("Brevo contact sync request failed: " . $e->getMessage());
+            Log::warning('Brevo contact sync request failed: '.$e->getMessage());
+
             return false;
         }
     }
@@ -118,7 +121,7 @@ class BrevoMarketingService
                 return $response->json();
             }
         } catch (\Throwable $e) {
-            Log::warning("Brevo getAccountInfo failed: " . $e->getMessage());
+            Log::warning('Brevo getAccountInfo failed: '.$e->getMessage());
         }
 
         return null;
@@ -142,7 +145,8 @@ class BrevoMarketingService
             if ($response->successful()) {
                 return $response->json('lists') ?? [];
             }
-        } catch (\Throwable $e) {}
+        } catch (\Throwable $e) {
+        }
 
         return [];
     }

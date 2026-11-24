@@ -3,7 +3,6 @@
 namespace Tests\Feature;
 
 use App\Models\Affiliate;
-use App\Models\AffiliateClick;
 use App\Models\AffiliatePayout;
 use App\Models\AffiliateReferral;
 use App\Models\Property;
@@ -494,7 +493,7 @@ class AffiliateSystemTest extends TestCase
         ]);
 
         $response->assertSessionHas('success');
-        $this->assertEquals(12.5, \App\Services\AffiliateCommissionService::getDefaultCommissionRate());
+        $this->assertEquals(12.5, AffiliateCommissionService::getDefaultCommissionRate());
         $this->assertEquals(12.5, (float) $affiliate->fresh()->commission_rate);
     }
 }

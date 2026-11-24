@@ -10,6 +10,7 @@ use App\Models\Unit;
 use App\Models\User;
 use App\Services\Finance\LedgerPostingService;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 /**
  * The single place where a reservation's booking status changes.
@@ -67,9 +68,9 @@ class ReservationLifecycle
         ]);
 
         try {
-            app(\App\Services\AffiliateCommissionService::class)->recordReferral($confirmed);
+            app(AffiliateCommissionService::class)->recordReferral($confirmed);
         } catch (\Throwable $e) {
-            \Illuminate\Support\Facades\Log::warning('Failed to record affiliate referral: ' . $e->getMessage());
+            Log::warning('Failed to record affiliate referral: '.$e->getMessage());
         }
 
         return $confirmed;
@@ -188,9 +189,9 @@ class ReservationLifecycle
         });
 
         try {
-            app(\App\Services\AffiliateCommissionService::class)->voidReferral($cancelled, $reason ?: 'Reservation cancelled');
+            app(AffiliateCommissionService::class)->voidReferral($cancelled, $reason ?: 'Reservation cancelled');
         } catch (\Throwable $e) {
-            \Illuminate\Support\Facades\Log::warning('Failed to void affiliate referral: ' . $e->getMessage());
+            Log::warning('Failed to void affiliate referral: '.$e->getMessage());
         }
 
         return $cancelled;

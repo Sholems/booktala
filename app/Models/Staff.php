@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\Supervision;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -101,6 +102,6 @@ class Staff extends Model
     {
         $siteId = $site instanceof Site ? $site->id : $site;
 
-        return \App\Support\Supervision::supervises($this->user, $siteId);
+        return Supervision::supervises($this->user, $siteId);
     }
 }

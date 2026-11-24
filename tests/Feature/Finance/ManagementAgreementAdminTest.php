@@ -2,8 +2,8 @@
 
 namespace Tests\Feature\Finance;
 
-use App\Models\ManagementAgreement;
 use App\Models\Expense;
+use App\Models\ManagementAgreement;
 use App\Models\Owner;
 use App\Models\OwnerStatement;
 use App\Models\OwnerStatementLine;
@@ -15,8 +15,8 @@ use App\Models\Unit;
 use App\Models\User;
 use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Spatie\Permission\Models\Role;
 use Illuminate\Support\Facades\Storage;
+use Spatie\Permission\Models\Role;
 use Tests\TestCase;
 
 class ManagementAgreementAdminTest extends TestCase

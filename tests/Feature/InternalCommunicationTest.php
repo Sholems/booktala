@@ -12,6 +12,7 @@ use App\Models\Site;
 use App\Models\SiteMessage;
 use App\Models\Staff;
 use App\Models\User;
+use App\Services\CommunicationAlertService;
 use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\Models\Role;
@@ -434,7 +435,7 @@ class InternalCommunicationTest extends TestCase
 
         $admin = $this->makeUser('admin');
 
-        $alertService = app(\App\Services\CommunicationAlertService::class);
+        $alertService = app(CommunicationAlertService::class);
 
         // Initially zero
         $this->assertEquals(0, $alertService->staffUnreadDeskCount($staffUser));

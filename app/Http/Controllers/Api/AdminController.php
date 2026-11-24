@@ -24,7 +24,7 @@ class AdminController extends Controller
         $pendingReservations = Reservation::where('booking_status', 'pending')->count();
         $confirmedReservations = Reservation::where('booking_status', 'confirmed')->count();
 
-        $totalRevenue = Reservation::paid()->sum(DB::raw('total_amount - caution_fee'));
+        $totalRevenue = (float) Reservation::paid()->sum(DB::raw('total_amount - caution_fee'));
 
         $recentReservations = Reservation::with('property', 'user')
             ->latest()

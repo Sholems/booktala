@@ -30,7 +30,7 @@ class StorageController extends Controller
             if ($disk->exists($path)) {
                 $cdnUrl = config('filesystems.disks.public.url');
                 if (config('filesystems.disks.public.driver') === 's3' && ! empty($cdnUrl)) {
-                    return redirect()->away(rtrim($cdnUrl, '/') . '/' . ltrim($path, '/'), 302);
+                    return redirect()->away(rtrim($cdnUrl, '/').'/'.ltrim($path, '/'), 302);
                 }
 
                 return $disk->response(

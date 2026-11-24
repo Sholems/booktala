@@ -5,9 +5,13 @@ namespace App\Http\Controllers\Affiliate;
 use App\Http\Controllers\Controller;
 use App\Models\Affiliate;
 use App\Models\Property;
+use App\Models\User;
 use App\Services\AffiliateCommissionService;
+use App\Services\QrCodeService;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use InvalidArgumentException;
 
 class AffiliatePortalController extends Controller
@@ -20,7 +24,7 @@ class AffiliatePortalController extends Controller
     {
         $user = Auth::user();
         $affiliate = $user?->affiliate;
-        $defaultCode = $user ? Affiliate::generateUniqueCode($user->name) : 'PARTNER' . strtoupper(substr(uniqid(), -4));
+        $defaultCode = $user ? Affiliate::generateUniqueCode($user->name) : 'PARTNER'.strtoupper(substr(uniqid(), -4));
         $defaultRate = AffiliateCommissionService::getDefaultCommissionRate();
 
         return view('affiliate.join', compact('defaultCode', 'affiliate', 'user', 'defaultRate'));
@@ -42,11 +46,11 @@ class AffiliatePortalController extends Controller
                 'account_name' => ['nullable', 'string', 'max:150'],
             ]);
 
-            $user = \App\Models\User::create([
+            $user = User::create([
                 'name' => $validated['name'],
                 'email' => $validated['email'],
                 'phone' => $validated['phone'] ?? null,
-                'password' => \Illuminate\Support\Facades\Hash::make($validated['password']),
+                'password' => Hash::make($validated['password']),
                 'status' => 'active',
             ]);
             $user->assignRole('customer');
@@ -164,7 +168,7 @@ class AffiliatePortalController extends Controller
         }
 
         $validated = $request->validate([
-            'amount' => ['required', 'numeric', 'min:' . AffiliateCommissionService::MINIMUM_PAYOUT_AMOUNT],
+            'amount' => ['required', 'numeric', 'min:'.AffiliateCommissionService::MINIMUM_PAYOUT_AMOUNT],
         ]);
 
         try {
@@ -178,7 +182,7 @@ class AffiliatePortalController extends Controller
                 ]
             );
 
-            return back()->with('success', 'Payout request of ₦' . number_format($payout->amount) . ' submitted successfully. Payment reference: ' . $payout->payout_ref);
+            return back()->with('success', 'Payout request of ₦'.number_format($payout->amount).' submitted successfully. Payment reference: '.$payout->payout_ref);
         } catch (InvalidArgumentException $e) {
             return back()->with('error', $e->getMessage());
         }
@@ -204,7 +208,7 @@ class AffiliatePortalController extends Controller
         }
 
         $layout = $request->query('layout', 'flyer'); // 'flyer' or 'tent'
-        $qrService = app(\App\Services\QrCodeService::class);
+        $qrService = app(QrCodeService::class);
         $qrDataUri = $qrService->generateReferralQrDataUri($affiliate->referral_url);
 
         return view('affiliate.flyer', compact('affiliate', 'qrDataUri', 'layout'));
@@ -218,13 +222,13 @@ class AffiliatePortalController extends Controller
         }
 
         $layout = $request->query('layout', 'flyer'); // 'flyer' or 'tent'
-        $qrService = app(\App\Services\QrCodeService::class);
+        $qrService = app(QrCodeService::class);
         $qrDataUri = $qrService->generateReferralQrDataUri($affiliate->referral_url);
 
-        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('affiliate.flyer-pdf', compact('affiliate', 'qrDataUri', 'layout'));
+        $pdf = Pdf::loadView('affiliate.flyer-pdf', compact('affiliate', 'qrDataUri', 'layout'));
         $pdf->setPaper('a4', $layout === 'tent' ? 'landscape' : 'portrait');
 
-        $filename = 'booktala-' . $layout . '-' . strtolower($affiliate->code) . '.pdf';
+        $filename = 'booktala-'.$layout.'-'.strtolower($affiliate->code).'.pdf';
 
         return $pdf->download($filename);
     }

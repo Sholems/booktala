@@ -33,6 +33,8 @@ class PaymentService
         $reference = $referenceOverride ?: $reservation->booking_ref;
 
         $response = Http::withToken($secret)
+            ->connectTimeout((int) config('services.paystack.connect_timeout', 5))
+            ->timeout((int) config('services.paystack.timeout', 15))
             ->post('https://api.paystack.co/transaction/initialize', [
                 'email' => $email,
                 'amount' => $amount,
@@ -62,6 +64,9 @@ class PaymentService
     {
         $secret = $this->requireSecret();
         $response = Http::withToken($secret)
+            ->connectTimeout((int) config('services.paystack.connect_timeout', 5))
+            ->timeout((int) config('services.paystack.timeout', 15))
+            ->retry(2, 250, throw: false)
             ->get('https://api.paystack.co/transaction/verify/'.rawurlencode($reference));
 
         if ($response->successful()) {

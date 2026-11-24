@@ -10,6 +10,7 @@ use Illuminate\Console\Command;
 class SyncContactsToBrevo extends Command
 {
     protected $signature = 'brevo:sync-contacts';
+
     protected $description = 'Synchronize all active users, customers, affiliates, and newsletter subscribers to Brevo';
 
     public function handle(BrevoMarketingService $brevo): int
@@ -44,7 +45,7 @@ class SyncContactsToBrevo extends Command
         $bar->finish();
         $this->newLine(2);
 
-        $this->info("Synchronization finished!");
+        $this->info('Synchronization finished!');
         $this->line("• Synced subscribers: {$syncedSubscribers}");
         $this->line("• Synced users:       {$syncedUsers}");
 

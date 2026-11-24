@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Conversation;
+use App\Models\HousekeepingInspection;
 use App\Models\MaintenanceReport;
 use App\Models\Message;
 use App\Models\Owner;
@@ -18,6 +19,7 @@ use App\Models\User;
 use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
+use Spatie\Permission\Models\Role;
 use Tests\TestCase;
 
 /**
@@ -280,6 +282,42 @@ class MultiPropertyAccessTest extends TestCase
         $this->makeReservation($this->lekkiFlat);
 
         $this->actingAs($unassigned)->get(route('staff.checkin.index'))->assertOk()->assertDontSee($this->lekkiFlat->title);
+    }
+
+    public function test_site_scoped_admin_cannot_access_another_sites_housekeeping_inspections(): void
+    {
+        Role::findByName('admin')->revokePermissionTo('portfolio.view_all');
+        $staff = Staff::create([
+            'user_id' => $this->admin->id,
+            'employee_id' => 'OPS-'.$this->admin->id,
+            'hire_date' => today(),
+            'is_active' => true,
+        ]);
+        $staff->assignTo($this->lekki, Position::where('name', 'Receptionist')->firstOrFail());
+
+        $lekkiInspection = HousekeepingInspection::create([
+            'unit_id' => $this->lekkiFlat->id,
+            'cleaner_id' => $this->lekkiDesk->id,
+            'status' => HousekeepingInspection::STATUS_PENDING_REVIEW,
+            'checklist' => HousekeepingInspection::defaultChecklist(),
+            'submitted_at' => now(),
+        ]);
+        $abujaInspection = HousekeepingInspection::create([
+            'unit_id' => $this->abujaFlat->id,
+            'cleaner_id' => $this->lekkiDesk->id,
+            'status' => HousekeepingInspection::STATUS_PENDING_REVIEW,
+            'checklist' => HousekeepingInspection::defaultChecklist(),
+            'submitted_at' => now(),
+        ]);
+
+        $this->actingAs($this->admin)->get(route('admin.inspections.index'))
+            ->assertOk()
+            ->assertSee(route('admin.inspections.show', $lekkiInspection))
+            ->assertDontSee(route('admin.inspections.show', $abujaInspection));
+        $this->actingAs($this->admin)->get(route('admin.inspections.show', $abujaInspection))->assertNotFound();
+        $this->actingAs($this->admin)->patch(route('admin.inspections.approve', $abujaInspection))->assertNotFound();
+        $this->actingAs($this->admin)->patch(route('admin.inspections.reject', $abujaInspection), ['notes' => 'No access'])->assertNotFound();
+        $this->assertSame(HousekeepingInspection::STATUS_PENDING_REVIEW, $abujaInspection->fresh()->status);
     }
 
     public function test_maintenance_is_limited_to_the_staff_members_sites(): void

@@ -7,6 +7,8 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\MessageStartConversationRequest;
 use App\Models\Conversation;
 use App\Models\Message;
+use App\Services\CommunicationAlertService;
+use Illuminate\Http\Request;
 
 class MessageController extends Controller
 {
@@ -53,7 +55,7 @@ class MessageController extends Controller
         return back()->with('success', 'Conversation started');
     }
 
-    public function startStaffConversation(\Illuminate\Http\Request $request)
+    public function startStaffConversation(Request $request)
     {
         $validated = $request->validate([
             'user_id' => 'required|exists:users,id',
@@ -75,7 +77,7 @@ class MessageController extends Controller
 
         $conversation->update(['last_message_at' => now()]);
 
-        app(\App\Services\CommunicationAlertService::class)->notifyDirectMessage($message, $conversation, auth()->user());
+        app(CommunicationAlertService::class)->notifyDirectMessage($message, $conversation, auth()->user());
 
         return redirect()->route('admin.messages.show', $conversation)
             ->with('success', 'Official memo sent directly to employee.');

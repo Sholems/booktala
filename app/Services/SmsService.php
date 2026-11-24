@@ -8,14 +8,16 @@ use Illuminate\Support\Facades\Log;
 class SmsService
 {
     private ?string $termiiKey;
+
     private string $termiiFrom;
+
     private SendchampService $sendchamp;
 
     public function __construct(SendchampService $sendchamp)
     {
         $this->sendchamp = $sendchamp;
         $this->termiiKey = config('services.termii.key');
-        $this->termiiFrom = config('services.termii.from', 'BOOKTALA');
+        $this->termiiFrom = config('services.termii.sender_id', 'BookTala');
     }
 
     public function sendSms($to, $message)
@@ -26,29 +28,32 @@ class SmsService
             if ($result['success']) {
                 return true;
             }
-            Log::warning('Sendchamp SMS dispatch unsuccessful, falling back to Termii if available: ' . ($result['error'] ?? 'Unknown error'));
+            Log::warning('Sendchamp SMS dispatch unsuccessful, falling back to Termii if available: '.($result['error'] ?? 'Unknown error'));
         }
 
         // 2. Termii Fallback
-        if (!empty($this->termiiKey)) {
+        if (! empty($this->termiiKey)) {
             $to = $this->formatPhoneNumber($to);
 
             try {
-                $response = Http::post('https://api.termii.com/api/sms/send', [
-                    'api_key' => $this->termiiKey,
-                    'to' => $to,
-                    'from' => $this->termiiFrom,
-                    'sms' => $message,
-                ]);
+                $response = Http::connectTimeout((int) config('services.termii.connect_timeout', 5))
+                    ->timeout((int) config('services.termii.timeout', 12))
+                    ->post('https://api.termii.com/api/sms/send', [
+                        'api_key' => $this->termiiKey,
+                        'to' => $to,
+                        'from' => $this->termiiFrom,
+                        'sms' => $message,
+                    ]);
 
                 return $response->successful();
             } catch (\Exception $e) {
-                Log::error('Termii SMS fallback failed: ' . $e->getMessage());
+                Log::error('Termii SMS fallback failed: '.$e->getMessage());
+
                 return false;
             }
         }
 
-        if (!$this->sendchamp->isConfigured()) {
+        if (! $this->sendchamp->isConfigured()) {
             Log::warning('Neither Sendchamp nor Termii is configured. SMS not sent.');
         }
 

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Conversation;
 use App\Models\Message;
 use App\Models\Owner;
+use App\Services\CommunicationAlertService;
 use Illuminate\Http\Request;
 
 class MessageController extends Controller
@@ -79,7 +80,7 @@ class MessageController extends Controller
             'read' => false,
         ]);
 
-        app(\App\Services\CommunicationAlertService::class)->notifyDirectMessage($message, $conversation, $request->user());
+        app(CommunicationAlertService::class)->notifyDirectMessage($message, $conversation, $request->user());
 
         return redirect()->route('owner.messages.show', $conversation)
             ->with('success', 'Your inquiry has been submitted to Asset Management. We will reply shortly.');
@@ -104,7 +105,7 @@ class MessageController extends Controller
 
         $conversation->update(['last_message_at' => now()]);
 
-        app(\App\Services\CommunicationAlertService::class)->notifyDirectMessage($message, $conversation, $request->user());
+        app(CommunicationAlertService::class)->notifyDirectMessage($message, $conversation, $request->user());
 
         return back()->with('success', 'Reply sent to Asset Management.');
     }

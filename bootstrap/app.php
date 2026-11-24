@@ -3,6 +3,7 @@
 use App\Exceptions\InvalidReservationTransition;
 use App\Http\Middleware\ApiAuthenticate;
 use App\Http\Middleware\EnsureSupervisor;
+use App\Http\Middleware\TrackAffiliateReferral;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -18,7 +19,7 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->web(append: [
-            \App\Http\Middleware\TrackAffiliateReferral::class,
+            TrackAffiliateReferral::class,
         ]);
 
         $middleware->alias([

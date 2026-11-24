@@ -299,7 +299,7 @@ ICAL;
             'subtotal' => 300000,
             'total_amount' => 300000,
             'booking_status' => 'cancelled',
-            'payment_status' => 'cancelled',
+            'payment_status' => 'pending',
         ]);
 
         $response = $this->get(route('ota.feed', ['token' => $this->mapping->export_token]));

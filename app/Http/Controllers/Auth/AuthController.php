@@ -5,7 +5,9 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\AuthLoginRequest;
 use App\Http\Requests\Auth\AuthRegisterRequest;
+use App\Models\Affiliate;
 use App\Models\User;
+use App\Services\AffiliateCommissionService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -77,11 +79,11 @@ class AuthController extends Controller
         // If registering specifically as an affiliate partner:
         if ($request->input('role') === 'affiliate' || $request->input('intent') === 'affiliate' || $request->session()->pull('affiliate_intent')) {
             if (! $user->affiliate) {
-                $code = \App\Models\Affiliate::generateUniqueCode($user->name);
-                \App\Models\Affiliate::create([
+                $code = Affiliate::generateUniqueCode($user->name);
+                Affiliate::create([
                     'user_id' => $user->id,
                     'code' => $code,
-                    'commission_rate' => \App\Services\AffiliateCommissionService::DEFAULT_COMMISSION_PERCENT,
+                    'commission_rate' => AffiliateCommissionService::DEFAULT_COMMISSION_PERCENT,
                     'status' => 'active',
                 ]);
             }

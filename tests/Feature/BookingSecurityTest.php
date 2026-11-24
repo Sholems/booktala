@@ -301,7 +301,7 @@ class BookingSecurityTest extends TestCase
             'guest_password' => 'secret123',
             // Omit policy_agreement
         ])->assertStatus(422)
-          ->assertJsonValidationErrors(['policy_agreement']);
+            ->assertJsonValidationErrors(['policy_agreement']);
     }
 
     public function test_booking_records_policy_agreement_audit(): void

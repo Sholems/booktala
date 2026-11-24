@@ -2,8 +2,8 @@
 
 namespace App\Support;
 
-use App\Models\StaffAssignment;
 use App\Models\Owner;
+use App\Models\StaffAssignment;
 use App\Models\Unit;
 use App\Models\User;
 use Illuminate\Contracts\Database\Query\Builder as BuilderContract;

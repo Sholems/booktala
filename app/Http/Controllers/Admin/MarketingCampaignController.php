@@ -73,7 +73,7 @@ class MarketingCampaignController extends Controller
 
     public function show(MarketingCampaign $campaign)
     {
-        $campaign->load(['creator', 'logs' => fn($q) => $q->latest()->take(50)]);
+        $campaign->load(['creator', 'logs' => fn ($q) => $q->latest()->take(50)]);
         $properties = $campaign->getFeaturedProperties();
         $segmentCounts = MarketingCampaign::segmentCounts();
 
@@ -144,7 +144,7 @@ class MarketingCampaignController extends Controller
     {
         $targetEmail = $request->input('test_email') ?: Auth::user()->email;
 
-        if (!filter_var($targetEmail, FILTER_VALIDATE_EMAIL)) {
+        if (! filter_var($targetEmail, FILTER_VALIDATE_EMAIL)) {
             return redirect()->back()->with('error', 'Invalid test destination email address.');
         }
 
@@ -157,9 +157,10 @@ class MarketingCampaignController extends Controller
 
         try {
             Mail::to($targetEmail)->send(new MarketingCampaignMail($campaign, $recipient, $properties));
+
             return redirect()->back()->with('success', "Test email successfully dispatched to [{$targetEmail}] via Brevo!");
         } catch (\Throwable $e) {
-            return redirect()->back()->with('error', "Failed sending test email: " . $e->getMessage());
+            return redirect()->back()->with('error', 'Failed sending test email: '.$e->getMessage());
         }
     }
 
@@ -178,6 +179,7 @@ class MarketingCampaignController extends Controller
     public function destroy(MarketingCampaign $campaign)
     {
         $campaign->delete();
+
         return redirect()->route('admin.marketing.campaigns.index')
             ->with('success', 'Campaign deleted successfully.');
     }
@@ -229,7 +231,8 @@ class MarketingCampaignController extends Controller
         // Auto sync to Brevo
         try {
             app(BrevoMarketingService::class)->createOrUpdateSubscriber($sub);
-        } catch (\Throwable $e) {}
+        } catch (\Throwable $e) {
+        }
 
         return redirect()->back()->with('success', 'Subscriber added successfully.');
     }
@@ -250,6 +253,7 @@ class MarketingCampaignController extends Controller
     public function destroySubscriber(NewsletterSubscriber $subscriber)
     {
         $subscriber->delete();
+
         return redirect()->back()->with('success', 'Subscriber removed successfully.');
     }
 }

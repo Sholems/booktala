@@ -7,10 +7,12 @@ use App\Http\Requests\Admin\HousekeepingInspectionApproveRequest;
 use App\Http\Requests\Admin\HousekeepingInspectionRejectRequest;
 use App\Http\Requests\Admin\HousekeepingInspectionStoreRequest;
 use App\Models\HousekeepingInspection;
+use App\Models\Task;
 use App\Models\Unit;
 use App\Support\PrivateStorage;
 use App\Support\PropertyAccess;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class HousekeepingInspectionController extends Controller
 {
@@ -18,26 +20,36 @@ class HousekeepingInspectionController extends Controller
     {
         $status = $request->query('status', 'pending_review');
 
-        $inspections = HousekeepingInspection::with(['unit.site', 'cleaner', 'supervisor', 'task'])
+        $inspectionsQuery = HousekeepingInspection::with(['unit.site', 'cleaner', 'supervisor', 'task']);
+        PropertyAccess::scope($inspectionsQuery, $request->user(), 'unit_id');
+        $inspections = $inspectionsQuery
             ->when($status !== 'all', fn ($q) => $q->where('status', $status))
             ->when($request->filled('unit_id'), fn ($q) => $q->where('unit_id', $request->integer('unit_id')))
             ->latest('submitted_at')
             ->paginate(20)
             ->withQueryString();
 
+        $inspectionCount = function (string $status) use ($request) {
+            $query = HousekeepingInspection::where('status', $status);
+            PropertyAccess::scope($query, $request->user(), 'unit_id');
+
+            return $query;
+        };
+
         $stats = [
-            'pending_review' => HousekeepingInspection::where('status', 'pending_review')->count(),
-            'approved_today' => HousekeepingInspection::where('status', 'approved')->whereDate('reviewed_at', today())->count(),
-            'rejected' => HousekeepingInspection::where('status', 'rejected')->count(),
+            'pending_review' => $inspectionCount('pending_review')->count(),
+            'approved_today' => $inspectionCount('approved')->whereDate('reviewed_at', today())->count(),
+            'rejected' => $inspectionCount('rejected')->count(),
         ];
 
-        $units = Unit::query()->orderBy('title')->get();
+        $units = Unit::query()->visibleTo($request->user())->orderBy('title')->get();
 
         return view('admin.inspections.index', compact('inspections', 'stats', 'units', 'status'));
     }
 
     public function show(HousekeepingInspection $inspection)
     {
+        $this->authorizeInspection($inspection);
         $inspection->load(['unit.site', 'cleaner', 'supervisor', 'task']);
 
         return view('admin.inspections.show', compact('inspection'));
@@ -45,7 +57,7 @@ class HousekeepingInspectionController extends Controller
 
     public function photo(HousekeepingInspection $inspection, string $collection, int $index)
     {
-        PropertyAccess::authorize(auth()->user(), $inspection->unit_id);
+        $this->authorizeInspection($inspection);
         abort_unless(in_array($collection, ['before', 'after'], true), 404);
 
         $photos = $collection === 'before' ? $inspection->before_photos : $inspection->after_photos;
@@ -57,18 +69,20 @@ class HousekeepingInspectionController extends Controller
 
     public function approve(HousekeepingInspectionApproveRequest $request, HousekeepingInspection $inspection)
     {
+        $this->authorizeInspection($inspection);
         $validated = $request->validated();
 
-        $inspection->approve($request->user(), $validated['notes'] ?? null);
+        DB::transaction(fn () => $inspection->approve($request->user(), $validated['notes'] ?? null));
 
         return back()->with('success', "Room {$inspection->unit?->title} inspection approved! Unit is now AVAILABLE for guests.");
     }
 
     public function reject(HousekeepingInspectionRejectRequest $request, HousekeepingInspection $inspection)
     {
+        $this->authorizeInspection($inspection);
         $validated = $request->validated();
 
-        $inspection->reject($request->user(), $validated['notes']);
+        DB::transaction(fn () => $inspection->reject($request->user(), $validated['notes']));
 
         return back()->with('error', "Room {$inspection->unit?->title} inspection rejected. Rework notes sent to cleaner; unit remains in CLEANING.");
     }
@@ -76,6 +90,13 @@ class HousekeepingInspectionController extends Controller
     public function store(HousekeepingInspectionStoreRequest $request)
     {
         $validated = $request->validated();
+        $unit = Unit::findOrFail($validated['unit_id']);
+        PropertyAccess::authorize($request->user(), $unit);
+        abort_unless(PropertyAccess::staffAtProperty($unit)->whereKey($validated['cleaner_id'])->exists(), 404);
+
+        if (! empty($validated['task_id'])) {
+            abort_unless(Task::whereKey($validated['task_id'])->where('property_id', $unit->id)->exists(), 404);
+        }
 
         $beforePhotos = $validated['before_photos'] ?? [];
         $afterPhotos = $validated['after_photos'] ?? [];
@@ -109,5 +130,10 @@ class HousekeepingInspectionController extends Controller
 
         return redirect()->route('admin.inspections.show', $inspection)
             ->with('success', 'Housekeeping inspection submitted and queued for supervisor review.');
+    }
+
+    private function authorizeInspection(HousekeepingInspection $inspection): void
+    {
+        PropertyAccess::authorize(auth()->user(), $inspection->unit_id);
     }
 }

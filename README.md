@@ -67,26 +67,18 @@ The same checks run in GitHub Actions.
 
 ## Scheduler and queue
 
-Production must invoke Laravel's scheduler every minute:
-
-```cron
-* * * * * cd /path/to/booktala && php artisan schedule:run >> /dev/null 2>&1
-```
-
-The scheduler sends check-in reminders, checks operational escalations, expires unpaid booking holds and drains the database queue for shared-hosting deployments. On a server that supports long-running processes, use a supervised `php artisan queue:work` process instead.
+The production container runs Laravel's scheduler and queue worker under Supervisor. The scheduler sends check-in reminders, checks operational escalations, expires unpaid booking holds, synchronizes OTA calendars, and matures affiliate commissions. Scheduled tasks use shared cache locks so only one replica executes each task.
 
 Inspect failed jobs with `php artisan queue:failed` and retry them with `php artisan queue:retry <id>`.
 
 ## Production deployment
 
-Start from `.env.production.example` (production mode, debug off, Telescope off, MySQL, secure cookies), fill in the blanks, then run:
+Deploy the repository Dockerfile through Coolify and connect it to PostgreSQL on Coolify's private network. Start from `.env.production.example`, fill in the blanks, and follow [the Coolify deployment guide](docs/deployment/coolify-postgresql.md).
+
+For a release check inside the running container:
 
 ```bash
-composer install --no-dev --optimize-autoloader
-npm ci
-npm run build
 php artisan migrate --force
-php artisan storage:link
 php artisan optimize
 php artisan queue:restart
 php artisan app:production-check
@@ -94,7 +86,7 @@ php artisan app:production-check
 
 Site settings are cached and refreshed automatically when changed in the admin; if you ever edit the `settings` table directly, run `php artisan cache:clear`.
 
-`app:production-check` fails if debug is on, Telescope is recording, the database is SQLite (it ignores the row locks used for bookings, payments and stock), or the app key is missing, and warns about mail, queue, https and cookie settings.
+`app:production-check` fails unless production mode, PostgreSQL, Paystack, outbound mail, queued jobs, HTTPS, secure encrypted sessions, and private/public R2 isolation are configured safely.
 
 Monitor `/up`, back up the database and uploaded files (including `storage/app/private`, which holds guest ID documents, receipts and incident photos), and verify restoration regularly. Telescope never records in production, whatever `TELESCOPE_ENABLED` says.
 

@@ -7,6 +7,28 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: booktala_test
+          POSTGRES_USER: booktala
+          POSTGRES_PASSWORD: booktala_test_password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U booktala -d booktala_test"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      DB_CONNECTION: pgsql
+      DB_HOST: 127.0.0.1
+      DB_PORT: 5432
+      DB_DATABASE: booktala_test
+      DB_USERNAME: booktala
+      DB_PASSWORD: booktala_test_password
 
     steps:
       - uses: actions/checkout@v4

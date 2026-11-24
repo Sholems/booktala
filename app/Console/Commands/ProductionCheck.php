@@ -17,7 +17,6 @@ class ProductionCheck extends Command
     public function handle(): int
     {
         $problems = [];
-        $warnings = [];
 
         if (! config('app.key')) {
             $problems[] = 'APP_KEY is not set. Run: php artisan key:generate';
@@ -31,29 +30,57 @@ class ProductionCheck extends Command
         if (config('telescope.enabled')) {
             $problems[] = 'Telescope is recording requests. Set TELESCOPE_ENABLED=false.';
         }
-        if (config('database.default') === 'sqlite') {
-            $problems[] = 'The database is SQLite, which ignores the row locks used for bookings, payments and stock. Use MySQL/MariaDB.';
+        if (config('database.default') !== 'pgsql') {
+            $problems[] = 'The production database must be PostgreSQL. Set DB_CONNECTION=pgsql.';
         }
         if (in_array(config('mail.default'), ['log', 'array'], true)) {
-            $warnings[] = 'Mail is going to the '.config('mail.default').' driver, so guests and staff receive no email.';
+            $problems[] = 'Mail is going to the '.config('mail.default').' driver, so guests and staff receive no email.';
         }
         if (config('queue.default') === 'sync') {
-            $warnings[] = 'QUEUE_CONNECTION=sync sends notifications during requests. Use database with the scheduler cron.';
+            $problems[] = 'QUEUE_CONNECTION=sync sends notifications during requests. Use database or redis with a dedicated worker.';
+        }
+        if (! in_array(config('cache.default'), ['database', 'redis'], true)) {
+            $problems[] = 'CACHE_STORE must be database or redis so rate limits and scheduler locks survive across processes.';
+        }
+        if (! in_array(config('session.driver'), ['database', 'redis'], true)) {
+            $problems[] = 'SESSION_DRIVER must be database or redis in production.';
         }
         if (! str_starts_with((string) config('app.url'), 'https://')) {
-            $warnings[] = 'APP_URL is not https: payment callbacks and links should use https.';
+            $problems[] = 'APP_URL is not https: payment callbacks and links must use https.';
         }
         if (! config('session.secure')) {
-            $warnings[] = 'SESSION_SECURE_COOKIE is off: login cookies can travel over plain http.';
+            $problems[] = 'SESSION_SECURE_COOKIE is off: login cookies can travel over plain http.';
+        }
+        if (! config('session.encrypt')) {
+            $problems[] = 'SESSION_ENCRYPT is off. Enable encrypted session payloads in production.';
+        }
+        if (! config('trustedproxy.proxies')) {
+            $problems[] = 'TRUSTED_PROXIES is not configured. Set it to * for an app reachable only through the Coolify proxy.';
+        }
+        if (! config('services.paystack.public') || ! config('services.paystack.secret')) {
+            $problems[] = 'Paystack credentials are missing. Set PAYSTACK_PUBLIC_KEY and PAYSTACK_SECRET_KEY.';
+        }
+
+        if (config('filesystems.default') === 'r2') {
+            $publicBucket = config('filesystems.disks.public.bucket');
+            $privateBucket = config('filesystems.disks.r2.bucket');
+
+            if (! $publicBucket || ! $privateBucket) {
+                $problems[] = 'R2 requires CLOUDFLARE_R2_PUBLIC_BUCKET and CLOUDFLARE_R2_PRIVATE_BUCKET.';
+            } elseif ($publicBucket === $privateBucket) {
+                $problems[] = 'R2 public and private uploads must use separate buckets.';
+            }
+            if (! config('filesystems.disks.r2.endpoint')) {
+                $problems[] = 'R2 endpoint is missing. Set CLOUDFLARE_R2_ENDPOINT.';
+            }
+            if (! config('filesystems.disks.public.url')) {
+                $problems[] = 'R2 public media URL is missing. Set CLOUDFLARE_R2_PUBLIC_URL.';
+            }
         }
 
         foreach ($problems as $problem) {
             $this->error('✗ '.$problem);
         }
-        foreach ($warnings as $warning) {
-            $this->warn('! '.$warning);
-        }
-
         if ($problems) {
             $this->line('');
             $this->error(count($problems).' problem(s) must be fixed before going live.');
@@ -61,7 +88,7 @@ class ProductionCheck extends Command
             return self::FAILURE;
         }
 
-        $this->info('Configuration is safe for production'.($warnings ? ' (see warnings above).' : '.'));
+        $this->info('Configuration is safe for production.');
 
         return self::SUCCESS;
     }

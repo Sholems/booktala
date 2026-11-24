@@ -7,8 +7,6 @@ use App\Mail\MarketingCampaignMail;
 use App\Mail\NewsletterWelcomeMail;
 use App\Models\MarketingCampaign;
 use App\Models\NewsletterSubscriber;
-use App\Models\Property;
-use App\Models\Site;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Mail;

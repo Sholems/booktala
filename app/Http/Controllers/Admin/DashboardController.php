@@ -24,11 +24,11 @@ class DashboardController extends Controller
         $confirmedBookings = Reservation::where('booking_status', 'confirmed')->count();
         $checkedInBookings = Reservation::where('booking_status', 'checked_in')->count();
 
-        $totalRevenue = Reservation::paid()->sum(DB::raw('total_amount - caution_fee'));
-        $thisMonthRevenue = Reservation::paid()
+        $totalRevenue = (float) Reservation::paid()->sum(DB::raw('total_amount - caution_fee'));
+        $thisMonthRevenue = (float) Reservation::paid()
             ->whereMonth('created_at', now()->month)
             ->sum(DB::raw('total_amount - caution_fee'));
-        $lastMonthRevenue = Reservation::paid()
+        $lastMonthRevenue = (float) Reservation::paid()
             ->whereMonth('created_at', now()->subMonth()->month)
             ->sum(DB::raw('total_amount - caution_fee'));
 

@@ -11,6 +11,7 @@ use App\Models\Message;
 use App\Models\Property;
 use App\Models\Reservation;
 use App\Models\User;
+use App\Services\CommunicationAlertService;
 
 class MessageController extends Controller
 {
@@ -66,7 +67,7 @@ class MessageController extends Controller
 
         $conversation->update(['last_message_at' => now()]);
 
-        app(\App\Services\CommunicationAlertService::class)->notifyDirectMessage($message, $conversation, auth()->user());
+        app(CommunicationAlertService::class)->notifyDirectMessage($message, $conversation, auth()->user());
 
         return redirect()->route('customer.messages.show', $conversation)->with('success', 'Message sent. Our team will reply here.');
     }
@@ -86,7 +87,7 @@ class MessageController extends Controller
 
         $conversation->update(['last_message_at' => now()]);
 
-        app(\App\Services\CommunicationAlertService::class)->notifyDirectMessage($message, $conversation, auth()->user());
+        app(CommunicationAlertService::class)->notifyDirectMessage($message, $conversation, auth()->user());
 
         return back()->with('success', 'Reply sent');
     }

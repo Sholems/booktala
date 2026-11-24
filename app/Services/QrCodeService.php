@@ -17,7 +17,7 @@ class QrCodeService
     {
         $rawPng = $this->generateReferralQrPng($url, $logoPath);
 
-        return 'data:image/png;base64,' . base64_encode($rawPng);
+        return 'data:image/png;base64,'.base64_encode($rawPng);
     }
 
     /**

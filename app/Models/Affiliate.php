@@ -64,7 +64,7 @@ class Affiliate extends Model
 
     public function getReferralUrlAttribute(): string
     {
-        return url('/?ref=' . urlencode($this->code));
+        return url('/?ref='.urlencode($this->code));
     }
 
     public static function generateUniqueCode(string $name): string
@@ -74,11 +74,11 @@ class Affiliate extends Model
             $base = 'PARTNER';
         }
         $code = substr($base, 0, 10);
-        
+
         $candidate = $code;
         $counter = 1;
         while (self::where('code', $candidate)->exists()) {
-            $candidate = $code . $counter++;
+            $candidate = $code.$counter++;
         }
 
         return $candidate;

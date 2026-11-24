@@ -180,7 +180,7 @@ class LedgerReconciliationService
         $imbalancedTx = DB::table('finance_entries')
             ->select('finance_transaction_id', DB::raw('SUM(amount_minor) as balance'))
             ->groupBy('finance_transaction_id')
-            ->having('balance', '!=', 0)
+            ->havingRaw('SUM(amount_minor) != 0')
             ->get();
 
         foreach ($imbalancedTx as $row) {

@@ -1,8 +1,7 @@
 <?php
 
-use App\Http\Controllers\Admin\AttendanceController as AdminAttendanceController;
 use App\Http\Controllers\Admin\AffiliateManagementController;
-use App\Http\Controllers\Admin\MarketingCampaignController;
+use App\Http\Controllers\Admin\AttendanceController as AdminAttendanceController;
 use App\Http\Controllers\Admin\BlogController;
 use App\Http\Controllers\Admin\ChannelManagerController;
 use App\Http\Controllers\Admin\CustomerController;
@@ -18,6 +17,7 @@ use App\Http\Controllers\Admin\IcalController;
 use App\Http\Controllers\Admin\InvoiceController;
 use App\Http\Controllers\Admin\MaintenanceController;
 use App\Http\Controllers\Admin\ManagementAgreementController;
+use App\Http\Controllers\Admin\MarketingCampaignController;
 use App\Http\Controllers\Admin\MessageController;
 use App\Http\Controllers\Admin\OwnerController;
 use App\Http\Controllers\Admin\OwnerStatementController;

@@ -58,7 +58,7 @@ class MarketingCampaign extends Model
      */
     public function getFeaturedProperties()
     {
-        if (empty($this->featured_property_ids) || !is_array($this->featured_property_ids)) {
+        if (empty($this->featured_property_ids) || ! is_array($this->featured_property_ids)) {
             return Property::with(['site', 'images'])->where('status', 'active')->latest()->take(3)->get();
         }
 
@@ -148,7 +148,7 @@ class MarketingCampaign extends Model
 
                 User::whereNotNull('email')->get()->each(function ($user) use (&$recipients) {
                     $email = strtolower(trim($user->email));
-                    if (!$recipients->has($email)) {
+                    if (! $recipients->has($email)) {
                         $recipients->put($email, [
                             'email' => $email,
                             'name' => trim($user->name) ?: 'Valued Guest',

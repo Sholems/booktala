@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Concerns;
 use App\Http\Requests\Shared\GuestInboxReplyRequest;
 use App\Models\Conversation;
 use App\Models\Message;
+use App\Services\CommunicationAlertService;
 use App\Support\PropertyAccess;
 use Illuminate\Http\Request;
 
@@ -86,7 +87,7 @@ trait ManagesGuestInbox
 
         $conversation->update(['last_message_at' => now()]);
 
-        app(\App\Services\CommunicationAlertService::class)->notifyDirectMessage($message, $conversation, $request->user());
+        app(CommunicationAlertService::class)->notifyDirectMessage($message, $conversation, $request->user());
 
         $recipientLabel = $conversation->type === 'staff' ? 'staff member' : ($conversation->type === 'owner' ? 'property owner' : 'guest');
 

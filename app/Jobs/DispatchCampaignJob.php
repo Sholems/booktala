@@ -60,7 +60,7 @@ class DispatchCampaignJob implements ShouldQueue
 
                 $sentCount++;
             } catch (\Throwable $e) {
-                Log::error("Failed sending campaign #{$this->campaign->id} to {$email}: " . $e->getMessage());
+                Log::error("Failed sending campaign #{$this->campaign->id} to {$email}: ".$e->getMessage());
 
                 CampaignLog::create([
                     'marketing_campaign_id' => $this->campaign->id,

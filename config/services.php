@@ -40,11 +40,15 @@ return [
         'public' => env('PAYSTACK_PUBLIC_KEY'),
         'merchant_email' => env('PAYSTACK_MERCHANT_EMAIL'),
         'callback_url' => env('PAYSTACK_CALLBACK_URL'),
+        'connect_timeout' => (int) env('PAYSTACK_CONNECT_TIMEOUT', 5),
+        'timeout' => (int) env('PAYSTACK_TIMEOUT', 15),
     ],
 
     'termii' => [
         'key' => env('TERMII_API_KEY'),
         'sender_id' => env('TERMII_SENDER_ID', 'BookTala'),
+        'connect_timeout' => (int) env('TERMII_CONNECT_TIMEOUT', 5),
+        'timeout' => (int) env('TERMII_TIMEOUT', 12),
     ],
 
     'google' => [

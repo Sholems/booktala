@@ -8,10 +8,15 @@ use Illuminate\Support\Facades\Log;
 class SendchampService
 {
     protected ?string $publicKey;
+
     protected string $mode;
+
     protected string $smsSenderId;
+
     protected ?string $whatsappSender;
+
     protected string $route;
+
     protected string $baseUrl = 'https://api.sendchamp.com/v1';
 
     public function __construct()
@@ -25,22 +30,23 @@ class SendchampService
 
     public function isConfigured(): bool
     {
-        return !empty($this->publicKey);
+        return ! empty($this->publicKey);
     }
 
     /**
      * Send single or bulk SMS via Sendchamp
      *
-     * @param string|array $to Phone number(s)
-     * @param string $message Text content
-     * @param string|null $senderName Custom alphanumeric sender ID
-     * @param string|null $route Delivery route ('dnd', 'non_dnd', 'international')
+     * @param  string|array  $to  Phone number(s)
+     * @param  string  $message  Text content
+     * @param  string|null  $senderName  Custom alphanumeric sender ID
+     * @param  string|null  $route  Delivery route ('dnd', 'non_dnd', 'international')
      * @return array [success => bool, reference => string|null, response => array|string, error => string|null]
      */
     public function sendSms(string|array $to, string $message, ?string $senderName = null, ?string $route = null): array
     {
-        if (!$this->isConfigured()) {
+        if (! $this->isConfigured()) {
             Log::warning('Sendchamp public key not configured. SMS not sent.');
+
             return [
                 'success' => false,
                 'error' => 'Sendchamp public key not configured in .env',
@@ -73,6 +79,7 @@ class SendchampService
 
             if ($response->successful() && ($data['status'] ?? '') === 'success') {
                 $ref = $data['data']['reference'] ?? ($data['data']['id'] ?? 'SC-'.uniqid());
+
                 return [
                     'success' => true,
                     'reference' => $ref,
@@ -89,7 +96,8 @@ class SendchampService
                 'data' => $data,
             ];
         } catch (\Throwable $e) {
-            Log::error('Sendchamp SMS exception: ' . $e->getMessage());
+            Log::error('Sendchamp SMS exception: '.$e->getMessage());
+
             return [
                 'success' => false,
                 'error' => $e->getMessage(),
@@ -100,15 +108,13 @@ class SendchampService
     /**
      * Send WhatsApp Message via Sendchamp
      *
-     * @param string $recipientPhone
-     * @param string $message
-     * @param string|null $senderId
      * @return array [success => bool, reference => string|null, error => string|null]
      */
     public function sendWhatsApp(string $recipientPhone, string $message, ?string $senderId = null): array
     {
-        if (!$this->isConfigured()) {
+        if (! $this->isConfigured()) {
             Log::warning('Sendchamp public key not configured. WhatsApp not sent.');
+
             return [
                 'success' => false,
                 'error' => 'Sendchamp public key not configured in .env',
@@ -124,7 +130,7 @@ class SendchampService
             'type' => 'text',
         ];
 
-        if (!empty($sender)) {
+        if (! empty($sender)) {
             $payload['sender'] = $sender;
         }
 
@@ -137,6 +143,7 @@ class SendchampService
 
             if ($response->successful() && ($data['status'] ?? '') === 'success') {
                 $ref = $data['data']['reference'] ?? ($data['data']['id'] ?? 'WA-SC-'.uniqid());
+
                 return [
                     'success' => true,
                     'reference' => $ref,
@@ -153,7 +160,8 @@ class SendchampService
                 'data' => $data,
             ];
         } catch (\Throwable $e) {
-            Log::error('Sendchamp WhatsApp exception: ' . $e->getMessage());
+            Log::error('Sendchamp WhatsApp exception: '.$e->getMessage());
+
             return [
                 'success' => false,
                 'error' => $e->getMessage(),
@@ -164,15 +172,14 @@ class SendchampService
     /**
      * Send OTP verification token via SMS or WhatsApp
      *
-     * @param string $phone
-     * @param string $channel 'sms' or 'whatsapp'
-     * @param int $tokenLength 4-8 digits
-     * @param int $expiryMinutes Expiration duration
+     * @param  string  $channel  'sms' or 'whatsapp'
+     * @param  int  $tokenLength  4-8 digits
+     * @param  int  $expiryMinutes  Expiration duration
      * @return array [success => bool, reference => string|null, error => string|null]
      */
     public function sendOtp(string $phone, string $channel = 'sms', int $tokenLength = 6, int $expiryMinutes = 10): array
     {
-        if (!$this->isConfigured()) {
+        if (! $this->isConfigured()) {
             return [
                 'success' => false,
                 'error' => 'Sendchamp public key not configured',
@@ -220,13 +227,13 @@ class SendchampService
     /**
      * Verify/Confirm an OTP code against a reference
      *
-     * @param string $reference Verification reference returned by sendOtp
-     * @param string $code User-entered OTP digits
+     * @param  string  $reference  Verification reference returned by sendOtp
+     * @param  string  $code  User-entered OTP digits
      * @return array [success => bool, message => string, error => string|null]
      */
     public function verifyOtp(string $reference, string $code): array
     {
-        if (!$this->isConfigured()) {
+        if (! $this->isConfigured()) {
             return [
                 'success' => false,
                 'error' => 'Sendchamp public key not configured',
@@ -269,7 +276,7 @@ class SendchampService
      */
     public function getWalletBalance(): ?array
     {
-        if (!$this->isConfigured()) {
+        if (! $this->isConfigured()) {
             return null;
         }
 
@@ -282,7 +289,7 @@ class SendchampService
                 return $response->json('data');
             }
         } catch (\Throwable $e) {
-            Log::warning('Sendchamp getWalletBalance failed: ' . $e->getMessage());
+            Log::warning('Sendchamp getWalletBalance failed: '.$e->getMessage());
         }
 
         return null;
@@ -299,12 +306,12 @@ class SendchampService
 
         // If local Nigerian number starting with 0 (e.g. 09116110242), convert to 2349116110242
         if (str_starts_with($digits, '0') && strlen($digits) === 11) {
-            return '234' . substr($digits, 1);
+            return '234'.substr($digits, 1);
         }
 
         // If 10 digits without leading 0 (e.g. 9116110242), prefix 234
         if (strlen($digits) === 10) {
-            return '234' . $digits;
+            return '234'.$digits;
         }
 
         return $digits;
@@ -315,7 +322,7 @@ class SendchampService
         return [
             'Accept' => 'application/json',
             'Content-Type' => 'application/json',
-            'Authorization' => 'Bearer ' . $this->publicKey,
+            'Authorization' => 'Bearer '.$this->publicKey,
         ];
     }
 }

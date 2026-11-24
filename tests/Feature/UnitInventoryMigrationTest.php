@@ -99,14 +99,14 @@ class UnitInventoryMigrationTest extends TestCase
         $property = $this->makeProperty('Historical Apartment');
 
         try {
-            $property->owner->delete();
+            DB::transaction(fn () => $property->owner->delete());
             $this->fail('Owner deletion should have been restricted.');
         } catch (QueryException) {
             $this->assertDatabaseHas('owners', ['id' => $property->owner_id]);
         }
 
         try {
-            $property->site->delete();
+            DB::transaction(fn () => $property->site->delete());
             $this->fail('Site deletion should have been restricted.');
         } catch (QueryException) {
             $this->assertDatabaseHas('sites', ['id' => $property->site_id]);

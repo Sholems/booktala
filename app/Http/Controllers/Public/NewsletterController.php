@@ -44,14 +44,14 @@ class NewsletterController extends Controller
         try {
             Mail::to($subscriber->email)->queue(new NewsletterWelcomeMail($subscriber));
         } catch (\Throwable $e) {
-            Log::warning("Could not dispatch welcome email to {$subscriber->email}: " . $e->getMessage());
+            Log::warning("Could not dispatch welcome email to {$subscriber->email}: ".$e->getMessage());
         }
 
         // Auto-sync to Brevo Contact list if Brevo is enabled
         try {
             app(BrevoMarketingService::class)->createOrUpdateSubscriber($subscriber);
         } catch (\Throwable $e) {
-            Log::warning("Brevo contact sync error for {$subscriber->email}: " . $e->getMessage());
+            Log::warning("Brevo contact sync error for {$subscriber->email}: ".$e->getMessage());
         }
 
         $successMsg = 'Welcome to the BookTala VIP Club! Use promo code WELCOME10 for 10% off your first stay.';
@@ -72,7 +72,7 @@ class NewsletterController extends Controller
         $subscriber = NewsletterSubscriber::where('unsubscribe_token', $token)->first();
 
         // Also allow matching md5(email) fallback
-        if (!$subscriber) {
+        if (! $subscriber) {
             $subscriber = NewsletterSubscriber::all()->first(function ($sub) use ($token) {
                 return md5(strtolower($sub->email)) === $token;
             });
@@ -92,7 +92,7 @@ class NewsletterController extends Controller
     {
         $subscriber = NewsletterSubscriber::where('unsubscribe_token', $token)->first();
 
-        if (!$subscriber) {
+        if (! $subscriber) {
             $subscriber = NewsletterSubscriber::all()->first(function ($sub) use ($token) {
                 return md5(strtolower($sub->email)) === $token;
             });
@@ -100,6 +100,7 @@ class NewsletterController extends Controller
 
         if ($subscriber) {
             $subscriber->resubscribe();
+
             return redirect()->back()->with('status', 'You have been successfully resubscribed to BookTala VIP Club.');
         }
 

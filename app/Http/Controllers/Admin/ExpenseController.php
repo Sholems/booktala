@@ -8,8 +8,8 @@ use App\Models\Expense;
 use App\Models\MaintenanceReport;
 use App\Models\Property;
 use App\Services\Finance\LedgerPostingService;
-use App\Support\PropertyAccess;
 use App\Support\PrivateStorage;
+use App\Support\PropertyAccess;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -59,7 +59,6 @@ class ExpenseController extends Controller
         PropertyAccess::authorize($request->user(), $data['property_id']);
 
         if ($request->hasFile('receipt')) {
-            // Receipts are private: stored on default/r2 storage, downloaded through the app.
             $disk = PrivateStorage::disk();
             $data['receipt_path'] = $request->file('receipt')->store('receipts', $disk);
         }

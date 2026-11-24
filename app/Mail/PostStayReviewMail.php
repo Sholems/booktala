@@ -21,6 +21,7 @@ class PostStayReviewMail extends Mailable implements ShouldQueue
     public function envelope(): Envelope
     {
         $propertyName = $this->reservation->property->name ?? 'BookTala';
+
         return new Envelope(
             subject: "How was your stay at {$propertyName}? · BookTala Concierge",
         );
@@ -29,6 +30,7 @@ class PostStayReviewMail extends Mailable implements ShouldQueue
     public function content(): Content
     {
         $guestEmail = $this->reservation->guest?->email ?: $this->reservation->user?->email;
+
         return new Content(
             view: 'emails.marketing.post-stay-review',
             with: [

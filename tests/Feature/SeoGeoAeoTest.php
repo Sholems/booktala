@@ -112,7 +112,7 @@ class SeoGeoAeoTest extends TestCase
         $this->assertStringContainsString('User-agent: GPTBot', $content);
         $this->assertStringContainsString('User-agent: PerplexityBot', $content);
         $this->assertStringContainsString('User-agent: ClaudeBot', $content);
-        $this->assertStringContainsString('Sitemap: ' . url('/sitemap.xml'), $content);
+        $this->assertStringContainsString('Sitemap: '.url('/sitemap.xml'), $content);
     }
 
     public function test_llms_txt_endpoint_serves_markdown_grounding_document(): void

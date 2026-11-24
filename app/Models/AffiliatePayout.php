@@ -42,6 +42,6 @@ class AffiliatePayout extends Model
 
     public static function generatePayoutRef(): string
     {
-        return 'PAY-' . strtoupper(Str::random(10));
+        return 'PAY-'.strtoupper(Str::random(10));
     }
 }

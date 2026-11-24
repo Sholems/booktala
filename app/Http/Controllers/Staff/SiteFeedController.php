@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Site;
 use App\Models\SiteMessage;
 use App\Models\Unit;
+use App\Services\CommunicationAlertService;
 use Illuminate\Http\Request;
 
 class SiteFeedController extends Controller
@@ -75,7 +76,7 @@ class SiteFeedController extends Controller
             'pinned_by' => $pinned ? $request->user()->id : null,
         ]);
 
-        app(\App\Services\CommunicationAlertService::class)->notifySiteMessage($siteMessage, $request->user());
+        app(CommunicationAlertService::class)->notifySiteMessage($siteMessage, $request->user());
 
         return back()->with('success', 'Operational update posted to site feed.');
     }

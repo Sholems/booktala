@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\Affiliate;
 use App\Models\AffiliatePayout;
 use App\Models\AffiliateReferral;
+use App\Models\Setting;
+use App\Services\AffiliateCommissionService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -17,7 +19,7 @@ class AffiliateManagementController extends Controller
         $query = Affiliate::with('user')->withCount('referrals');
 
         if ($request->filled('search')) {
-            $search = '%' . $request->search . '%';
+            $search = '%'.$request->search.'%';
             $query->where(function ($q) use ($search) {
                 $q->where('code', 'like', $search)
                     ->orWhere('bank_name', 'like', $search)
@@ -38,7 +40,7 @@ class AffiliateManagementController extends Controller
         $totalAffiliates = Affiliate::count();
         $totalPaidOut = AffiliatePayout::where('status', 'completed')->sum('amount');
         $totalPendingCommissions = AffiliateReferral::where('status', 'pending')->sum('commission_amount');
-        $defaultCommissionRate = \App\Services\AffiliateCommissionService::getDefaultCommissionRate();
+        $defaultCommissionRate = AffiliateCommissionService::getDefaultCommissionRate();
 
         return view('admin.affiliates.index', compact(
             'affiliates',
@@ -57,10 +59,11 @@ class AffiliateManagementController extends Controller
         ]);
 
         $rate = (float) $validated['commission_rate'];
-        \App\Models\Setting::set('affiliate_commission_rate', $rate);
+        Setting::set('affiliate_commission_rate', $rate);
 
         if ($request->boolean('update_existing')) {
             Affiliate::query()->update(['commission_rate' => $rate]);
+
             return back()->with('success', "Default affiliate commission rate updated to {$rate}% and applied to all existing affiliates.");
         }
 
@@ -69,7 +72,7 @@ class AffiliateManagementController extends Controller
 
     public function show(Affiliate $affiliate)
     {
-        $affiliate->load(['user', 'payouts' => fn($q) => $q->latest()->take(10)]);
+        $affiliate->load(['user', 'payouts' => fn ($q) => $q->latest()->take(10)]);
         $referrals = $affiliate->referrals()->with(['reservation.property', 'guest'])->latest()->paginate(15);
 
         return view('admin.affiliates.show', compact('affiliate', 'referrals'));

@@ -9,10 +9,10 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('newsletter_subscribers', function (Blueprint $table) {
-            if (!Schema::hasColumn('newsletter_subscribers', 'unsubscribe_token')) {
+            if (! Schema::hasColumn('newsletter_subscribers', 'unsubscribe_token')) {
                 $table->string('unsubscribe_token', 64)->nullable()->unique()->after('status');
             }
-            if (!Schema::hasColumn('newsletter_subscribers', 'unsubscribed_at')) {
+            if (! Schema::hasColumn('newsletter_subscribers', 'unsubscribed_at')) {
                 $table->timestamp('unsubscribed_at')->nullable()->after('subscribed_at');
             }
         });

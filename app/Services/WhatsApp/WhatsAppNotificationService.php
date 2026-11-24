@@ -6,6 +6,7 @@ use App\Models\Reservation;
 use App\Models\RoomServiceOrder;
 use App\Models\User;
 use App\Models\WhatsAppMessageLog;
+use App\Services\SendchampService;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
@@ -183,8 +184,8 @@ class WhatsAppNotificationService
         $gatewayReference = 'WA-'.uniqid();
         $errorMessage = null;
 
-        /** @var \App\Services\SendchampService $sendchamp */
-        $sendchamp = app(\App\Services\SendchampService::class);
+        /** @var SendchampService $sendchamp */
+        $sendchamp = app(SendchampService::class);
 
         if (! app()->environment('testing') && ($gateway === 'sendchamp' || $gateway === 'auto') && $sendchamp->isConfigured()) {
             $gateway = 'sendchamp';

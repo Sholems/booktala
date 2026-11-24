@@ -37,17 +37,18 @@ class TestCloudflareR2 extends Command
         $this->line("Default Filesystem Disk: <comment>{$disk}</comment>");
         $this->line("R2 Bucket: <comment>{$bucket}</comment>");
         $this->line("R2 Endpoint: <comment>{$endpoint}</comment>");
-        $this->line("R2 Key ID: <comment>" . ($key ? substr($key, 0, 6) . '...' . substr($key, -4) : 'NOT SET') . "</comment>");
-        $this->line("Public CDN URL: <comment>" . ($cdnUrl ?: 'None (streaming via /media/{path})') . "</comment>");
+        $this->line('R2 Key ID: <comment>'.($key ? substr($key, 0, 6).'...'.substr($key, -4) : 'NOT SET').'</comment>');
+        $this->line('Public CDN URL: <comment>'.($cdnUrl ?: 'None (streaming via /media/{path})').'</comment>');
 
         if (empty($key) || empty($bucket) || empty($endpoint)) {
             $this->error('Cloudflare R2 is missing required configuration in .env!');
             $this->line('Ensure CLOUDFLARE_R2_ACCESS_KEY_ID, CLOUDFLARE_R2_SECRET_ACCESS_KEY, and CLOUDFLARE_R2_ENDPOINT are set.');
+
             return Command::FAILURE;
         }
 
-        $testPath = 'diagnostics/test-' . time() . '.txt';
-        $testContent = "BookTala Cloudflare R2 Storage Verification\nTimestamp: " . now()->toIso8601String() . "\nStatus: OK";
+        $testPath = 'diagnostics/test-'.time().'.txt';
+        $testContent = "BookTala Cloudflare R2 Storage Verification\nTimestamp: ".now()->toIso8601String()."\nStatus: OK";
 
         $this->line("\n[1/3] Uploading test object to [{$testPath}] on R2...");
 
@@ -55,27 +56,30 @@ class TestCloudflareR2 extends Command
             $r2 = Storage::disk('r2');
             $uploadSuccess = $r2->put($testPath, $testContent);
 
-            if (!$uploadSuccess) {
+            if (! $uploadSuccess) {
                 $this->error('Failed to put test object onto Cloudflare R2.');
+
                 return Command::FAILURE;
             }
             $this->info('Upload successful!');
 
             $this->line("\n[2/3] Verifying read & existence from Cloudflare R2...");
-            if (!$r2->exists($testPath)) {
+            if (! $r2->exists($testPath)) {
                 $this->error('File was uploaded but exists() check failed.');
+
                 return Command::FAILURE;
             }
 
             $retrieved = $r2->get($testPath);
             if ($retrieved !== $testContent) {
                 $this->error('Retrieved file content does not match original payload.');
+
                 return Command::FAILURE;
             }
             $this->info('Read verified! File content matches 100%.');
 
-            if (!empty($cdnUrl)) {
-                $publicUrl = rtrim($cdnUrl, '/') . '/' . $testPath;
+            if (! empty($cdnUrl)) {
+                $publicUrl = rtrim($cdnUrl, '/').'/'.$testPath;
                 $this->line("Public Object URL: <info>{$publicUrl}</info>");
             }
 
@@ -88,9 +92,11 @@ class TestCloudflareR2 extends Command
             }
 
             $this->info("\nCloudflare R2 storage is active, healthy, and operational!");
+
             return Command::SUCCESS;
         } catch (\Throwable $e) {
-            $this->error('Cloudflare R2 Error: ' . $e->getMessage());
+            $this->error('Cloudflare R2 Error: '.$e->getMessage());
+
             return Command::FAILURE;
         }
     }
